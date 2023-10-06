@@ -20,13 +20,26 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
 
 func opAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	x, y := scope.Stack.pop(), scope.Stack.peek()
+	log.Info("----opAdd-----", "x", x.String(), "y", y.String())
 	y.Add(&x, y)
+	log.Info("----opAdd-----2", "x", x.String(), "y", y.String())
+	return nil, nil
+}
+
+func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	x, y := scope.Stack.pop(), scope.Stack.peek()
+	log.Info("----opDecAdd-----", "x", x.String(), "y", y.String())
+	y.Add(&x, y)
+	t := uint256.NewInt(1)
+	y.Add(t, y)
+	log.Info("----opDecAdd-----2", "x", x.String(), "y", y.String())
 	return nil, nil
 }
 

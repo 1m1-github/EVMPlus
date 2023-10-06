@@ -42,6 +42,8 @@ const (
 	MULMOD     OpCode = 0x9
 	EXP        OpCode = 0xa
 	SIGNEXTEND OpCode = 0xb
+
+	DEC_ADD OpCode = 0xc
 )
 
 // 0x10 range - comparison ops.
@@ -244,6 +246,8 @@ var opCodeToString = map[OpCode]string{
 	ISZERO:     "ISZERO",
 	SIGNEXTEND: "SIGNEXTEND",
 
+	DEC_ADD: "DEC_ADD",
+
 	// 0x10 range - bit ops.
 	AND:    "AND",
 	OR:     "OR",
@@ -423,6 +427,9 @@ var stringToOp = map[string]OpCode{
 	"EQ":             EQ,
 	"ISZERO":         ISZERO,
 	"SIGNEXTEND":     SIGNEXTEND,
+
+	"DEC_ADD":        DEC_ADD,
+
 	"AND":            AND,
 	"OR":             OR,
 	"XOR":            XOR,
