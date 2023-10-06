@@ -38,6 +38,8 @@ we will (time permitting) implement two example use cases:
 1. Black-Scholes ~ basic formula to value options risk neutrally
 2. MLP ~ basic neural network
 
+generally, with these OPCODES, users can solve integrals, diff. equations, etc.
+
 ### testing
 
 testing the correctness of the math itself is trivial. we can achieve as high a confidence as we like by comparing more digits of any calculation. any mistake in any part of the code would contribute in accumulated higher errors in the end result, i.e. if we e.g. get the option price to match a reliable web2 lib value to 100 digits, the chance of error is extremely low. i.e., we can make it as low as the chance of an Eth hash collusion, if we wanted to.
@@ -58,6 +60,10 @@ adding the ability to represent any decimal value precisely and do calculations 
 2. add +, -, *, /
 3. add EXP, LOG
 4. workout, test and analyze gas correctly
+
+### *virtual* machine
+
+the EVM is a virtual machine and thereby not restricted by hardware. usually, assembly languages provide OPCODES that are basic due to the basic and binary nature of hardware. in a virtual machine, we have no such limitations and nothing stops us from adding complex OPCODES like EXP and LOG. at the same time, we do not want to clutter the OPCODES library. EXP and LOG however are universal functions that open the path to: powers, trigonometry, integrals, differential equations, machine learning, etc.
 
 ## Go Ethereum
 
