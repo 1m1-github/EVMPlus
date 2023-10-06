@@ -1,3 +1,70 @@
+## EVM+
+
+Add arbitrary precision, complex decimal float math to the EVM.
+Add OPCODES: +, - , *, /, EXP, LOG
+
+### complex decimal float
+
+$x = i^p * a * 10^b$
+
+where
+
+$p$ the parity (sign) is an element from ${0, 1, 2, 3}$, making $i^p$ either of $1, i, -1, -i$
+
+and
+
+$a$ is an uint and $b$ is int.
+
+### derived functions
+
+in the smart contract code (or as precompiled smart contracts), we can easily get the following functions:
+
+a^b = POW(a, b) = EXP(b * LOG(a))
+SIN(a) = (EXP(i*a) - EXP(-i*a)) / (2*i)
+COS(a) = SIN(PI/2 - a)
+TAN(a) = SIN(a) / COS(a)
+...
+
+### implementation
+
+1. define +, -, *, /
+2. EXP as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
+3. LOG using a binary algorithm
+
+use big.Int or what is already used in geth. need arbitrary precision.
+
+### use cases
+
+lots of scientific, mathematical and financial calculations require universal functions such as EXP and LOG. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
+
+these new capabilities will invite large universes of apps into Ethereum.
+
+we will (time permitting) implement two examples use cases:
+
+1. Black-Scholes ~ basic formula to value options risk neutrally
+2. MLP ~ basic neural network
+
+### testing
+
+testing the correctness of the math itself is trivial. we can achieve as high a confidence as we like by comparing more digits of any calculation. any mistake in any part of the code would contribute in accumulated higher errors int end result, i.e. if we e.g. get the option price to match a reliable web2 lib value to 100 digits, the chance of error is extremely low. i.e., we can make it as low as the chance of an Eth hash collusion, if we wanted to.
+
+### gas
+
+the opcodes will have as an input the desired target precion of the user. this will render the calculation deterministic. e.g. we know how many Taylor steps we will to achieve a certain precision.
+
+### binary vs decimal float
+
+most apps created by humans work with decimal values.
+e.g. 0.1 is a very commonly used number, but cannot be represented in binary finitely.
+adding the ability to represent any decimal value precisely and do calculations with them, invites lots of common web2 apps into Ethereum
+
+### plan
+
+1. run private EVM network from local code
+2. add basic arithmetic opcodes
+3. add EXP, LOG
+4. workout, test and analyze gas correctly
+
 ## Go Ethereum
 
 Official Golang execution layer implementation of the Ethereum protocol.
