@@ -1,20 +1,19 @@
 ## EVM+
 
 Add arbitrary precision, complex decimal float math to the EVM.
-Add OPCODES: +, - , *, /, EXP, LOG
+Add OPCODES: +, - , *, /, EXP, LOG, SIN, PI
 
-### complex decimal float
+### decimal float
 
-$x = i^p * a * 10^b$
+$x = (-1)^p * a * 10^b$
 
-where $p$ the parity (sign) is an element from $\{0, 1, 2, 3\}$, making $i^p$ either of $\{1, i, -1, -i\}$ and $a$ is a uint and $b$ is int.
+where $p$ the parity is an element from $\{0, 1\}$, making $(-1)^p$ either of $\{1, -1\}$ and $a$ is a uint and $b$ is int.
 
 ### derived functions
 
 in the smart contract code (or as precompiled smart contracts), we can easily get the following functions:
 
-a^b = POW(a, b) = EXP(b * LOG(a))  
-SIN(a) = (EXP(i*a) - EXP(-i*a)) / (2*i)  
+a^b = POW(a, b) = EXP(b * LOG(a))   
 COS(a) = SIN(PI/2 - a)  
 TAN(a) = SIN(a) / COS(a)  
 ...
@@ -24,12 +23,13 @@ TAN(a) = SIN(a) / COS(a)
 1. define +, -, *, /
 2. EXP as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
 3. LOG using a binary algorithm
+2. SIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
 
 use big.Int or what is already used in geth. need arbitrary precision.
 
 ### use cases
 
-lots of scientific, mathematical and financial calculations require universal functions such as EXP and LOG. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
+lots of scientific, mathematical and financial calculations require universal functions such as EXP, LOG, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
 
 these new capabilities will invite large universes of apps into Ethereum.
 
@@ -58,7 +58,7 @@ adding the ability to represent any decimal value precisely and do calculations 
 
 1. run private EVM network from local code
 2. add +, -, *, /
-3. add EXP, LOG
+3. add EXP, LOG, SIN, PI
 4. workout, test and analyze gas correctly
 
 ### *virtual* machine
