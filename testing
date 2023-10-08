@@ -1,6 +1,9 @@
 make geth
-./build/bin/geth --http --http.corsdomain="https://remix.ethereum.org" --http.api web3,eth,debug,personal,net --vmdebug --datadir /Users/1m1/Documents/go-ethereum-plus/chaindata --dev console
+./build/bin/geth --http --http.corsdomain="https://remix.ethereum.org" --http.api web3,eth,debug,net --vmdebug --datadir /Users/1m1/Documents/go-ethereum-plus/chaindata --dev console
 echo $((16#A))
+
+cd cmd/geth
+go run . --http --http.corsdomain="https://remix.ethereum.org" --http.api web3,eth,debug,net --vmdebug --datadir /Users/1m1/Documents/go-ethereum-plus/chaindata --dev console
 
 pragma solidity ^0.8.0;
 contract SimpleStorage2 {
@@ -43,7 +46,7 @@ var gas = eth.estimateGas({ data: bytecode });
 var tx = { from: eth.accounts[0], data: bytecode, gas: gas };
 var deployed_contract = contract.new(tx);
 
-var instance = contract.at('0xe8401561c18a51d4bd871750317b5f55f75996af');
+var instance = contract.at('0x66ee9e27af437113b5416ff794b102d83d4c0d53');
 instance.addone.sendTransaction(42, { from: eth.accounts[0], gas: 1000000 });
 
 PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0xF JUMPI PUSH0 DUP1 REVERT JUMPDEST POP PUSH2 0x192 DUP1 PUSH2 0x1D PUSH0 CODECOPY PUSH0 RETURN INVALID PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0xF JUMPI PUSH0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x29 JUMPI PUSH0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0x8C6A69E7 EQ PUSH2 0x2D JUMPI JUMPDEST PUSH0 DUP1 REVERT JUMPDEST PUSH2 0x47 PUSH1 0x4 DUP1 CALLDATASIZE SUB DUP2 
@@ -78,3 +81,61 @@ var instance = contract.at('0xe90ffcd4e79aea6b4178f5aec6381f292801122d');
 instance.addone.sendTransaction(42, { from: eth.accounts[0], gas: 1000000 });
 
 
+
+
+var abi=[{
+		"inputs": [
+			{
+				"internalType": "int256",
+				"name": "x",
+				"type": "int256"
+			}
+		],
+		"name": "addone",
+		"outputs": [
+			{
+				"internalType": "int256",
+				"name": "",
+				"type": "int256"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	}];
+var bytecode = '0x608060405234801561000f575f80fd5b506101a08061001d5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063076dcbb01461002d575b5f80fd5b610047600480360381019061004291906100a9565b61005d565b60405161005491906100e3565b60405180910390f35b5f60028261006b9190610129565b9050919050565b5f80fd5b5f819050919050565b61008881610076565b8114610092575f80fd5b50565b5f813590506100a38161007f565b92915050565b5f602082840312156100be576100bd610072565b5b5f6100cb84828501610095565b91505092915050565b6100dd81610076565b82525050565b5f6020820190506100f65f8301846100d4565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f61013382610076565b915061013e83610076565b92508282019050828112155f8312168382125f841215161715610164576101636100fc565b5b9291505056fea264697066735822122031e2f6fa66687229ebead52edda361d6bb219d5f7c053720910d9e596c85175564736f6c63430008150033';
+var instance = contract.at('0x1276068d2008bc91ded8abe7624db7ad56beea87');
+instance.addone.sendTransaction(42, { from: eth.accounts[0], gas: 1000000 });
+
+
+
+var abi=[{
+		"inputs": [
+			{
+				"internalType": "int256",
+				"name": "x",
+				"type": "int256"
+			}
+		],
+		"name": "addone",
+		"outputs": [
+			{
+				"internalType": "int256",
+				"name": "",
+				"type": "int256"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	}];
+var bytecode = '0x608060405234801561000f575f80fd5b506102c38061001d5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063076dcbb01461002d575b5f80fd5b61004760048036038101906100429190610146565b61005d565b6040516100549190610180565b60405180910390f35b5f80601790505f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe990505f818361009491906101c6565b90505f82846100a39190610207565b90505f83856100b190610247565b6100bb91906101c6565b90505f84866100c990610247565b6100d39190610207565b9050808284868b6100e491906101c6565b6100ee91906101c6565b6100f891906101c6565b61010291906101c6565b9650505050505050919050565b5f80fd5b5f819050919050565b61012581610113565b811461012f575f80fd5b50565b5f813590506101408161011c565b92915050565b5f6020828403121561015b5761015a61010f565b5b5f61016884828501610132565b91505092915050565b61017a81610113565b82525050565b5f6020820190506101935f830184610171565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f6101d082610113565b91506101db83610113565b92508282019050828112155f8312168382125f84121516171561020157610200610199565b5b92915050565b5f61021182610113565b915061021c83610113565b925082820390508181125f8412168282135f85121516171561024157610240610199565b5b92915050565b5f61025182610113565b91507f8000000000000000000000000000000000000000000000000000000000000000820361028357610282610199565b5b815f03905091905056fea264697066735822122072d8860e0158a4ea963b7df87a49f8481a9eb883915d248c080f50edfbbef3f164736f6c63430008150033';
+var contract = eth.contract(abi);
+var gas = eth.estimateGas({ data: bytecode });
+var tx = { from: eth.accounts[0], data: bytecode, gas: gas };
+var deployed_contract = contract.new(tx);
+deployed_contract
+var instance = contract.at('0xf7448f7d96608168Bb7F7CD39cd6b6B464180859');
+instance.addone.sendTransaction(42, { from: eth.accounts[0], gas: 1000000 });
+
+eth.accounts
+web3.eth.getBalance(eth.accounts[0])
+eth.getTransaction("0x38ddfc691df0ad1858ea49fe43fff7555f3409a84f609c0f1e6ff7da6ccf15e8")
