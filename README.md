@@ -5,15 +5,15 @@ Add OPCODES: +, - , *, /, EXP, LOG, SIN, PI
 
 ### decimal float
 
-$x = a * 10^b$
+$x = s * 10^e$
 
-with $a$ (significand) and $b$ (exponent) are $int$.
+with $e$ (significand) and $e$ (exponent) are $int$.
 
 ### derived functions
 
 in the smart contract code (or as precompiled smart contracts), we can easily get the following functions:
 
-a^b = POW(a, b) = EXP(b * LOG(a))   
+a^b = POW(a, b) = EXP(b * LOG(a))
 COS(a) = SIN(PI/2 - a)  
 TAN(a) = SIN(a) / COS(a)  
 ...
