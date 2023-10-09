@@ -1,7 +1,7 @@
 package vm
 
 import (
-	"fmt"
+	"fmt" // TODO remove
 
 	"github.com/holiman/uint256"
 )
@@ -15,14 +15,20 @@ type decimal struct {
 
 var ZERO = uint256.NewInt(0)
 
+func isNegativeIfInterpretedAsInt256(value *uint256.Int) bool {
+	msb := new(uint256.Int).Lsh(uint256.NewInt(1), 255) // 2^255
+	return new(uint256.Int).And(value, msb).Sign() != 0
+}
+
 // c.s*10^c.e = a.s*10^a.e + b.s*10^b.e
-func add(a, b, out *decimal, precision int64, L bool) (*decimal) {
+func add(a, b, out *decimal, L bool) (*decimal) {
 	if L {fmt.Println("add", "a", "b", a, b)}
 
 	aqmbq := new(uint256.Int).Sub(&a.e, &b.e)
 	if L {fmt.Println("add", "aqmbq", aqmbq)}
 	
 	aqmbq_abs := new(uint256.Int).Abs(aqmbq)
+	if L {fmt.Println("add", "aqmbq_abs", aqmbq_abs)}
 
 	ten_power := uint256.NewInt(10)
 	ten_power.Exp(ten_power, aqmbq_abs) // todo faster way should exist
@@ -34,38 +40,43 @@ func add(a, b, out *decimal, precision int64, L bool) (*decimal) {
 	cb := new(uint256.Int).Abs(&b.s)
 	if L {fmt.Println("add", "cb", cb, cb.String())}
 
-	if aqmbq.Cmp(ZERO) == 1 {
+	aqmbq_neg := isNegativeIfInterpretedAsInt256(aqmbq)
+	if !aqmbq_neg {
 		ca.Mul(ca, ten_power)
-	} else if aqmbq.Cmp(ZERO) == -1 {
+	} else if aqmbq.Cmp(ZERO) != 0 {
 		cb.Mul(cb, ten_power)
 	}
 	if L {fmt.Println("add", "ca", ca, ca.String())}
 	if L {fmt.Println("add", "cb", cb, cb.String())}
 
-	// s = (abs(cx) > abs(cy)) ? x.s : y.s
-	// var n bool
-	// switch ca.CmpAbs(&cb) {
-	// case 1: n = a.n
-	// default: n = b.n
-	// }
-	// if L {fmt.Println("add", "n", n)}
-	// s = (abs(cx) > abs(cy)) ? x.s : y.s
-
-	// c = BigInt(cx) + BigInt(cy)
 	c := new(uint256.Int).Add(ca, cb)
 	if L {fmt.Println("add", "c", c, c.String())}
-	// c = BigInt(cx) + BigInt(cy)
 	
-	// min(x.e, y.e)
+	// min(a.e, b.e)
+	ae_neg := isNegativeIfInterpretedAsInt256(&a.e)
+	if L {fmt.Println("add", "b.e", b.e)}
+	be_neg := isNegativeIfInterpretedAsInt256(&b.e)
 	e := a.e
-	if (b.e.Cmp(&a.e) == -1) {
+	if L {fmt.Println("add", "a.e", a.e)}
+	if L {fmt.Println("add", "b.e", b.e)}
+	if L {fmt.Println("add", "ae_neg", ae_neg)}
+	if L {fmt.Println("add", "be_neg", be_neg)}
+	if L {fmt.Println("add", "e", e)}
+	if ae_neg && !be_neg {
+		if L {fmt.Println("1")}
+	} else if !ae_neg && be_neg {
+		if L {fmt.Println("2")}
+		e = b.e
+	} else if a.e.Cmp(&b.e) == 1 {
+		if L {fmt.Println("3")}
 		e = b.e
 	}
-	if L {fmt.Println("add", "q", e)}
-	// min(x.q, y.q)
+	if L {fmt.Println("add", "e", e)}
+	// min(a.e, b.e)
 
 	out.s = *c
 	out.e = e
+	if L {fmt.Println("add", "out", out)}
 
 	return out
 }
