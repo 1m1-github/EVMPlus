@@ -5,9 +5,9 @@ Add OPCODES: +, - , *, /, EXP, LOG, SIN, PI
 
 ### decimal float
 
-$x = (-1)^p * a * 10^b$
+$x = a * 10^b$
 
-where $p$ the parity is an element from $\{0, 1\}$, making $(-1)^p$ either of $\{1, -1\}$ and $a$ is a uint and $b$ is int.
+with $a$ (significand) and $b$ (exponent) are $int$.
 
 ### derived functions
 
@@ -64,6 +64,12 @@ adding the ability to represent any decimal value precisely and do calculations 
 ### *virtual* machine
 
 the EVM is a virtual machine and thereby not restricted by hardware. usually, assembly languages provide OPCODES that are basic due to the basic and binary nature of hardware. in a virtual machine, we have no such limitations and nothing stops us from adding complex OPCODES like EXP and LOG. at the same time, we do not want to clutter the OPCODES library. EXP and LOG however are universal functions that open the path to: powers, trigonometry, integrals, differential equations, machine learning, etc.
+
+### arbitrary precision
+
+The algorithms implemented allow for arbitrary precision. Practically, as we always only have access to a finite amount of resources, the available precision is finite. 
+
+The first version allows for 256 bits of precision for the significand and exponent each. This corresponds to single elements of the EVM stack. If there is demand for higher precision, we can relatively easily expand to occupying the entire stack. (todo-if-demand)
 
 ## Go Ethereum
 
