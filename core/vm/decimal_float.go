@@ -146,6 +146,6 @@ func inverse(a, out *decimal, precision uint256.Int, L bool) (*decimal) {
 // a / b
 func divide(a, b, out *decimal, precision uint256.Int, L bool) (*decimal) {
 	inverse(b, out, precision, L)
-	multiply(a, copy(out), out, precision, L)
+	multiply(a, copy(out), out, L)
 	return out
 }
