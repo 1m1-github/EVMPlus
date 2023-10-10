@@ -327,8 +327,50 @@ func newFrontierInstructionSet() JumpTable {
 		DEC_ADD: {
 			execute:     opDecAdd,
 			constantGas: GasFastStep,
-			minStack:    minStack(2, 1),
-			maxStack:    maxStack(2, 1),
+			minStack:    minStack(4, 2),
+			maxStack:    maxStack(4, 2),
+		},
+		DEC_MUL: {
+			execute:     opDecMul,
+			constantGas: GasFastStep,
+			minStack:    minStack(4, 2),
+			maxStack:    maxStack(4, 2),
+		},
+		DEC_SUB: {
+			execute:     opDecSub,
+			constantGas: GasFastStep,
+			minStack:    minStack(4, 2),
+			maxStack:    maxStack(4, 2),
+		},
+		DEC_DIV: {
+			execute:     opDecDiv,
+			constantGas: GasFastStep,
+			minStack:    minStack(4, 2),
+			maxStack:    maxStack(4, 2),
+		},
+		DEC_EXP: {
+			execute:     opDecExp,
+			constantGas: GasFastStep,
+			minStack:    minStack(2, 2),
+			maxStack:    maxStack(2, 2),
+		},
+		DEC_LOG: {
+			execute:     opDecLog,
+			constantGas: GasFastStep,
+			minStack:    minStack(2, 2),
+			maxStack:    maxStack(2, 2),
+		},
+		DEC_SIN: {
+			execute:     opDecSin,
+			constantGas: GasFastStep,
+			minStack:    minStack(2, 2),
+			maxStack:    maxStack(2, 2),
+		},
+		DEC_PI: {
+			execute:     opDecPI,
+			constantGas: GasFastStep,
+			minStack:    minStack(0, 2),
+			maxStack:    maxStack(0, 2),
 		},
 
 		LT: {
