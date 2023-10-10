@@ -88,3 +88,10 @@ func negate(a, out *decimal, L bool) (*decimal) {
 	return out
 }
 
+// a - b
+func subtract(a, b, out *decimal, precision int64, L bool) (*decimal) {
+	negate(b, out, L)
+	add(a, out, out, L)
+	return out
+}
+
