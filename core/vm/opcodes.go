@@ -43,7 +43,15 @@ const (
 	EXP        OpCode = 0xa
 	SIGNEXTEND OpCode = 0xb
 
-	DEC_ADD OpCode = 0xc
+	DEC_ADD OpCode = 0xd0
+	DEC_MUL OpCode = 0xd1
+	DEC_SUB OpCode = 0xd2
+	DEC_DIV OpCode = 0xd3
+	DEC_EXP OpCode = 0xd4
+	DEC_LOG OpCode = 0xd5
+	DEC_SIN OpCode = 0xd6
+	DEC_PI OpCode = 0xd7
+
 )
 
 // 0x10 range - comparison ops.
