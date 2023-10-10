@@ -14,6 +14,7 @@ type decimal struct {
 }
 
 var ZERO = uint256.NewInt(0)
+var TEN = uint256.NewInt(10)
 
 func isNegativeIfInterpretedAsInt256(value *uint256.Int) bool {
 	msb := new(uint256.Int).Lsh(uint256.NewInt(1), 255) // 2^255
@@ -107,3 +108,33 @@ func multiply(a, b, out *decimal, L bool) (*decimal) {
 	return out
 }
 
+// 1 / a
+func inverse(a, out *decimal, precision uint256.Int, L bool) (*decimal) {
+	// if L {fmt.Println("inverse", "a", String(a), "precision", precision)}
+
+	// out.n = a.n
+	// if L {fmt.Println("inverse", "out.n", out.n)}
+
+	ten_power := TEN
+	ae_m_precision := new(uint256.Int).Neg(&a.e)
+	ae_m_precision.Add(ae_m_precision, &precision)
+	ten_power.Exp(ten_power, ae_m_precision)
+	out.s.Div(ten_power, &a.s)
+
+	if L {fmt.Println("inverse", "out.s", out.s)}
+	
+	out.s.Sub(&out.s, &precision)
+
+	if L {fmt.Println("inverse", "out.s", out.s)}
+	// if L {fmt.Println("inverse", "out", out, String(out))}
+	
+	// norm := normalize(copy(out), out, precision, false, L)
+	// if L {fmt.Println("inverse", "norm", norm, String(norm))}
+	// return norm
+	
+	// c = round(BigInt(10)^(-x.q + DIGITS) / x.c) # the decimal point of 1/x.c is shifted by -x.q so that the integer part of the result is correct and then it is shifted further by DIGITS to also cover some digits from the fractional part.
+    // q = -DIGITS # we only need to remember that there are these digits after the decimal point
+    // normalize(Decimal(x.s, c, q))
+
+	return out
+}
