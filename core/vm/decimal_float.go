@@ -95,3 +95,15 @@ func subtract(a, b, out *decimal, precision int64, L bool) (*decimal) {
 	return out
 }
 
+// a * b
+func multiply(a, b, out *decimal, L bool) (*decimal) {
+	// if L {fmt.Println("multiply", "a", String(a), "b", String(b), "precision", precision)}
+	// if L {fmt.Println("multiply", "a", a, "b", b)}
+	out.s.Mul(&a.s, &b.s)
+	// if L {fmt.Println("multiply", "out.c", out.c)}
+	out.e.Add(&a.e, &b.e)
+	// if L {fmt.Println("multiply", "out.q", out.q)}
+	// return normalize(copy(out), out, precision, false, L)
+	return out
+}
+
