@@ -80,3 +80,11 @@ func add(a, b, out *decimal, L bool) (*decimal) {
 
 	return out
 }
+
+// -a
+func negate(a, out *decimal, L bool) (*decimal) {
+	out.s.Neg(&a.s)
+	out.e = a.e
+	return out
+}
+
