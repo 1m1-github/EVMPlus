@@ -13,6 +13,10 @@ type decimal struct {
 	e uint256.Int // exponent
 }
 
+func copy(a *decimal) (*decimal) {
+	return &decimal{a.s, a.e}
+}
+
 var ZERO = uint256.NewInt(0)
 var TEN = uint256.NewInt(10)
 
@@ -136,5 +140,12 @@ func inverse(a, out *decimal, precision uint256.Int, L bool) (*decimal) {
     // q = -DIGITS # we only need to remember that there are these digits after the decimal point
     // normalize(Decimal(x.s, c, q))
 
+	return out
+}
+
+// a / b
+func divide(a, b, out *decimal, precision uint256.Int, L bool) (*decimal) {
+	inverse(b, out, precision, L)
+	multiply(a, copy(out), out, precision, L)
 	return out
 }
