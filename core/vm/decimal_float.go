@@ -17,8 +17,9 @@ func copy(a *decimal) (*decimal) {
 	return &decimal{a.s, a.e}
 }
 
-var ZERO = uint256.NewInt(0)
-var TEN = uint256.NewInt(10)
+var ZERO_uint256_Int = uint256.NewInt(0)
+var ONE_uint256_Int = uint256.NewInt(1)
+var TEN_uint256_Int = uint256.NewInt(10)
 
 func isNegativeIfInterpretedAsInt256(value *uint256.Int) bool {
 	msb := new(uint256.Int).Lsh(uint256.NewInt(1), 255) // 2^255
@@ -48,7 +49,7 @@ func add(a, b, out *decimal, L bool) (*decimal) {
 	aqmbq_neg := isNegativeIfInterpretedAsInt256(aqmbq)
 	if !aqmbq_neg {
 		ca.Mul(ca, ten_power)
-	} else if aqmbq.Cmp(ZERO) != 0 {
+	} else if aqmbq.Cmp(ZERO_uint256_Int) != 0 {
 		cb.Mul(cb, ten_power)
 	}
 	if L {fmt.Println("add", "ca", ca, ca.String())}
@@ -94,7 +95,7 @@ func negate(a, out *decimal, L bool) (*decimal) {
 }
 
 // a - b
-func subtract(a, b, out *decimal, precision int64, L bool) (*decimal) {
+func subtract(a, b, out *decimal, L bool) (*decimal) {
 	negate(b, out, L)
 	add(a, out, out, L)
 	return out
@@ -113,23 +114,27 @@ func multiply(a, b, out *decimal, L bool) (*decimal) {
 }
 
 // 1 / a
-func inverse(a, out *decimal, precision uint256.Int, L bool) (*decimal) {
+func inverse(a, out *decimal, L bool) (*decimal) {
 	// if L {fmt.Println("inverse", "a", String(a), "precision", precision)}
 
 	// out.n = a.n
 	// if L {fmt.Println("inverse", "out.n", out.n)}
 
-	ten_power := TEN
+	precision := uint256.NewInt(80) // more than max decimal precision on 256 bits
+
+	ten_power := TEN_uint256_Int
 	ae_m_precision := new(uint256.Int).Neg(&a.e)
-	ae_m_precision.Add(ae_m_precision, &precision)
+	ae_m_precision.Add(ae_m_precision, precision)
 	ten_power.Exp(ten_power, ae_m_precision)
 	out.s.Div(ten_power, &a.s)
-
 	if L {fmt.Println("inverse", "out.s", out.s)}
+
+	out.e.Sub(&out.e, precision)
+
+	if L {fmt.Println("inverse", "out", out)}
 	
-	out.s.Sub(&out.s, &precision)
+	// out.s.Sub(&out.s, &precision)
 
-	if L {fmt.Println("inverse", "out.s", out.s)}
 	// if L {fmt.Println("inverse", "out", out, String(out))}
 	
 	// norm := normalize(copy(out), out, precision, false, L)
@@ -144,8 +149,70 @@ func inverse(a, out *decimal, precision uint256.Int, L bool) (*decimal) {
 }
 
 // a / b
-func divide(a, b, out *decimal, precision uint256.Int, L bool) (*decimal) {
-	inverse(b, out, precision, L)
+func divide(a, b, out *decimal, L bool) (*decimal) {
+	inverse(b, out, L)
 	multiply(a, copy(out), out, L)
+	return out
+}
+
+func iszero(a *decimal) (bool) {
+	return a.s.IsZero()
+}
+
+// e^a
+// total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
+func exp_df(a, out *decimal, taylor_steps uint, L bool) (*decimal) {
+
+	if L {fmt.Println("a", a, "taylor_precision", taylor_steps)}
+
+	if iszero(a) {
+		out.s = *ONE_uint256_Int // possible problem
+		out.e = *ZERO_uint256_Int
+		return out
+	}
+
+	ONE := decimal{*ONE_uint256_Int, *ZERO_uint256_Int} // 1
+	a_power := decimal{*ONE_uint256_Int, *ZERO_uint256_Int} // 1
+	factorial := decimal{*ONE_uint256_Int, *ZERO_uint256_Int} // 1
+	factorial_next := decimal{*ZERO_uint256_Int, *ZERO_uint256_Int} // 0
+	factorial_inv := decimal{*ONE_uint256_Int, *ZERO_uint256_Int} // 1
+	
+	// out = 1
+	out.s = *ONE_uint256_Int
+	out.e = *ZERO_uint256_Int
+
+	if L {fmt.Println("out", out)}
+
+	for i := uint(0) ; i < taylor_steps ; i++ {
+		if L {fmt.Println("i", i)}
+
+		if L {fmt.Println("a", a)}
+		if L {fmt.Println("a_power", a_power)}
+		multiply(copy(&a_power), a, &a_power, false) // a^i
+		if L {fmt.Println("a_power", a_power)}
+
+		if L {fmt.Println("ONE", ONE_uint256_Int)}
+		if L {fmt.Println("factorial_next", factorial_next)}
+		add(copy(&factorial_next), &ONE, &factorial_next, false) // i + 1
+		if L {fmt.Println("factorial_next", factorial_next)}
+		
+		if L {fmt.Println("factorial", factorial)}
+		multiply(copy(&factorial), &factorial_next, &factorial, false) // i!
+		if L {fmt.Println("factorial", factorial)}
+		
+		if L {fmt.Println("factorial_inv", factorial_inv)}
+		inverse(&factorial, &factorial_inv, false) // 1 / i!
+		if L {fmt.Println("factorial_inv", factorial_inv)}
+
+		multiply(&a_power, copy(&factorial_inv), &factorial_inv, false) // store in factorial_inv as not needed anymore
+		if L {fmt.Println("factorial_inv", factorial_inv)}
+
+		if L {fmt.Println("out", out)}
+		add(copy(out), &factorial_inv, out, false)
+		if L {fmt.Println("out", out)}
+	}
+
+	if L {fmt.Println("out", out)}
+
 	return out
 }
