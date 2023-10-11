@@ -988,7 +988,7 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecLog(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecLn(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	xs, xe := scope.Stack.pop(), scope.Stack.peek()
 	x := decimal{s: xs, e: *xe}
 	log.Info("----opDecLog-----", "x", x)

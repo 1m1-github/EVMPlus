@@ -48,7 +48,7 @@ const (
 	DEC_SUB OpCode = 0xd2
 	DEC_DIV OpCode = 0xd3
 	DEC_EXP OpCode = 0xd4
-	DEC_LOG OpCode = 0xd5
+	DEC_LN OpCode = 0xd5
 	DEC_SIN OpCode = 0xd6
 	DEC_PI OpCode = 0xd7
 
