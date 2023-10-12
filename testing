@@ -1,3 +1,6 @@
+go test
+go test -run regexp
+
 make geth
 ./build/bin/geth --http --http.corsdomain="https://remix.ethereum.org" --http.api web3,eth,debug,net --vmdebug --datadir /Users/1m1/Documents/go-ethereum-plus/chaindata --dev console
 echo $((16#A))
@@ -107,7 +110,18 @@ var instance = contract.at('0x1276068d2008bc91ded8abe7624db7ad56beea87');
 instance.addone.sendTransaction(42, { from: eth.accounts[0], gas: 1000000 });
 
 
-
+pragma solidity ^0.8.0;
+contract SimpleStorage2 {
+    function addone(int x) public pure returns (int) {
+        int a = 23;
+        int b = -23;
+        int c = a + b;
+        int d = a - b;
+        int e = -a + b;
+        int f = -a - b;
+        return x+c+d+e+f;
+    }
+}
 var abi=[{
 		"inputs": [
 			{
@@ -133,7 +147,7 @@ var gas = eth.estimateGas({ data: bytecode });
 var tx = { from: eth.accounts[0], data: bytecode, gas: gas };
 var deployed_contract = contract.new(tx);
 deployed_contract
-var instance = contract.at('0xf7448f7d96608168Bb7F7CD39cd6b6B464180859');
+var instance = contract.at('0x137f0b218bf22da8424a425f730ef54250177484');
 instance.addone.sendTransaction(42, { from: eth.accounts[0], gas: 1000000 });
 
 eth.accounts
