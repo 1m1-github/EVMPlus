@@ -964,7 +964,7 @@ func opDecSub(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	x := decimal{s: xs, e: xe}
 	y := decimal{s: ys, e: *ye}
 	log.Info("----opDecSub-----", "x", x, "y", y)
-	subtract(&x, &y, &y, 10, false) // TODO need precision
+	subtract(&x, &y, &y, false) // TODO need precision
 	log.Info("----opDecSub-----2", "y", y)
 	return nil, nil
 }
@@ -974,7 +974,7 @@ func opDecDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	x := decimal{s: xs, e: xe}
 	y := decimal{s: ys, e: *ye}
 	log.Info("----opDecDiv-----", "x", x, "y", y)
-	divide(&x, &y, &y, uint256.Int{3}, false) // TODO need precision
+	divide(&x, &y, &y, false) // TODO need precision
 	log.Info("----opDecDiv-----2", "y", y)
 	return nil, nil
 }

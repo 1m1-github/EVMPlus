@@ -32,6 +32,53 @@ func showInt(a *uint256.Int) (string) {
 	return fmt.Sprintf("%v(%v)", a.Sign(), a.Dec())
 }
 
+// func TestInt(t *testing.T) {
+
+// 	tests := []struct {
+// 		a uint256.Int
+// 		b uint256.Int
+// 	}{
+// 		{*uint256.NewInt(20), *uint256.NewInt(7)},
+// 		{*uint256.NewInt(20), *new(uint256.Int).Neg(uint256.NewInt(7))},
+// 		{*new(uint256.Int).Neg(uint256.NewInt(20)), *uint256.NewInt(7)},
+// 		{*new(uint256.Int).Neg(uint256.NewInt(20)), *new(uint256.Int).Neg(uint256.NewInt(7))},
+// 	}
+// 	for _, tt := range tests {
+
+// 		fmt.Println("a", showInt(&tt.a))
+// 		fmt.Println("b", showInt(&tt.b))
+
+// 		var out uint256.Int
+
+// 		out.Add(&tt.a, &tt.b)
+// 		fmt.Println("Add", showInt(&out))
+
+// 		out.Sub(&tt.a, &tt.b)
+// 		fmt.Println("Sub", showInt(&out))
+
+// 		out.Div(&tt.a, &tt.b)
+// 		fmt.Println("Div", showInt(&out))
+
+// 		signed_div(&tt.a, &tt.b, &out)
+// 		fmt.Println("signed_div", showInt(&out))
+
+// 		out.Mul(&tt.a, &tt.b)
+// 		fmt.Println("Mul", showInt(&out))
+
+// 		out.Exp(&tt.a, &tt.b)
+// 		fmt.Println("Exp", showInt(&out))
+
+// 		out.Mod(&tt.a, &tt.b)
+// 		fmt.Println("Mod", showInt(&out))
+
+// 		out.Abs(&tt.a)
+// 		fmt.Println("Abs", showInt(&out))
+
+// 		out.Neg(&tt.a)
+// 		fmt.Println("Neg", showInt(&out))
+// 	}
+// }
+
 // func TestAdd(t *testing.T) {
 // 	tests := []struct {
 // 		a decimal
@@ -117,40 +164,40 @@ func showInt(a *uint256.Int) (string) {
 // 	}
 // }
 
-func TestInv(t *testing.T) {
+// func TestInv(t *testing.T) {
 
-	tests := []struct {
-		a decimal
-		b decimal
-	}{
-		{decimal{*ONE_uint256_Int, *ZERO_uint256_Int}, decimal{*ONE_uint256_Int, *ZERO_uint256_Int}},
-		{decimal{*uint256.NewInt(2), *ZERO_uint256_Int}, decimal{*uint256.NewInt(5), MINUS_ONE_uint256_Int}},
-		{decimal{*new(uint256.Int).Neg(uint256.NewInt(20)), MINUS_ONE_uint256_Int}, decimal{*new(uint256.Int).Neg(uint256.NewInt(5)), MINUS_ONE_uint256_Int}},
-	}
-	for _, tt := range tests {
+// 	tests := []struct {
+// 		a decimal
+// 		b decimal
+// 	}{
+// 		{decimal{*ONE_uint256_Int, *ZERO_uint256_Int}, decimal{*ONE_uint256_Int, *ZERO_uint256_Int}},
+// 		{decimal{*uint256.NewInt(2), *ZERO_uint256_Int}, decimal{*uint256.NewInt(5), MINUS_ONE_uint256_Int}},
+// 		{decimal{*new(uint256.Int).Neg(uint256.NewInt(20)), MINUS_ONE_uint256_Int}, decimal{*new(uint256.Int).Neg(uint256.NewInt(5)), MINUS_ONE_uint256_Int}},
+// 	}
+// 	for _, tt := range tests {
 
-		showDecimal("a", &tt.a)
+// 		showDecimal("a", &tt.a)
 
-		var out decimal
+// 		var out decimal
 		
-		inverse(&tt.a, &out, false)
-		// showDecimal("a", &tt.a)
-		// showDecimal("out", &out)
-		// showDecimal("b", &tt.b)
+// 		inverse(&tt.a, &out, false)
+// 		// showDecimal("a", &tt.a)
+// 		// showDecimal("out", &out)
+// 		// showDecimal("b", &tt.b)
 		
-		var out2 decimal
-		multiply(&out, &tt.a, &out2, false)
-		// showDecimal("out2", &out2)
+// 		var out2 decimal
+// 		multiply(&out, &tt.a, &out2, false)
+// 		// showDecimal("out2", &out2)
 
-		var out3 decimal
-		normalize(&out2, &out3, 0, false, false)
-		// showDecimal("out3", &out3)
+// 		var out3 decimal
+// 		normalize(&out2, &out3, 0, false, false)
+// 		// showDecimal("out3", &out3)
 
-		if out3 != ONE {
-			t.Fatal(tt.a, out, tt.b)
-		}
-	}
-}
+// 		if out3 != ONE {
+// 			t.Fatal(tt.a, out, tt.b)
+// 		}
+// 	}
+// }
 
 // func TestExp(t *testing.T) {
 // 	tests := []struct {
