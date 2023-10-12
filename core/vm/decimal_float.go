@@ -6,22 +6,22 @@ import (
 	"github.com/holiman/uint256"
 )
 
-// s * 10^e
-// consider s and e as int256 using 2's complement
+// c * 10^q
+// consider c and q as int256 using 2's complement    
 type decimal struct {
-	s uint256.Int // significand
-	e uint256.Int // exponent
+	c uint256.Int // coefficient
+	q uint256.Int // exponent
 }
 
 func showDecimal(a *decimal) string {
-	return fmt.Sprintf("%v %v", showInt(&a.s), showInt(&a.e))
+	return fmt.Sprintf("%v %v", showInt(&a.c), showInt(&a.q))
 }
 func showInt(a *uint256.Int) string {
 	return fmt.Sprintf("%v(%v)", a.Sign(), a.Dec())
 }
 
 func copyDecimal(a *decimal) *decimal {
-	return &decimal{a.s, a.e}
+	return &decimal{a.c, a.q}
 }
 
 var ZERO_uint256_Int = uint256.NewInt(0)
@@ -33,7 +33,7 @@ var ZERO = decimal{*ZERO_uint256_Int, *ZERO_uint256_Int}
 var ONE = decimal{*ONE_uint256_Int, *ZERO_uint256_Int}
 
 func add_helper(a, b *decimal) *uint256.Int {
-	exponent_diff := new(uint256.Int).Sub(&a.e, &b.e)
+	exponent_diff := new(uint256.Int).Sub(&a.q, &b.q)
 	if exponent_diff.Sign() == -1 {
 		exponent_diff = uint256.NewInt(0)
 	}
@@ -42,11 +42,11 @@ func add_helper(a, b *decimal) *uint256.Int {
 	ten_power.Exp(&ten_power, exponent_diff)
 
 	var ca uint256.Int
-	ca.Mul(&a.s, &ten_power)
+	ca.Mul(&a.c, &ten_power)
 	return &ca
 }
 
-// c.s*10^c.e = a.s*10^a.e + b.s*10^b.e
+// a + b
 func add(a, b, out *decimal, L bool) *decimal {
 	if L {
 		fmt.Println("add", "a", "b", showDecimal(a), showDecimal(b))
@@ -62,8 +62,8 @@ func add(a, b, out *decimal, L bool) *decimal {
 		fmt.Println("add", "cb", showInt(cb))
 	}
 
-	out.s.Add(ca, cb)
-	out.e = *signed_min(&a.e, &b.e, false)
+	out.c.Add(ca, cb)
+	out.q = *signed_min(&a.q, &b.q, false)
 	if L {
 		fmt.Println("add", "out", showDecimal(out))
 	}
@@ -76,8 +76,8 @@ func negate(a, out *decimal, L bool) *decimal {
 	if L {
 		fmt.Println("negate", showDecimal(a))
 	}
-	out.s.Neg(&a.s)
-	out.e = a.e
+	out.c.Neg(&a.c)
+	out.q = a.q
 	if L {
 		fmt.Println("negate", showDecimal(out))
 	}
@@ -107,9 +107,9 @@ func multiply(a, b, out *decimal, L bool) *decimal {
 	}
 	// if L {fmt.Println("multiply", "a", String(a), "b", String(b), "precision", precision)}
 	// if L {fmt.Println("multiply", "a", a, "b", b)}
-	out.s.Mul(&a.s, &b.s)
+	out.c.Mul(&a.c, &b.c)
 	// if L {fmt.Println("multiply", "out.c", out.c)}
-	out.e.Add(&a.e, &b.e)
+	out.q.Add(&a.q, &b.q)
 	if L {
 		fmt.Println("multiply", "out", out)
 	}
@@ -174,18 +174,18 @@ func signed_div(numerator, denominator, out *uint256.Int, L bool) *uint256.Int {
 // 1 / a
 func inverse(a, out *decimal, L bool) *decimal {
 	if L {
-		fmt.Println("inverse", "a", a, a.s.Sign(), a.s.Dec(), a.e.Sign(), a.e.Dec())
+		fmt.Println("inverse", "a", a, a.c.Sign(), a.c.Dec(), a.q.Sign(), a.q.Dec())
 	}
 
-	max_precision := uint256.NewInt(76)
+	max_precision := uint256.NewInt(50) // TODO choose correct max_precision
 	var precision uint256.Int
-	precision.Add(max_precision, &a.e) // more than max decimal precision on 256 bits
+	precision.Add(max_precision, &a.q) // more than max decimal precision on 256 bits
 	if L {
 		fmt.Println("inverse", "precision", precision, precision.Dec())
 	}
 
 	ten_power := *TEN_uint256_Int
-	ae_m_precision := new(uint256.Int).Neg(&a.e)
+	ae_m_precision := new(uint256.Int).Neg(&a.q)
 	ae_m_precision.Add(ae_m_precision, &precision)
 	if L {
 		fmt.Println("inverse", "ae_m_precision", ae_m_precision, ae_m_precision.Dec())
@@ -198,14 +198,14 @@ func inverse(a, out *decimal, L bool) *decimal {
 	if L {
 		fmt.Println("inverse", "ten_power", ten_power, ten_power.Dec())
 	}
-	signed_div(&ten_power, &a.s, &out.s, false)
+	signed_div(&ten_power, &a.c, &out.c, false)
 	if L {
-		fmt.Println("inverse after div", "out.s", out.s, out.s.Dec())
+		fmt.Println("inverse after div", "out.s", out.c, out.c.Dec())
 	}
 
-	out.e.Sub(ZERO_uint256_Int, &precision)
+	out.q.Sub(ZERO_uint256_Int, &precision)
 	if L {
-		fmt.Println("inverse after sub", "out.e", out.e, out.e.Dec())
+		fmt.Println("inverse after sub", "out.e", out.q, out.q.Dec())
 	}
 
 	return out
@@ -223,12 +223,12 @@ func divide(a, b, out *decimal, L bool) *decimal {
 }
 
 func iszero(a *decimal, L bool) bool {
-	return a.s.IsZero()
+	return a.c.IsZero()
 }
 
 // a should be normalized
 func isone(a *decimal, L bool) bool {
-	return a.s.Eq(ONE_uint256_Int) && a.e.Eq(ZERO_uint256_Int)
+	return a.c.Eq(ONE_uint256_Int) && a.q.Eq(ZERO_uint256_Int)
 }
 
 // a < b
@@ -241,13 +241,13 @@ func lessthan(a, b *decimal, L bool) bool {
 	if L {
 		fmt.Println("lessthan diff", showDecimal(&diff))
 	}
-	return diff.s.Sign() == -1
+	return diff.c.Sign() == -1
 }
 
 // a == b
 // a,b should be both normalized
 func equal(a, b *decimal) bool {
-	return a.s.Eq(&b.s) && a.e.Eq(&b.e)
+	return a.c.Eq(&b.c) && a.q.Eq(&b.q)
 }
 
 // e^a
@@ -259,8 +259,8 @@ func exp(a, out *decimal, taylor_steps uint, L bool) *decimal {
 	}
 
 	if iszero(a, false) {
-		out.s = *ONE_uint256_Int
-		out.e = *ZERO_uint256_Int
+		out.c = *ONE_uint256_Int
+		out.q = *ZERO_uint256_Int
 		return out
 	}
 
@@ -271,8 +271,8 @@ func exp(a, out *decimal, taylor_steps uint, L bool) *decimal {
 	factorial_inv := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}   // 1
 
 	// out = 1
-	out.s = *ONE_uint256_Int
-	out.e = *ZERO_uint256_Int
+	out.c = *ONE_uint256_Int
+	out.q = *ZERO_uint256_Int
 
 	if L {
 		fmt.Println("out", out)
@@ -441,12 +441,12 @@ func exp(a, out *decimal, taylor_steps uint, L bool) *decimal {
 func round(a, out *decimal, precision uint64, normal bool, L bool) *decimal {
 
 	var shift uint256.Int
-	shift.Add(uint256.NewInt(precision), &a.e)
+	shift.Add(uint256.NewInt(precision), &a.q)
 
-	out.s = a.s
-	out.e = a.e
+	out.c = a.c
+	out.q = a.q
 
-	if shift.Cmp(ZERO_uint256_Int) == 1 || shift.Cmp(&a.e) == -1 {
+	if shift.Cmp(ZERO_uint256_Int) == 1 || shift.Cmp(&a.q) == -1 {
 		if normal {
 			return out
 		}
@@ -457,8 +457,8 @@ func round(a, out *decimal, precision uint64, normal bool, L bool) *decimal {
 	ten_power := *TEN_uint256_Int
 	ten_power.Exp(&ten_power, &shift) // 10^shift // TODO if shift<0, problem
 	// out.s.Div(&out.s, &ten_power)
-	signed_div(&out.s, &ten_power, &out.s, false)
-	out.e.Add(&out.e, &shift)
+	signed_div(&out.c, &ten_power, &out.c, false)
+	out.q.Add(&out.q, &shift)
 
 	if normal {
 		return out
@@ -475,10 +475,10 @@ func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal
 	// remove trailing zeros in significand
 	p := *ZERO_uint256_Int
 	ten_power := *TEN_uint256_Int       // 10^(p+1)
-	if a.s.Cmp(ZERO_uint256_Int) != 0 { // if a.c != 0
+	if a.c.Cmp(ZERO_uint256_Int) != 0 { // if a.c != 0
 		for {
 			t := uint256.NewInt(0)
-			tt := t.Mod(&a.s, &ten_power)
+			tt := t.Mod(&a.c, &ten_power)
 			ttt := tt.Cmp(ZERO_uint256_Int)
 			if ttt != 0 { // if a.s % 10^(p+1) != 0
 				break
@@ -498,7 +498,7 @@ func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal
 	if L {
 		fmt.Println("normalize", "ten_power", showInt(&ten_power))
 	}
-	signed_div(&a.s, &ten_power, &out.s, false) // out.s = a.s / 10^p
+	signed_div(&a.c, &ten_power, &out.c, false) // out.s = a.s / 10^p
 	if L {
 		fmt.Println("normalize", "out", showDecimal(out))
 	}
@@ -510,10 +510,10 @@ func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal
 	// 	fmt.Println("normalize", "out.s", out.s.Dec(), out.s.Sign())
 	// }
 
-	out.e = *ZERO_uint256_Int
-	a_pos := a.s.Sign() == 1
-	if !(out.s.Cmp(ZERO_uint256_Int) == 0 && a_pos) { // if out.c == 0
-		out.e.Add(&a.e, &p)
+	out.q = *ZERO_uint256_Int
+	a_pos := a.c.Sign() == 1
+	if !(out.c.Cmp(ZERO_uint256_Int) == 0 && a_pos) { // if out.c == 0
+		out.q.Add(&a.q, &p)
 	}
 	if L {
 		fmt.Println("normalize", "out.e", showDecimal(out))
