@@ -204,7 +204,7 @@ func exp(a, out *decimal, taylor_steps uint, L bool) (*decimal) {
 	if L {fmt.Println("a", a, "taylor_precision", taylor_steps)}
 
 	if iszero(a) {
-		out.s = *ONE_uint256_Int // possible problem
+		out.s = *ONE_uint256_Int
 		out.e = *ZERO_uint256_Int
 		return out
 	}

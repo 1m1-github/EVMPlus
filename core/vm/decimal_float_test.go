@@ -199,20 +199,22 @@ func showInt(a *uint256.Int) (string) {
 // 	}
 // }
 
-// func TestExp(t *testing.T) {
-// 	tests := []struct {
-// 		a decimal
-// 		b decimal
-// 	}{
-// 		{decimal{*ONE_uint256_Int, *ZERO_uint256_Int}, decimal{*uint256.NewInt(141), *new(uint256.Int).Neg(uint256.NewInt(1))}},
-// 	}
-// 	for _, tt := range tests {
-// 		var out decimal
-// 		steps := uint(2)
-// 		exp(&tt.a, &out, steps, true)
-// 		fmt.Println("a", tt.a, "out", out, "b", tt.b)
-// 		// if out != tt.c {
-// 		// 	t.Fatal(tt.a, tt.b, out, tt.c)
-// 		// }
-// 	}
-// }
+func TestExp(t *testing.T) {
+	tests := []struct {
+		a decimal
+		b decimal
+	}{
+		{decimal{*ONE_uint256_Int, *ZERO_uint256_Int}, decimal{*uint256.NewInt(2718281), *new(uint256.Int).Neg(uint256.NewInt(6))}},
+	}
+	for _, tt := range tests {
+		var out decimal
+		steps := uint(10)
+		exp(&tt.a, &out, steps, false)
+		showDecimal("a", &tt.a)
+		showDecimal("out", &out)
+		showDecimal("b", &tt.b)
+		// if out != tt.c {
+		// 	t.Fatal(tt.a, tt.b, out, tt.c)
+		// }
+	}
+}
