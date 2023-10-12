@@ -57,7 +57,7 @@ func add(a, b, out *decimal, L bool) (*decimal) {
 	if L {fmt.Println("add", "c", showInt(c))}
 
 	out.s.Abs(c)
-	out.e = *signed_min(&a.e, &b.e)
+	out.e = *signed_min(&a.e, &b.e, false)
 	if L {fmt.Println("add", "out", showDecimal(out))}
 
 	return out
@@ -95,7 +95,7 @@ func multiply(a, b, out *decimal, L bool) (*decimal) {
 	return out
 }
 
-func signed_min(a, b *uint256.Int) (*uint256.Int) {
+func signed_min(a, b *uint256.Int, L bool) (*uint256.Int) {
 	a_neg := a.Sign() == -1
 	b_neg := b.Sign() == -1
 	
@@ -118,7 +118,7 @@ func signed_min(a, b *uint256.Int) (*uint256.Int) {
 	}
 }
 
-func signed_div(numerator, denominator, out *uint256.Int) (*uint256.Int) {
+func signed_div(numerator, denominator, out *uint256.Int, L bool) (*uint256.Int) {
 	sn := numerator.Sign()
 	sd := denominator.Sign()
 	if sn == 0 && sd == 0 {
@@ -153,9 +153,6 @@ func signed_div(numerator, denominator, out *uint256.Int) (*uint256.Int) {
 func inverse(a, out *decimal, L bool) (*decimal) {
 	if L {fmt.Println("inverse", "a", a, a.s.Sign(), a.s.Dec(), a.e.Sign(), a.e.Dec())}
 
-	// out.n = a.n
-	// if L {fmt.Println("inverse", "out.n", out.n)}
-	
 	max_precision := uint256.NewInt(76)
 	var precision uint256.Int
 	precision.Add(max_precision, &a.e) // more than max decimal precision on 256 bits
@@ -171,24 +168,11 @@ func inverse(a, out *decimal, L bool) (*decimal) {
 	}
 	ten_power.Exp(&ten_power, ae_m_precision)
 	if L {fmt.Println("inverse", "ten_power", ten_power, ten_power.Dec())}
-	// out.s.Div(&ten_power, &a.s)
-	signed_div(&ten_power, &a.s, &out.s)
+	signed_div(&ten_power, &a.s, &out.s, false)
 	if L {fmt.Println("inverse after div", "out.s", out.s, out.s.Dec())}
 
 	out.e.Sub(ZERO_uint256_Int, &precision)
 	if L {fmt.Println("inverse after sub", "out.e", out.e, out.e.Dec())}
-	
-	// out.s.Sub(&out.s, &precision)
-
-	// if L {fmt.Println("inverse", "out", out, String(out))}
-	
-	// norm := normalize(copy(out), out, precision, false, L)
-	// if L {fmt.Println("inverse", "norm", norm, String(norm))}
-	// return norm
-	
-	// c = round(BigInt(10)^(-x.q + DIGITS) / x.c) # the decimal point of 1/x.c is shifted by -x.q so that the integer part of the result is correct and then it is shifted further by DIGITS to also cover some digits from the fractional part.
-    // q = -DIGITS # we only need to remember that there are these digits after the decimal point
-    // normalize(Decimal(x.s, c, q))
 
 	return out
 }
@@ -202,19 +186,19 @@ func divide(a, b, out *decimal, L bool) (*decimal) {
 	return out
 }
 
-func iszero(a *decimal) (bool) {
+func iszero(a *decimal, L bool) (bool) {
 	return a.s.IsZero()
 }
 
 // a should be normalized
-func isone(a *decimal) (bool) {
+func isone(a *decimal, L bool) (bool) {
 	return a.s.Eq(ONE_uint256_Int) && a.e.Eq(ZERO_uint256_Int)
 }
 
 // a < b
-func lessthan(a, b *decimal) (bool) {
+func lessthan(a, b *decimal, L bool) (bool) {
 
-	if iszero(a) && iszero(b) {
+	if iszero(a, false) && iszero(b, false) {
 		return false
 	}
 
@@ -226,7 +210,7 @@ func lessthan(a, b *decimal) (bool) {
 	var diff decimal
 	subtract(b, a, &diff, false)
 
-	farther_from_0 := diff.s.Gt(ZERO_uint256_Int) || (iszero(&diff) && diff.e.Gt(ZERO_uint256_Int))
+	farther_from_0 := diff.s.Gt(ZERO_uint256_Int) || (iszero(&diff, false) && diff.e.Gt(ZERO_uint256_Int))
 
     if diff.s.Sign() >= 1 {
 		return !farther_from_0
@@ -247,7 +231,7 @@ func exp(a, out *decimal, taylor_steps uint, L bool) (*decimal) {
 
 	if L {fmt.Println("a", a, "taylor_precision", taylor_steps)}
 
-	if iszero(a) {
+	if iszero(a, false) {
 		out.s = *ONE_uint256_Int
 		out.e = *ZERO_uint256_Int
 		return out
@@ -415,7 +399,7 @@ func round(a, out *decimal, precision uint64, normal bool, L bool) (*decimal) {
 	ten_power := *TEN_uint256_Int
 	ten_power.Exp(&ten_power, &shift) // 10^shift // TODO if shift<0, problem
 	// out.s.Div(&out.s, &ten_power)
-	signed_div(&out.s, &ten_power, &out.s)
+	signed_div(&out.s, &ten_power, &out.s, false)
 	out.e.Add(&out.e, &shift)
 
 	if normal {
@@ -443,12 +427,11 @@ func normalize(a, out *decimal, precision uint64, rounded bool, L bool) (*decima
 			ten_power.Mul(&ten_power, TEN_uint256_Int) // 10^(p+1)
 		}
 	}
-	// ten_power.Div(&ten_power, TEN_uint256_Int) // 10^p
-	signed_div(&ten_power, TEN_uint256_Int, &ten_power) // 10^p
+
+	signed_div(&ten_power, TEN_uint256_Int, &ten_power, false) // 10^p
 	if L {fmt.Println("normalize", "p", p.Dec())}
 	if L {fmt.Println("normalize", "ten_power", ten_power.Dec(), ten_power.Sign())}
-	// out.s.Div(&a.s, &ten_power) // out.s = a.s / 10^p
-	signed_div(&a.s, &ten_power, &out.s) // out.s = a.s / 10^p
+	signed_div(&a.s, &ten_power, &out.s, false) // out.s = a.s / 10^p
 	if L {fmt.Println("normalize", "out.s", out.s.Dec(), out.s.Sign())}
 	out.s.Abs(&out.s) // out.s = abs(out.s)
 	if L {fmt.Println("normalize", "out.s", out.s.Dec(), out.s.Sign())}
