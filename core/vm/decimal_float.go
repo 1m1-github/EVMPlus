@@ -438,33 +438,67 @@ func exp(a, out *decimal, taylor_steps uint, L bool) *decimal {
 // 	return b
 // }
 
-func round(a, out *decimal, precision uint64, normal bool, L bool) *decimal {
+// func round(a, out *decimal, precision uint64, normal bool, L bool) *decimal {
 
-	var shift uint256.Int
-	shift.Add(uint256.NewInt(precision), &a.q)
+// 	var shift uint256.Int
+// 	shift.Add(uint256.NewInt(precision), &a.q)
 
-	out.c = a.c
-	out.q = a.q
+// 	out.c = a.c
+// 	out.q = a.q
 
-	if shift.Cmp(ZERO_uint256_Int) == 1 || shift.Cmp(&a.q) == -1 {
-		if normal {
-			return out
-		}
-		return normalize(out, out, precision, true, L)
+// 	if shift.Cmp(ZERO_uint256_Int) == 1 || shift.Cmp(&a.q) == -1 {
+// 		if normal {
+// 			return out
+// 		}
+// 		return normalize(out, out, precision, true, L)
+// 	}
+
+// 	if L {fmt.Println(showInt(&shift))}
+// 	shift.Neg(&shift) // shift *= -1
+// 	if L {fmt.Println(showInt(&shift))}
+// 	var ten_power uint256.Int
+// 	ten_power.Exp(TEN_uint256_Int, &shift) // 10^shift // TODO if shift<0, problem
+// 	// out.s.Div(&out.s, &ten_power)
+// 	signed_div(&out.c, &ten_power, &out.c, false)
+
+// 	out.q.Add(&out.q, &shift)
+
+// 	if normal {
+// 		return out
+// 	}
+
+// 	return normalize(copyDecimal(out), out, precision, true, L)
+// }
+
+func find_num_trailing_zeros_signed(a *uint256.Int, L bool) (uint64, uint256.Int) {
+	b := *a
+	if b.Sign() == -1 {
+		b.Neg(a)
 	}
 
-	shift.Neg(&shift) // shift *= -1
+	p := uint64(0)
 	ten_power := *TEN_uint256_Int
-	ten_power.Exp(&ten_power, &shift) // 10^shift // TODO if shift<0, problem
-	// out.s.Div(&out.s, &ten_power)
-	signed_div(&out.c, &ten_power, &out.c, false)
-	out.q.Add(&out.q, &shift)
-
-	if normal {
-		return out
+	if b.Cmp(ZERO_uint256_Int) != 0 { // if b != 0
+		for {
+			var m uint256.Int
+			m.Mod(&b, &ten_power)
+			if m.Cmp(ZERO_uint256_Int) != 0 { // if b % 10^(p+1) != 0
+				break
+			}
+			p++
+			ten_power.Mul(&ten_power, TEN_uint256_Int) // 10^(p+1)
+		}
 	}
 
-	return normalize(copyDecimal(out), out, precision, true, L)
+	if L {
+		fmt.Println("find_num_trailing_zeros_signed", "p", p, "ten_power", showInt(&ten_power))
+	}
+	signed_div(&ten_power, TEN_uint256_Int, &ten_power, false) // 10^p
+	if L {
+		fmt.Println("find_num_trailing_zeros_signed", "p", p, "ten_power", showInt(&ten_power))
+	}
+
+	return p, ten_power
 }
 
 func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal {
@@ -473,55 +507,28 @@ func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal
 	}
 
 	// remove trailing zeros in significand
-	p := *ZERO_uint256_Int
-	ten_power := *TEN_uint256_Int       // 10^(p+1)
-	if a.c.Cmp(ZERO_uint256_Int) != 0 { // if a.c != 0
-		for {
-			t := uint256.NewInt(0)
-			tt := t.Mod(&a.c, &ten_power)
-			ttt := tt.Cmp(ZERO_uint256_Int)
-			if ttt != 0 { // if a.s % 10^(p+1) != 0
-				break
-			}
-			p.Add(&p, ONE_uint256_Int)
-			ten_power.Mul(&ten_power, TEN_uint256_Int) // 10^(p+1)
-		}
+	p, ten_power := find_num_trailing_zeros_signed(&a.c, false)
+	if L {
+		fmt.Println("normalize", "p", p, "ten_power", showInt(&ten_power))
 	}
 
-	if L {
-		fmt.Println("normalize", "ten_power", showInt(&ten_power))
-	}
-	signed_div(&ten_power, TEN_uint256_Int, &ten_power, false) // 10^p
-	if L {
-		fmt.Println("normalize", "p", showInt(&p))
-	}
-	if L {
-		fmt.Println("normalize", "ten_power", showInt(&ten_power))
-	}
-	signed_div(&a.c, &ten_power, &out.c, false) // out.s = a.s / 10^p
+	signed_div(&a.c, &ten_power, &out.c, false) // out.c = a.c / 10^p
 	if L {
 		fmt.Println("normalize", "out", showDecimal(out))
 	}
-	// if L {
-	// 	fmt.Println("normalize", "out.s", out.s.Dec(), out.s.Sign())
-	// }
-	// out.s.Abs(&out.s) // out.s = abs(out.s)
-	// if L {
-	// 	fmt.Println("normalize", "out.s", out.s.Dec(), out.s.Sign())
-	// }
 
 	out.q = *ZERO_uint256_Int
 	a_pos := a.c.Sign() == 1
 	if !(out.c.Cmp(ZERO_uint256_Int) == 0 && a_pos) { // if out.c == 0
-		out.q.Add(&a.q, &p)
+		out.q.Add(&a.q, uint256.NewInt(p))
 	}
 	if L {
 		fmt.Println("normalize", "out.e", showDecimal(out))
 	}
 
-	if rounded {
+	// if rounded {
 		return out
-	}
+	// }
 
-	return round(copyDecimal(out), out, precision, true, L)
+	// return round(copyDecimal(out), out, precision, true, L)
 }
