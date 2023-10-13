@@ -34,28 +34,33 @@ func fromUint256Int(a, b *uint256.Int) *Decimal {
 }
 
 // a * 10^b
-func toUint256Int(d *Decimal) (*uint256.Int, *uint256.Int) {
-	a, oa := uint256.FromBig(&d.c)
+func toUint256IntWithPanic(x *big.Int, pos *bool) *uint256.Int {
+	a, oa := uint256.FromBig(x)
 	if oa {
 		panic("overflow")
 	}
-	if (0 <= a.Sign() && !d.pos_c) || (a.Sign() == -1 && d.pos_c) {
+	if (0 <= a.Sign() && !*pos) || (a.Sign() == -1 && *pos) {
 		panic("overflow")
 	}
 
-	b, ob := uint256.FromBig(&d.q)
-	if ob {
-		panic("overflow")
-	}
-	if (0 <= b.Sign() && !d.pos_q) || (b.Sign() == -1 && d.pos_q) {
-		panic("overflow")
-	}
-
+	return a
+}
+func toUint256Int(d *Decimal) (*uint256.Int, *uint256.Int) {
+	a := toUint256IntWithPanic(&d.c, &d.pos_c)
+	b := toUint256IntWithPanic(&d.q, &d.pos_q)
 	return a, b
 }
 
-func showDecimal(x *Decimal) string {
-	return fmt.Sprintf("%v %v", showInt(&x.c), showInt(&x.q))
+func toString(x *Decimal) string {
+	sc := '+'
+	if !x.pos_c {
+		sc = '-'
+	}
+	sq := '+'
+	if !x.pos_q {
+		sq = '-'
+	}
+	return fmt.Sprintf("%v%v*10^", sc, x.c, sq, x.q)
 }
 func showInt(x *uint256.Int) string {
 	return fmt.Sprintf("%v(%v)", x.Sign(), x.Dec())
@@ -90,7 +95,7 @@ func add_helper(a, b *Decimal) *uint256.Int {
 // a + b
 func add(a, b, out *Decimal, L bool) *Decimal {
 	if L {
-		fmt.Println("add", "a", "b", showDecimal(a), showDecimal(b))
+		fmt.Println("add", "a", "b", toString(a), toString(b))
 	}
 
 	ca := add_helper(a, b)
@@ -106,7 +111,7 @@ func add(a, b, out *Decimal, L bool) *Decimal {
 	out.c.Add(ca, cb)
 	out.q = *signed_min(&a.q, &b.q, false)
 	if L {
-		fmt.Println("add", "out", showDecimal(out))
+		fmt.Println("add", "out", toString(out))
 	}
 
 	return out
@@ -115,12 +120,12 @@ func add(a, b, out *Decimal, L bool) *Decimal {
 // -a
 func negate(a, out *Decimal, L bool) *Decimal {
 	if L {
-		fmt.Println("negate", showDecimal(a))
+		fmt.Println("negate", toString(a))
 	}
 	out.c.Neg(&a.c)
 	out.q = a.q
 	if L {
-		fmt.Println("negate", showDecimal(out))
+		fmt.Println("negate", toString(out))
 	}
 	return out
 }
@@ -128,15 +133,15 @@ func negate(a, out *Decimal, L bool) *Decimal {
 // a - b
 func subtract(a, b, out *Decimal, L bool) *Decimal {
 	if L {
-		fmt.Println("subtract", showDecimal(a), showDecimal(b))
+		fmt.Println("subtract", toString(a), toString(b))
 	}
 	negate(b, out, false)
 	if L {
-		fmt.Println("subtract 2", showDecimal(out))
+		fmt.Println("subtract 2", toString(out))
 	}
 	add(a, out, out, false)
 	if L {
-		fmt.Println("subtract 3", showDecimal(out))
+		fmt.Println("subtract 3", toString(out))
 	}
 	return out
 }
@@ -275,12 +280,12 @@ func isone(a *Decimal, L bool) bool {
 // a < b
 func lessthan(a, b *Decimal, L bool) bool {
 	if L {
-		fmt.Println("lessthan", showDecimal(a), showDecimal(b))
+		fmt.Println("lessthan", toString(a), toString(b))
 	}
 	var diff Decimal
 	subtract(a, b, &diff, false)
 	if L {
-		fmt.Println("lessthan diff", showDecimal(&diff))
+		fmt.Println("lessthan diff", toString(&diff))
 	}
 	return diff.c.Sign() == -1
 }
@@ -544,7 +549,7 @@ func find_num_trailing_zeros_signed(a *uint256.Int, L bool) (uint64, uint256.Int
 
 func normalize(a, out *Decimal, precision uint64, rounded bool, L bool) *Decimal {
 	if L {
-		fmt.Println("normalize", "a", showDecimal(a))
+		fmt.Println("normalize", "a", toString(a))
 	}
 
 	// remove trailing zeros in significand
@@ -555,7 +560,7 @@ func normalize(a, out *Decimal, precision uint64, rounded bool, L bool) *Decimal
 
 	signed_div(&a.c, &ten_power, &out.c, false) // out.c = a.c / 10^p
 	if L {
-		fmt.Println("normalize", "out", showDecimal(out))
+		fmt.Println("normalize", "out", toString(out))
 	}
 
 	out.q = *ZERO_uint256_Int
@@ -564,7 +569,7 @@ func normalize(a, out *Decimal, precision uint64, rounded bool, L bool) *Decimal
 		out.q.Add(&a.q, uint256.NewInt(p))
 	}
 	if L {
-		fmt.Println("normalize", "out.e", showDecimal(out))
+		fmt.Println("normalize", "out.e", toString(out))
 	}
 
 	// if rounded {
