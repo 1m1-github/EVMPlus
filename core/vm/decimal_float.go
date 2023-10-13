@@ -87,15 +87,15 @@ func min(a, b *big.Int) (c *big.Int) {
 	}
 }
 
-func add_helper(d1, d2 *Decimal) (c *big.Int) {
-	var exponent_diff *big.Int
+func add_helper(d1, d2 *Decimal) (c big.Int) {
+	var exponent_diff big.Int
 	exponent_diff.Sub(&d1.q, &d2.q)
 	if exponent_diff.Sign() == -1 {
-		exponent_diff = ZERO_BIG
+		exponent_diff = *ZERO_BIG
 	}
 
-	c.Exp(TEN_BIG, exponent_diff, ZERO_BIG)
-	c.Mul(&d1.c, c)
+	c.Exp(TEN_BIG, &exponent_diff, ZERO_BIG)
+	c.Mul(&d1.c, &c)
 
 	return c
 }
@@ -116,7 +116,7 @@ func (out *Decimal) Add(d1, d2 *Decimal, L bool) *Decimal {
 		fmt.Println("add", "cb", cb.String())
 	}
 
-	out.c.Add(ca, cb)
+	out.c.Add(&ca, &cb)
 	out.q = *min(&d1.q, &d2.q)
 	if L {
 		fmt.Println("add", "out", String(out))

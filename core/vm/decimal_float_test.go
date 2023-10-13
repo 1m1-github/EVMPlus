@@ -99,31 +99,31 @@ func TestBigIntToUInt256Int(t *testing.T) {
 	}
 }
 
-// func TestAdd(t *testing.T) {
-// 	tests := []struct {
-// 		a Decimal
-// 		b Decimal
-// 		c Decimal
-// 	}{
-// 		{Decimal{*big.NewInt(5), *ZERO_BIG}, Decimal{*big.NewInt(121), *MINUS_ONE_BIG}, Decimal{*big.NewInt(171), *MINUS_ONE_BIG}},
-// 		{Decimal{*big.NewInt(5), *ZERO_BIG}, Decimal{*big.NewInt(121), *ZERO_BIG}, Decimal{*big.NewInt(126), *ZERO_BIG}},
-// 		{Decimal{*big.NewInt(-2), *MINUS_ONE_BIG}, Decimal{*big.NewInt(8), *MINUS_ONE_BIG}, Decimal{*big.NewInt(6), *MINUS_ONE_BIG}},
-// 		{Decimal{*big.NewInt(5), *MINUS_ONE_BIG}, Decimal{*big.NewInt(-2), *ZERO_BIG}, Decimal{*big.NewInt(-15), *MINUS_ONE_BIG}},
-// 	}
-// 	for _, tt := range tests {
-// 		var out Decimal
-// 		out.Add(&tt.a, &tt.b, false)
-// 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
+func TestAdd(t *testing.T) {
+	tests := []struct {
+		a Decimal
+		b Decimal
+		c Decimal
+	}{
+		{Decimal{*big.NewInt(5), *ZERO_BIG}, Decimal{*big.NewInt(121), *MINUS_ONE_BIG}, Decimal{*big.NewInt(171), *MINUS_ONE_BIG}},
+		{Decimal{*big.NewInt(5), *ZERO_BIG}, Decimal{*big.NewInt(121), *ZERO_BIG}, Decimal{*big.NewInt(126), *ZERO_BIG}},
+		{Decimal{*big.NewInt(-2), *MINUS_ONE_BIG}, Decimal{*big.NewInt(8), *MINUS_ONE_BIG}, Decimal{*big.NewInt(6), *MINUS_ONE_BIG}},
+		{Decimal{*big.NewInt(5), *MINUS_ONE_BIG}, Decimal{*big.NewInt(-2), *ZERO_BIG}, Decimal{*big.NewInt(-15), *MINUS_ONE_BIG}},
+	}
+	for _, tt := range tests {
+		var out Decimal
+		out.Add(&tt.a, &tt.b, false)
+		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
-// 		var out2 Decimal
-// 		normalize(&out, &out2, 0, true, false)
-// 		// fmt.Println("out2", showDecimal(&out2))
+		var out2 Decimal
+		out2.normalize(&out, 0, true, false)
+		// fmt.Println("out2", showDecimal(&out2))
 
-// 		if out2 != tt.c {
-// 			t.Fatal(tt.a, tt.b, out, out2, tt.c)
-// 		}
-// 	}
-// }
+		if !out2.Eq(&tt.c) {
+			t.Fatal(tt.a, tt.b, out, out2, tt.c)
+		}
+	}
+}
 
 // func TestMultiply(t *testing.T) {
 // 	tests := []struct {
