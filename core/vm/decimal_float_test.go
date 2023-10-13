@@ -125,6 +125,33 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+func TestSubtract(t *testing.T) {
+	tests := []struct {
+		a Decimal
+		b Decimal
+		c Decimal
+	}{
+		{Decimal{*big.NewInt(2), *ZERO_BIG}, Decimal{*big.NewInt(5), *MINUS_ONE_BIG}, Decimal{*big.NewInt(15), *MINUS_ONE_BIG}},
+		{Decimal{*big.NewInt(5), *MINUS_ONE_BIG}, Decimal{*big.NewInt(2), *ZERO_BIG}, Decimal{*big.NewInt(-15), *MINUS_ONE_BIG}},
+	}
+	for _, tt := range tests {
+
+		var out Decimal
+		out.Subtract(&tt.a, &tt.b)
+		// fmt.Println("a", showDecimal(&tt.a))
+		// fmt.Println("b", showDecimal(&tt.b))
+		// fmt.Println("out", showDecimal(&out))
+
+		var out2 Decimal
+		out2.Normalize(&out, 0, true)
+		// fmt.Println("out2", showDecimal(&out2))
+
+		if !out2.Eq(&tt.c) {
+			t.Fatal(tt.a, tt.b, out, out2, tt.c)
+		}
+	}
+}
+
 // func TestMultiply(t *testing.T) {
 // 	tests := []struct {
 // 		a Decimal
@@ -237,33 +264,6 @@ func TestNormalize(t *testing.T) {
 
 // 		if out2 != tt.b {
 // 			t.Fatal(tt.a, out, tt.b)
-// 		}
-// 	}
-// }
-
-// func TestSubtract(t *testing.T) {
-// 	tests := []struct {
-// 		a Decimal
-// 		b Decimal
-// 		c Decimal
-// 	}{
-// 		{Decimal{*big.NewInt(2), *ZERO_uint256_Int}, Decimal{*big.NewInt(5), *MINUS_ONE_uint256_Int}, Decimal{*big.NewInt(15), *MINUS_ONE_uint256_Int}},
-// 		{Decimal{*big.NewInt(5), *MINUS_ONE_uint256_Int}, Decimal{*big.NewInt(2), *ZERO_uint256_Int}, Decimal{*new(big.Int).Neg(big.NewInt(15)), *MINUS_ONE_uint256_Int}},
-// 	}
-// 	for _, tt := range tests {
-
-// 		var out Decimal
-// 		subtract(&tt.a, &tt.b, &out, false)
-// 		// fmt.Println("a", showDecimal(&tt.a))
-// 		// fmt.Println("b", showDecimal(&tt.b))
-// 		// fmt.Println("out", showDecimal(&out))
-
-// 		var out2 Decimal
-// 		normalize(&out, &out2, 0, true, false)
-// 		// fmt.Println("out2", showDecimal(&out2))
-
-// 		if out2 != tt.c {
-// 			t.Fatal(tt.a, tt.b, out, out2, tt.c)
 // 		}
 // 	}
 // }

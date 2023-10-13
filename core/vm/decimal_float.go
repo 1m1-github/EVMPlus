@@ -116,7 +116,7 @@ func (out *Decimal) Negate(a *Decimal) *Decimal {
 }
 
 // a - b
-func (out *Decimal) subtract(a, b *Decimal) *Decimal {
+func (out *Decimal) Subtract(a, b *Decimal) *Decimal {
 	out.Negate(b)
 	out.Add(a, out)
 	return out
