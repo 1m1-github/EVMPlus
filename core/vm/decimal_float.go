@@ -2,6 +2,7 @@ package vm
 
 import (
 	// "fmt" // TODO remove
+	"fmt"
 	"math/big"
 
 	"github.com/holiman/uint256"
@@ -49,17 +50,17 @@ func DecimalToUInt256IntTuple(d *Decimal) (c, q *uint256.Int) {
 	return c, q
 }
 
-// func String(x *Decimal) string {
-// 	sc := '+'
-// 	if !x.pos_c {
-// 		sc = '-'
-// 	}
-// 	sq := '+'
-// 	if !x.pos_q {
-// 		sq = '-'
-// 	}
-// 	return fmt.Sprintf("%v%v*10^", sc, x.c, sq, x.q)
-// }
+func String(d *Decimal) string {
+	sc := '+'
+	if d.c.Sign() == -1 {
+		sc = '-'
+	}
+	sq := '+'
+	if d.q.Sign() == -1 {
+		sq = '-'
+	}
+	return fmt.Sprintf("%c%v*10^%c%v", sc, d.c.String(), sq, d.q.String())
+}
 // func showInt(x *uint256.Int) string {
 // 	return fmt.Sprintf("%v(%v)", x.Sign(), x.Dec())
 // }
