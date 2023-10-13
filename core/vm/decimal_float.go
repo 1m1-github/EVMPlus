@@ -2,26 +2,67 @@ package vm
 
 import (
 	"fmt" // TODO remove
+	"math/big"
 
 	"github.com/holiman/uint256"
 )
 
-// c * 10^q
-// consider c and q as int256 using 2's complement    
-type decimal struct {
-	c uint256.Int // coefficient
-	q uint256.Int // exponent
+// (-1)^sc * c * 10^((-1)^sq * q)
+type Decimal struct {
+	pos_c bool    // is c semi-positive
+	c     big.Int // coefficient
+	pos_q bool    // is q semi-positive
+	q     big.Int // exponent
 }
 
-func showDecimal(a *decimal) string {
-	return fmt.Sprintf("%v %v", showInt(&a.c), showInt(&a.q))
-}
-func showInt(a *uint256.Int) string {
-	return fmt.Sprintf("%v(%v)", a.Sign(), a.Dec())
+// a * 10^b
+func fromUint256Int(a, b *uint256.Int) *Decimal {
+	pos_c := true
+	if a.Sign() == -1 {
+		pos_c = false
+	}
+
+	pos_q := true
+	if b.Sign() == -1 {
+		pos_q = false
+	}
+
+	c := a.ToBig()
+	q := b.ToBig()
+
+	return &Decimal{pos_c, *c, pos_q, *q}
 }
 
-func copyDecimal(a *decimal) *decimal {
-	return &decimal{a.c, a.q}
+// a * 10^b
+func toUint256Int(d *Decimal) (*uint256.Int, *uint256.Int) {
+	a, oa := uint256.FromBig(&d.c)
+	if oa {
+		panic("overflow")
+	}
+	if (0 <= a.Sign() && !d.pos_c) || (a.Sign() == -1 && d.pos_c) {
+		panic("overflow")
+	}
+
+	b, ob := uint256.FromBig(&d.q)
+	if ob {
+		panic("overflow")
+	}
+	if (0 <= b.Sign() && !d.pos_q) || (b.Sign() == -1 && d.pos_q) {
+		panic("overflow")
+	}
+
+	return a, b
+}
+
+func showDecimal(x *Decimal) string {
+	return fmt.Sprintf("%v %v", showInt(&x.c), showInt(&x.q))
+}
+func showInt(x *uint256.Int) string {
+	return fmt.Sprintf("%v(%v)", x.Sign(), x.Dec())
+}
+
+func copyDecimal(a *Decimal) *Decimal {
+	return &Decimal{a.c, a.q}
 }
 
 var ZERO_uint256_Int = uint256.NewInt(0)
@@ -29,10 +70,10 @@ var ONE_uint256_Int = uint256.NewInt(1)
 var TEN_uint256_Int = uint256.NewInt(10)
 var MINUS_ONE_uint256_Int = new(uint256.Int).Neg(uint256.NewInt(1))
 
-var ZERO = decimal{*ZERO_uint256_Int, *ZERO_uint256_Int}
-var ONE = decimal{*ONE_uint256_Int, *ZERO_uint256_Int}
+var ZERO = Decimal{*ZERO_uint256_Int, *ZERO_uint256_Int}
+var ONE = Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}
 
-func add_helper(a, b *decimal) *uint256.Int {
+func add_helper(a, b *Decimal) *uint256.Int {
 	exponent_diff := new(uint256.Int).Sub(&a.q, &b.q)
 	if exponent_diff.Sign() == -1 {
 		exponent_diff = uint256.NewInt(0)
@@ -47,7 +88,7 @@ func add_helper(a, b *decimal) *uint256.Int {
 }
 
 // a + b
-func add(a, b, out *decimal, L bool) *decimal {
+func add(a, b, out *Decimal, L bool) *Decimal {
 	if L {
 		fmt.Println("add", "a", "b", showDecimal(a), showDecimal(b))
 	}
@@ -72,7 +113,7 @@ func add(a, b, out *decimal, L bool) *decimal {
 }
 
 // -a
-func negate(a, out *decimal, L bool) *decimal {
+func negate(a, out *Decimal, L bool) *Decimal {
 	if L {
 		fmt.Println("negate", showDecimal(a))
 	}
@@ -85,7 +126,7 @@ func negate(a, out *decimal, L bool) *decimal {
 }
 
 // a - b
-func subtract(a, b, out *decimal, L bool) *decimal {
+func subtract(a, b, out *Decimal, L bool) *Decimal {
 	if L {
 		fmt.Println("subtract", showDecimal(a), showDecimal(b))
 	}
@@ -101,7 +142,7 @@ func subtract(a, b, out *decimal, L bool) *decimal {
 }
 
 // a * b
-func multiply(a, b, out *decimal, L bool) *decimal {
+func multiply(a, b, out *Decimal, L bool) *Decimal {
 	if L {
 		fmt.Println("multiply", "a", a, "b", b)
 	}
@@ -172,7 +213,7 @@ func signed_div(numerator, denominator, out *uint256.Int, L bool) *uint256.Int {
 }
 
 // 1 / a
-func inverse(a, out *decimal, L bool) *decimal {
+func inverse(a, out *Decimal, L bool) *Decimal {
 	if L {
 		fmt.Println("inverse", "a", a, a.c.Sign(), a.c.Dec(), a.q.Sign(), a.q.Dec())
 	}
@@ -212,7 +253,7 @@ func inverse(a, out *decimal, L bool) *decimal {
 }
 
 // a / b
-func divide(a, b, out *decimal, L bool) *decimal {
+func divide(a, b, out *Decimal, L bool) *Decimal {
 	if L {
 		fmt.Println("divide", "a", a, "b", b)
 	}
@@ -222,21 +263,21 @@ func divide(a, b, out *decimal, L bool) *decimal {
 	return out
 }
 
-func iszero(a *decimal, L bool) bool {
+func iszero(a *Decimal, L bool) bool {
 	return a.c.IsZero()
 }
 
 // a should be normalized
-func isone(a *decimal, L bool) bool {
+func isone(a *Decimal, L bool) bool {
 	return a.c.Eq(ONE_uint256_Int) && a.q.Eq(ZERO_uint256_Int)
 }
 
 // a < b
-func lessthan(a, b *decimal, L bool) bool {
+func lessthan(a, b *Decimal, L bool) bool {
 	if L {
 		fmt.Println("lessthan", showDecimal(a), showDecimal(b))
 	}
-	var diff decimal
+	var diff Decimal
 	subtract(a, b, &diff, false)
 	if L {
 		fmt.Println("lessthan diff", showDecimal(&diff))
@@ -246,13 +287,13 @@ func lessthan(a, b *decimal, L bool) bool {
 
 // a == b
 // a,b should be both normalized
-func equal(a, b *decimal) bool {
+func equal(a, b *Decimal) bool {
 	return a.c.Eq(&b.c) && a.q.Eq(&b.q)
 }
 
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-func exp(a, out *decimal, taylor_steps uint, L bool) *decimal {
+func exp(a, out *Decimal, taylor_steps uint, L bool) *Decimal {
 
 	if L {
 		fmt.Println("a", a, "taylor_precision", taylor_steps)
@@ -264,11 +305,11 @@ func exp(a, out *decimal, taylor_steps uint, L bool) *decimal {
 		return out
 	}
 
-	ONE := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}             // 1
-	a_power := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}         // 1
-	factorial := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}       // 1
-	factorial_next := decimal{*ZERO_uint256_Int, *ZERO_uint256_Int} // 0
-	factorial_inv := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}   // 1
+	ONE := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}             // 1
+	a_power := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}         // 1
+	factorial := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}       // 1
+	factorial_next := Decimal{*ZERO_uint256_Int, *ZERO_uint256_Int} // 0
+	factorial_inv := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}   // 1
 
 	// out = 1
 	out.c = *ONE_uint256_Int
@@ -501,7 +542,7 @@ func find_num_trailing_zeros_signed(a *uint256.Int, L bool) (uint64, uint256.Int
 	return p, ten_power
 }
 
-func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal {
+func normalize(a, out *Decimal, precision uint64, rounded bool, L bool) *Decimal {
 	if L {
 		fmt.Println("normalize", "a", showDecimal(a))
 	}
@@ -527,7 +568,7 @@ func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal
 	}
 
 	// if rounded {
-		return out
+	return out
 	// }
 
 	// return round(copyDecimal(out), out, precision, true, L)
