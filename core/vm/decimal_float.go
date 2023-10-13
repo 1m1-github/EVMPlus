@@ -20,10 +20,10 @@ func Eq(d1, d2 *Decimal) bool {
 
 func UInt256IntToBigInt(x *uint256.Int) (y *big.Int) {
 	if x.Sign() == -1 {
-		y = &(*x.Neg(x).ToBig())
+		y = x.Neg(x).ToBig()
 		y.Neg(y)
 	} else {
-		y = &(*x.ToBig())
+		y = x.ToBig()
 	}
 	return y
 }
@@ -33,23 +33,21 @@ func UInt256IntTupleToDecimal(_c, _q *uint256.Int) *Decimal {
 	return &Decimal{*c, *q}
 }
 
-// // a * 10^b
-// func toUint256IntWithPanic(x *big.Int, pos *bool) *uint256.Int {
-// 	a, oa := uint256.FromBig(x)
-// 	if oa {
-// 		panic("overflow")
-// 	}
-// 	if (0 <= a.Sign() && !*pos) || (a.Sign() == -1 && *pos) {
-// 		panic("overflow")
-// 	}
-
-// 	return a
-// }
-// func toUint256Int(d *Decimal) (*uint256.Int, *uint256.Int) {
-// 	a := toUint256IntWithPanic(&d.c, &d.pos_c)
-// 	b := toUint256IntWithPanic(&d.q, &d.pos_q)
-// 	return a, b
-// }
+func BigIntToUInt256Int(x *big.Int) (y *uint256.Int) {
+	y, overflow := uint256.FromBig(x)
+	if overflow { // x more than 256 bits
+		panic("overflow")
+	}
+	if y.Sign() != x.Sign() {
+		panic("overflow")
+	}
+	return y
+}
+func DecimalToUInt256IntTuple(d *Decimal) (c, q *uint256.Int) {
+	c = BigIntToUInt256Int(&d.c)
+	q = BigIntToUInt256Int(&d.q)
+	return c, q
+}
 
 // func String(x *Decimal) string {
 // 	sc := '+'
