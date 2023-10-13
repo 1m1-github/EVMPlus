@@ -51,7 +51,7 @@ func toUint256Int(d *Decimal) (*uint256.Int, *uint256.Int) {
 	return a, b
 }
 
-func toString(x *Decimal) string {
+func String(x *Decimal) string {
 	sc := '+'
 	if !x.pos_c {
 		sc = '-'
@@ -66,36 +66,37 @@ func showInt(x *uint256.Int) string {
 	return fmt.Sprintf("%v(%v)", x.Sign(), x.Dec())
 }
 
-func copyDecimal(a *Decimal) *Decimal {
-	return &Decimal{a.c, a.q}
+func copyDecimal(x *Decimal) *Decimal {
+	return &Decimal{x.pos_c, x.c, x.pos_q, x.q}
 }
 
-var ZERO_uint256_Int = uint256.NewInt(0)
-var ONE_uint256_Int = uint256.NewInt(1)
-var TEN_uint256_Int = uint256.NewInt(10)
-var MINUS_ONE_uint256_Int = new(uint256.Int).Neg(uint256.NewInt(1))
+// TODO all needed?
+var ZERO_BIG = big.NewInt(0)
+var ONE_BIG = big.NewInt(1)
+var TEN_BIG = big.NewInt(10)
 
-var ZERO = Decimal{*ZERO_uint256_Int, *ZERO_uint256_Int}
-var ONE = Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}
+var ZERO = Decimal{true, *ZERO_BIG, true, *ZERO_BIG}
+var ONE = Decimal{true, *ONE_BIG, true, *ZERO_BIG}
 
-func add_helper(a, b *Decimal) *uint256.Int {
+func add_helper(a, b *Decimal) *big.Int {
+	exponent_diff := 
 	exponent_diff := new(uint256.Int).Sub(&a.q, &b.q)
 	if exponent_diff.Sign() == -1 {
 		exponent_diff = uint256.NewInt(0)
 	}
 
-	ten_power := *TEN_uint256_Int
-	ten_power.Exp(&ten_power, exponent_diff)
+	var ten_power big.Int
+	ten_power.Exp(&TEN_BIG, exponent_diff)
 
-	var ca uint256.Int
-	ca.Mul(&a.c, &ten_power)
-	return &ca
+	var c big.Int
+	c.Mul(&a.c, &ten_power)
+	return &c
 }
 
 // a + b
 func add(a, b, out *Decimal, L bool) *Decimal {
 	if L {
-		fmt.Println("add", "a", "b", toString(a), toString(b))
+		fmt.Println("add", "a", "b", String(a), String(b))
 	}
 
 	ca := add_helper(a, b)
@@ -111,7 +112,7 @@ func add(a, b, out *Decimal, L bool) *Decimal {
 	out.c.Add(ca, cb)
 	out.q = *signed_min(&a.q, &b.q, false)
 	if L {
-		fmt.Println("add", "out", toString(out))
+		fmt.Println("add", "out", String(out))
 	}
 
 	return out
@@ -120,12 +121,12 @@ func add(a, b, out *Decimal, L bool) *Decimal {
 // -a
 func negate(a, out *Decimal, L bool) *Decimal {
 	if L {
-		fmt.Println("negate", toString(a))
+		fmt.Println("negate", String(a))
 	}
 	out.c.Neg(&a.c)
 	out.q = a.q
 	if L {
-		fmt.Println("negate", toString(out))
+		fmt.Println("negate", String(out))
 	}
 	return out
 }
@@ -133,15 +134,15 @@ func negate(a, out *Decimal, L bool) *Decimal {
 // a - b
 func subtract(a, b, out *Decimal, L bool) *Decimal {
 	if L {
-		fmt.Println("subtract", toString(a), toString(b))
+		fmt.Println("subtract", String(a), String(b))
 	}
 	negate(b, out, false)
 	if L {
-		fmt.Println("subtract 2", toString(out))
+		fmt.Println("subtract 2", String(out))
 	}
 	add(a, out, out, false)
 	if L {
-		fmt.Println("subtract 3", toString(out))
+		fmt.Println("subtract 3", String(out))
 	}
 	return out
 }
@@ -280,12 +281,12 @@ func isone(a *Decimal, L bool) bool {
 // a < b
 func lessthan(a, b *Decimal, L bool) bool {
 	if L {
-		fmt.Println("lessthan", toString(a), toString(b))
+		fmt.Println("lessthan", String(a), String(b))
 	}
 	var diff Decimal
 	subtract(a, b, &diff, false)
 	if L {
-		fmt.Println("lessthan diff", toString(&diff))
+		fmt.Println("lessthan diff", String(&diff))
 	}
 	return diff.c.Sign() == -1
 }
@@ -549,7 +550,7 @@ func find_num_trailing_zeros_signed(a *uint256.Int, L bool) (uint64, uint256.Int
 
 func normalize(a, out *Decimal, precision uint64, rounded bool, L bool) *Decimal {
 	if L {
-		fmt.Println("normalize", "a", toString(a))
+		fmt.Println("normalize", "a", String(a))
 	}
 
 	// remove trailing zeros in significand
@@ -560,7 +561,7 @@ func normalize(a, out *Decimal, precision uint64, rounded bool, L bool) *Decimal
 
 	signed_div(&a.c, &ten_power, &out.c, false) // out.c = a.c / 10^p
 	if L {
-		fmt.Println("normalize", "out", toString(out))
+		fmt.Println("normalize", "out", String(out))
 	}
 
 	out.q = *ZERO_uint256_Int
@@ -569,7 +570,7 @@ func normalize(a, out *Decimal, precision uint64, rounded bool, L bool) *Decimal
 		out.q.Add(&a.q, uint256.NewInt(p))
 	}
 	if L {
-		fmt.Println("normalize", "out.e", toString(out))
+		fmt.Println("normalize", "out.e", String(out))
 	}
 
 	// if rounded {
