@@ -62,9 +62,6 @@ func String(d *Decimal) string {
 	}
 	return fmt.Sprintf("%c%v*10^%c%v", sc, d.c.String(), sq, d.q.String())
 }
-// func showInt(x *uint256.Int) string {
-// 	return fmt.Sprintf("%v(%v)", x.Sign(), x.Dec())
-// }
 
 func (d *Decimal) copyDecimal() *Decimal {
 	return &Decimal{d.c, d.q}
@@ -101,58 +98,29 @@ func add_helper(d1, d2 *Decimal) (c big.Int) {
 }
 
 // a + b
-func (out *Decimal) Add(d1, d2 *Decimal, L bool) *Decimal {
-	if L {
-		fmt.Println("add", "a", "b", String(d1), String(d2))
-	}
-
+func (out *Decimal) Add(d1, d2 *Decimal) *Decimal {
 	ca := add_helper(d1, d2)
-	if L {
-		fmt.Println("add", "ca", ca.String())
-	}
-
 	cb := add_helper(d2, d1)
-	if L {
-		fmt.Println("add", "cb", cb.String())
-	}
 
 	out.c.Add(&ca, &cb)
 	out.q = *min(&d1.q, &d2.q)
-	if L {
-		fmt.Println("add", "out", String(out))
-	}
 
 	return out
 }
 
-// // -a
-// func negate(a, out *Decimal, L bool) *Decimal {
-// 	if L {
-// 		fmt.Println("negate", String(a))
-// 	}
-// 	out.c.Neg(&a.c)
-// 	out.q = a.q
-// 	if L {
-// 		fmt.Println("negate", String(out))
-// 	}
-// 	return out
-// }
+// -a
+func (out *Decimal) Negate(a *Decimal) *Decimal {
+	out.c.Neg(&a.c)
+	out.q = a.q
+	return out
+}
 
-// // a - b
-// func subtract(a, b, out *Decimal, L bool) *Decimal {
-// 	if L {
-// 		fmt.Println("subtract", String(a), String(b))
-// 	}
-// 	negate(b, out, false)
-// 	if L {
-// 		fmt.Println("subtract 2", String(out))
-// 	}
-// 	add(a, out, out, false)
-// 	if L {
-// 		fmt.Println("subtract 3", String(out))
-// 	}
-// 	return out
-// }
+// a - b
+func (out *Decimal) subtract(a, b *Decimal) *Decimal {
+	out.Negate(b)
+	out.Add(a, out)
+	return out
+}
 
 // // a * b
 // func multiply(a, b, out *Decimal, L bool) *Decimal {
@@ -170,8 +138,6 @@ func (out *Decimal) Add(d1, d2 *Decimal, L bool) *Decimal {
 // 	// return normalize(copy(out), out, precision, false, L)
 // 	return out
 // }
-
-
 
 // func signed_div(numerator, denominator, out *uint256.Int, L bool) *uint256.Int {
 // 	sn := numerator.Sign()
@@ -503,7 +469,7 @@ func (out *Decimal) Add(d1, d2 *Decimal, L bool) *Decimal {
 // // 	return normalize(copyDecimal(out), out, precision, true, L)
 // // }
 
-func find_num_trailing_zeros_signed(a *big.Int, L bool) (p, ten_power *big.Int) {
+func find_num_trailing_zeros_signed(a *big.Int) (p, ten_power *big.Int) {
 	b := *a
 	if b.Sign() == -1 {
 		b.Neg(&b)
@@ -522,41 +488,20 @@ func find_num_trailing_zeros_signed(a *big.Int, L bool) (p, ten_power *big.Int) 
 			ten_power.Mul(ten_power, TEN_BIG) // 10^(p+1)
 		}
 	}
-
-	if L {
-		fmt.Println("find_num_trailing_zeros_signed", "p", p, "ten_power", ten_power.String())
-	}
 	ten_power.Div(ten_power, TEN_BIG)
-	if L {
-		fmt.Println("find_num_trailing_zeros_signed", "p", p, "ten_power", ten_power.String())
-	}
 
 	return p, ten_power
 }
 
-func (out *Decimal) normalize(a *Decimal, precision uint64, rounded bool, L bool) *Decimal {
-	if L {
-		fmt.Println("normalize", "a", String(a))
-	}
-
+func (out *Decimal) Normalize(a *Decimal, precision uint64, rounded bool) *Decimal {
 	// remove trailing zeros in significand
-	p, ten_power := find_num_trailing_zeros_signed(&a.c, false)
-	if L {
-		fmt.Println("normalize", "p", p.String(), "ten_power", ten_power.String())
-	}
-
+	p, ten_power := find_num_trailing_zeros_signed(&a.c)
 	out.c.Div(&a.c, ten_power)
-	if L {
-		fmt.Println("normalize", "out", String(out))
-	}
 
 	out.q = *ZERO_BIG
 	a_neg := a.c.Sign() == -1
 	if !(out.c.Cmp(ZERO_BIG) == 0 && !a_neg) { // if out.c == 0
 		out.q.Add(&a.q, p)
-	}
-	if L {
-		fmt.Println("normalize", "out.e", String(out))
 	}
 
 	// if rounded {

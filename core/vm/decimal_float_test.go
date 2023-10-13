@@ -112,11 +112,11 @@ func TestAdd(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Add(&tt.a, &tt.b, false)
+		out.Add(&tt.a, &tt.b)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
 		var out2 Decimal
-		out2.normalize(&out, 0, true, false)
+		out2.Normalize(&out, 0, true)
 		// fmt.Println("out2", showDecimal(&out2))
 
 		if !out2.Eq(&tt.c) {
@@ -206,7 +206,7 @@ func TestNormalize(t *testing.T) {
 	for _, tt := range tests {
 		var out Decimal
 
-		out.normalize(&tt.a, 0, true, false)
+		out.Normalize(&tt.a, 0, true)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
 		if !out.Eq(&tt.b) {
