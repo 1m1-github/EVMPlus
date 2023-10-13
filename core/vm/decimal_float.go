@@ -122,22 +122,13 @@ func (out *Decimal) Subtract(a, b *Decimal) *Decimal {
 	return out
 }
 
-// // a * b
-// func multiply(a, b, out *Decimal, L bool) *Decimal {
-// 	if L {
-// 		fmt.Println("multiply", "a", a, "b", b)
-// 	}
-// 	// if L {fmt.Println("multiply", "a", String(a), "b", String(b), "precision", precision)}
-// 	// if L {fmt.Println("multiply", "a", a, "b", b)}
-// 	out.c.Mul(&a.c, &b.c)
-// 	// if L {fmt.Println("multiply", "out.c", out.c)}
-// 	out.q.Add(&a.q, &b.q)
-// 	if L {
-// 		fmt.Println("multiply", "out", out)
-// 	}
-// 	// return normalize(copy(out), out, precision, false, L)
-// 	return out
-// }
+// a * b
+func (out *Decimal) Multiply(a, b *Decimal) *Decimal {
+	out.c.Mul(&a.c, &b.c)
+	out.q.Add(&a.q, &b.q)
+	// return normalize(copy(out), out, precision, false, L)
+	return out
+}
 
 // func signed_div(numerator, denominator, out *uint256.Int, L bool) *uint256.Int {
 // 	sn := numerator.Sign()
