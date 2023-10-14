@@ -193,29 +193,16 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 	factorial_next := copyDecimal(ZERO)
 
 	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
-		// fmt.Println("i", i)
 		a_power.Multiply(a_power, a) // a^i
-		// pna("a^i", a_power)
-		factorial_next.Add(factorial_next, ONE) // i + 1
-		// pna("i+1", factorial_next)
+		factorial_next.Add(factorial_next, ONE) // i++
 		factorial.Multiply(factorial, factorial_next) // i!
-		// pna("i!", factorial)
-		// factorial_inv = *factorial.copyDecimal()
-		factorial_inv.Inverse(factorial) // 1 / i!
-		// pna("1 / i!", &factorial_inv)
-		factorial_inv.Multiply(&factorial_inv, a_power) // store in factorial_inv as not needed anymore
-		// pna("a^i/i!", &factorial_inv)
-		out.Add(out, &factorial_inv)
-		// pna("out", out)
+		factorial_inv.Inverse(factorial) // 1/i!
+		factorial_inv.Multiply(&factorial_inv, a_power) // store a^i/i! in factorial_inv as not needed anymore
+		out.Add(out, &factorial_inv) // out += a^i/i!
 	}
-	// pna("out out", out)
+
 	return out
 }
-// func pna(l string, a *Decimal) {
-// 	na := copyDecimal(a)
-// 	na.Normalize(na, 0, true)
-// 	fmt.Println(l, na.String())
-// }
 
 // // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
 // // 0 < a
