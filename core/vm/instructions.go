@@ -27,9 +27,7 @@ import (
 
 func opAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	x, y := scope.Stack.pop(), scope.Stack.peek()
-	log.Info("----opAdd-----", "x", x.String(), "y", y.String())
 	y.Add(&x, y)
-	log.Info("----opAdd-----2", "x", x.String(), "y", y.String())
 	return nil, nil
 }
 
@@ -939,13 +937,13 @@ func makeSwap(size int64) executionFunc {
 
 // decimal float
 
+// ac * 10^ aq + bc * 10^ bq
 func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	// xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
-	// x := Decimal{c: xs, q: xe}
-	// y := Decimal{c: ys, q: *ye}
-	// log.Info("----opDecAdd-----", "x", x, "y", y)
-	// add(&x, &y, &y, false)
-	// log.Info("----opDecAdd-----2", "y", y)
+	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek(), scope.Stack.peek()
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	b := UInt256IntTupleToDecimal(bc, bq)
+	b.Add(a, b)
+	bc, bq = b.DecimalToUInt256IntTuple()
 	return nil, nil
 }
 
