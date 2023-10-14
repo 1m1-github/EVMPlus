@@ -940,69 +940,69 @@ func makeSwap(size int64) executionFunc {
 // decimal float
 
 func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
-	x := decimal{c: xs, q: xe}
-	y := decimal{c: ys, q: *ye}
-	log.Info("----opDecAdd-----", "x", x, "y", y)
-	add(&x, &y, &y, false)
-	log.Info("----opDecAdd-----2", "y", y)
+	// xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
+	// x := Decimal{c: xs, q: xe}
+	// y := Decimal{c: ys, q: *ye}
+	// log.Info("----opDecAdd-----", "x", x, "y", y)
+	// add(&x, &y, &y, false)
+	// log.Info("----opDecAdd-----2", "y", y)
 	return nil, nil
 }
 
 func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
-	x := decimal{c: xs, q: xe}
-	y := decimal{c: ys, q: *ye}
-	log.Info("----opDecMul-----", "x", x, "y", y)
-	multiply(&x, &y, &y, false)
-	log.Info("----opDecMul-----2", "y", y)
+	// xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
+	// x := Decimal{c: xs, q: xe}
+	// y := Decimal{c: ys, q: *ye}
+	// log.Info("----opDecMul-----", "x", x, "y", y)
+	// multiply(&x, &y, &y, false)
+	// log.Info("----opDecMul-----2", "y", y)
 	return nil, nil
 }
 
 func opDecSub(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
-	x := decimal{c: xs, q: xe}
-	y := decimal{c: ys, q: *ye}
-	log.Info("----opDecSub-----", "x", x, "y", y)
-	subtract(&x, &y, &y, false) // TODO need precision
-	log.Info("----opDecSub-----2", "y", y)
+	// xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
+	// x := Decimal{c: xs, q: xe}
+	// y := Decimal{c: ys, q: *ye}
+	// log.Info("----opDecSub-----", "x", x, "y", y)
+	// subtract(&x, &y, &y, false) // TODO need precision
+	// log.Info("----opDecSub-----2", "y", y)
 	return nil, nil
 }
 
 func opDecDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
-	x := decimal{c: xs, q: xe}
-	y := decimal{c: ys, q: *ye}
-	log.Info("----opDecDiv-----", "x", x, "y", y)
-	divide(&x, &y, &y, false) // TODO need precision
-	log.Info("----opDecDiv-----2", "y", y)
+	// xs, xe, ys, ye := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek()
+	// x := Decimal{c: xs, q: xe}
+	// y := Decimal{c: ys, q: *ye}
+	// log.Info("----opDecDiv-----", "x", x, "y", y)
+	// divide(&x, &y, &y, false) // TODO need precision
+	// log.Info("----opDecDiv-----2", "y", y)
 	return nil, nil
 }
 
 func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	xs, xe := scope.Stack.pop(), scope.Stack.peek()
-	x := decimal{c: xs, q: *xe}
-	log.Info("----opDecExp-----", "x", x)
-	// exp // TODO
-	// log.Info("----opDecExp-----2", "y", y)
+	// xs, xe := scope.Stack.pop(), scope.Stack.peek()
+	// x := Decimal{c: xs, q: *xe}
+	// log.Info("----opDecExp-----", "x", x)
+	// // exp // TODO
+	// // log.Info("----opDecExp-----2", "y", y)
 	return nil, nil
 }
 
 func opDecLn(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	xs, xe := scope.Stack.pop(), scope.Stack.peek()
-	x := decimal{c: xs, q: *xe}
-	log.Info("----opDecLog-----", "x", x)
-	// exp // TODO
-	// log.Info("----opDecLog-----2", "y", y)
+	// xs, xe := scope.Stack.pop(), scope.Stack.peek()
+	// x := Decimal{c: xs, q: *xe}
+	// log.Info("----opDecLog-----", "x", x)
+	// // exp // TODO
+	// // log.Info("----opDecLog-----2", "y", y)
 	return nil, nil
 }
 
 func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	xs, xe := scope.Stack.pop(), scope.Stack.peek()
-	x := decimal{c: xs, q: *xe}
-	log.Info("----opDecSin-----", "x", x)
-	// exp // TODO
-	// log.Info("----opDecExp-----2", "y", y)
+	// xs, xe := scope.Stack.pop(), scope.Stack.peek()
+	// x := Decimal{c: xs, q: *xe}
+	// log.Info("----opDecSin-----", "x", x)
+	// // exp // TODO
+	// // log.Info("----opDecExp-----2", "y", y)
 	return nil, nil
 }
 

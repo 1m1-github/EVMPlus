@@ -1,533 +1,376 @@
 package vm
 
 import (
-	"fmt" // TODO remove
+	// "fmt" // TODO remove
+	"fmt"
+	"math/big"
 
 	"github.com/holiman/uint256"
 )
 
 // c * 10^q
-// consider c and q as int256 using 2's complement    
-type decimal struct {
-	c uint256.Int // coefficient
-	q uint256.Int // exponent
+type Decimal struct {
+	c big.Int // coefficient
+	q big.Int // exponent
 }
 
-func showDecimal(a *decimal) string {
-	return fmt.Sprintf("%v %v", showInt(&a.c), showInt(&a.q))
-}
-func showInt(a *uint256.Int) string {
-	return fmt.Sprintf("%v(%v)", a.Sign(), a.Dec())
+// TODO normalize first
+func (d2 *Decimal) Eq(d1 *Decimal) bool {
+	return d1.c.Cmp(&d2.c) == 0 && d1.q.Cmp(&d2.q) == 0
 }
 
-func copyDecimal(a *decimal) *decimal {
-	return &decimal{a.c, a.q}
+func UInt256IntToBigInt(x *uint256.Int) (y *big.Int) {
+	if x.Sign() == -1 {
+		var xn uint256.Int
+		y = xn.Neg(x).ToBig()
+		y.Neg(y)
+	} else {
+		y = x.ToBig()
+	}
+	return y
+}
+func UInt256IntTupleToDecimal(_c, _q *uint256.Int) *Decimal {
+	c := UInt256IntToBigInt(_c)
+	q := UInt256IntToBigInt(_q)
+	return &Decimal{*c, *q}
 }
 
-var ZERO_uint256_Int = uint256.NewInt(0)
-var ONE_uint256_Int = uint256.NewInt(1)
-var TEN_uint256_Int = uint256.NewInt(10)
-var MINUS_ONE_uint256_Int = new(uint256.Int).Neg(uint256.NewInt(1))
+func BigIntToUInt256Int(x *big.Int) (y *uint256.Int) {
+	y, overflow := uint256.FromBig(x)
+	if overflow { // x more than 256 bits
+		panic("overflow")
+	}
+	if y.Sign() != x.Sign() {
+		panic("overflow")
+	}
+	return y
+}
+func (d *Decimal) DecimalToUInt256IntTuple() (c, q *uint256.Int) {
+	c = BigIntToUInt256Int(&d.c)
+	q = BigIntToUInt256Int(&d.q)
+	return c, q
+}
 
-var ZERO = decimal{*ZERO_uint256_Int, *ZERO_uint256_Int}
-var ONE = decimal{*ONE_uint256_Int, *ZERO_uint256_Int}
+func (d *Decimal) String() string {
+	return fmt.Sprintf("%v*10^%v", d.c.String(), d.q.String())
+}
 
-func add_helper(a, b *decimal) *uint256.Int {
-	exponent_diff := new(uint256.Int).Sub(&a.q, &b.q)
+func copyDecimal(d *Decimal) *Decimal {
+	return createDecimal(&d.c, &d.q)
+}
+func createDecimal(_c, _q *big.Int) (*Decimal) {
+	var c, q big.Int
+	c.Set(_c)
+	q.Set(_q)
+	return &Decimal{c, q}
+}
+
+// TODO all needed?
+var MINUS_ONE_BIG = big.NewInt(-1)
+var ZERO_BIG = big.NewInt(0)
+var ONE_BIG = big.NewInt(1)
+var TEN_BIG = big.NewInt(10)
+
+var ZERO = createDecimal(ZERO_BIG, ZERO_BIG)
+var ONE = createDecimal(ONE_BIG, ZERO_BIG)
+
+func min(a, b *big.Int) (c *big.Int) {
+	if a.Cmp(b) == -1 {
+		return a
+	} else {
+		return b
+	}
+}
+
+func add_helper(d1, d2 *Decimal) (c big.Int) {
+	var exponent_diff big.Int
+	exponent_diff.Sub(&d1.q, &d2.q)
 	if exponent_diff.Sign() == -1 {
-		exponent_diff = uint256.NewInt(0)
+		exponent_diff = *ZERO_BIG // shallow copy ok
 	}
 
-	ten_power := *TEN_uint256_Int
-	ten_power.Exp(&ten_power, exponent_diff)
+	c.Exp(TEN_BIG, &exponent_diff, ZERO_BIG)
+	c.Mul(&d1.c, &c)
 
-	var ca uint256.Int
-	ca.Mul(&a.c, &ten_power)
-	return &ca
+	return c
 }
 
 // a + b
-func add(a, b, out *decimal, L bool) *decimal {
-	if L {
-		fmt.Println("add", "a", "b", showDecimal(a), showDecimal(b))
-	}
-
+func (out *Decimal) Add(a, b *Decimal) *Decimal {
 	ca := add_helper(a, b)
-	if L {
-		fmt.Println("add", "ca", showInt(ca))
-	}
-
 	cb := add_helper(b, a)
-	if L {
-		fmt.Println("add", "cb", showInt(cb))
-	}
 
-	out.c.Add(ca, cb)
-	out.q = *signed_min(&a.q, &b.q, false)
-	if L {
-		fmt.Println("add", "out", showDecimal(out))
-	}
+	out.c.Add(&ca, &cb)
+	out.q.Set(min(&a.q, &b.q))
 
 	return out
 }
 
 // -a
-func negate(a, out *decimal, L bool) *decimal {
-	if L {
-		fmt.Println("negate", showDecimal(a))
-	}
+func (out *Decimal) Negate(a *Decimal) *Decimal {
 	out.c.Neg(&a.c)
-	out.q = a.q
-	if L {
-		fmt.Println("negate", showDecimal(out))
-	}
+	out.q.Set(&a.q)
 	return out
 }
 
 // a - b
-func subtract(a, b, out *decimal, L bool) *decimal {
-	if L {
-		fmt.Println("subtract", showDecimal(a), showDecimal(b))
-	}
-	negate(b, out, false)
-	if L {
-		fmt.Println("subtract 2", showDecimal(out))
-	}
-	add(a, out, out, false)
-	if L {
-		fmt.Println("subtract 3", showDecimal(out))
-	}
+func (out *Decimal) Subtract(a, b *Decimal) *Decimal {
+	out.Negate(b)
+	out.Add(a, out)
 	return out
 }
 
 // a * b
-func multiply(a, b, out *decimal, L bool) *decimal {
-	if L {
-		fmt.Println("multiply", "a", a, "b", b)
-	}
-	// if L {fmt.Println("multiply", "a", String(a), "b", String(b), "precision", precision)}
-	// if L {fmt.Println("multiply", "a", a, "b", b)}
+func (out *Decimal) Multiply(a, b *Decimal) *Decimal {
 	out.c.Mul(&a.c, &b.c)
-	// if L {fmt.Println("multiply", "out.c", out.c)}
 	out.q.Add(&a.q, &b.q)
-	if L {
-		fmt.Println("multiply", "out", out)
-	}
-	// return normalize(copy(out), out, precision, false, L)
-	return out
-}
-
-func signed_min(a, b *uint256.Int, L bool) *uint256.Int {
-	a_neg := a.Sign() == -1
-	b_neg := b.Sign() == -1
-
-	if a_neg && !b_neg {
-		return a
-	} else if b_neg && !a_neg {
-		return b
-	} else if !a_neg && !b_neg {
-		if a.Lt(b) {
-			return a
-		} else {
-			return b
-		}
-	} else { // both negative
-		if a.Lt(b) {
-			return b
-		} else {
-			return a
-		}
-	}
-}
-
-func signed_div(numerator, denominator, out *uint256.Int, L bool) *uint256.Int {
-	sn := numerator.Sign()
-	sd := denominator.Sign()
-	if sn == 0 && sd == 0 {
-		out = nil
-		return nil
-	}
-	if sn == 0 {
-		out = uint256.NewInt(0)
-		return out
-	}
-
-	n := *numerator
-	if sn == -1 {
-		n.Neg(numerator)
-	}
-
-	d := *denominator
-	if sd == -1 {
-		d.Neg(denominator)
-	}
-
-	out.Div(&n, &d)
-
-	if (sn == -1) != (sd == -1) {
-		out.Neg(out)
-	}
-
+	// normalize?
 	return out
 }
 
 // 1 / a
-func inverse(a, out *decimal, L bool) *decimal {
-	if L {
-		fmt.Println("inverse", "a", a, a.c.Sign(), a.c.Dec(), a.q.Sign(), a.q.Dec())
-	}
-
-	max_precision := uint256.NewInt(50) // TODO choose correct max_precision
-	var precision uint256.Int
+func (out *Decimal) Inverse(a *Decimal) *Decimal {
+	max_precision := big.NewInt(50) // TODO choose correct max_precision
+	var precision big.Int
 	precision.Add(max_precision, &a.q) // more than max decimal precision on 256 bits
-	if L {
-		fmt.Println("inverse", "precision", precision, precision.Dec())
+
+	var aq_m_precision big.Int
+	aq_m_precision.Sub(&precision, &a.q)
+	if aq_m_precision.Cmp(ZERO_BIG) == -1 {
+		panic("ae_m_precision NEGATIVE")
 	}
 
-	ten_power := *TEN_uint256_Int
-	ae_m_precision := new(uint256.Int).Neg(&a.q)
-	ae_m_precision.Add(ae_m_precision, &precision)
-	if L {
-		fmt.Println("inverse", "ae_m_precision", ae_m_precision, ae_m_precision.Dec())
-	}
-	if ae_m_precision.Cmp(ZERO_uint256_Int) == -1 {
-		fmt.Println("ae_m_precision NEGATIVE")
-		return nil
-	}
-	ten_power.Exp(&ten_power, ae_m_precision)
-	if L {
-		fmt.Println("inverse", "ten_power", ten_power, ten_power.Dec())
-	}
-	signed_div(&ten_power, &a.c, &out.c, false)
-	if L {
-		fmt.Println("inverse after div", "out.s", out.c, out.c.Dec())
-	}
+	aq_m_precision.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG) // aq_m_precision not needed after
+	out.c.Div(&aq_m_precision, &a.c)
+	out.q.Neg(&precision)
 
-	out.q.Sub(ZERO_uint256_Int, &precision)
-	if L {
-		fmt.Println("inverse after sub", "out.e", out.q, out.q.Dec())
-	}
+	// normalize?
 
 	return out
 }
 
 // a / b
-func divide(a, b, out *decimal, L bool) *decimal {
-	if L {
-		fmt.Println("divide", "a", a, "b", b)
-	}
-
-	inverse(b, out, L)
-	multiply(a, copyDecimal(out), out, L)
+func (out *Decimal) Divide(a, b *Decimal) *Decimal {
+	out.Inverse(b)
+	out.Multiply(a, out)
 	return out
 }
 
-func iszero(a *decimal, L bool) bool {
-	return a.c.IsZero()
+func (a *Decimal) IsZero() bool {
+	return a.c.Cmp(ZERO_BIG) == 0
 }
 
 // a should be normalized
-func isone(a *decimal, L bool) bool {
-	return a.c.Eq(ONE_uint256_Int) && a.q.Eq(ZERO_uint256_Int)
+func (a *Decimal) IsOne() bool {
+	return a.c.Cmp(ONE_BIG) == 0 && a.q.Cmp(ZERO_BIG) == 0
+}
+
+func (a *Decimal) IsNegative() bool {
+	return a.c.Sign() == -1
 }
 
 // a < b
-func lessthan(a, b *decimal, L bool) bool {
-	if L {
-		fmt.Println("lessthan", showDecimal(a), showDecimal(b))
-	}
-	var diff decimal
-	subtract(a, b, &diff, false)
-	if L {
-		fmt.Println("lessthan diff", showDecimal(&diff))
-	}
+func (a *Decimal) LessThan(b *Decimal) bool {
+	var diff Decimal
+	diff.Subtract(a, b)
 	return diff.c.Sign() == -1
-}
-
-// a == b
-// a,b should be both normalized
-func equal(a, b *decimal) bool {
-	return a.c.Eq(&b.c) && a.q.Eq(&b.q)
 }
 
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-func exp(a, out *decimal, taylor_steps uint, L bool) *decimal {
+func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
+	// out = 1
+	out.c.Set(ONE_BIG)
+	out.q.Set(ZERO_BIG)
 
-	if L {
-		fmt.Println("a", a, "taylor_precision", taylor_steps)
-	}
-
-	if iszero(a, false) {
-		out.c = *ONE_uint256_Int
-		out.q = *ZERO_uint256_Int
+	if a.IsZero() {
 		return out
 	}
+	
+	var factorial_inv Decimal
+	a_power := copyDecimal(ONE)
+	factorial := copyDecimal(ONE)
+	factorial_next := copyDecimal(ZERO)
 
-	ONE := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}             // 1
-	a_power := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}         // 1
-	factorial := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}       // 1
-	factorial_next := decimal{*ZERO_uint256_Int, *ZERO_uint256_Int} // 0
-	factorial_inv := decimal{*ONE_uint256_Int, *ZERO_uint256_Int}   // 1
-
-	// out = 1
-	out.c = *ONE_uint256_Int
-	out.q = *ZERO_uint256_Int
-
-	if L {
-		fmt.Println("out", out)
-	}
-
-	for i := uint(0); i < taylor_steps; i++ {
-		if L {
-			fmt.Println("i", i)
-		}
-
-		if L {
-			fmt.Println("a", a)
-		}
-		if L {
-			fmt.Println("a_power", a_power)
-		}
-		multiply(copyDecimal(&a_power), a, &a_power, false) // a^i
-		if L {
-			fmt.Println("a_power", a_power)
-		}
-
-		if L {
-			fmt.Println("ONE", ONE_uint256_Int)
-		}
-		if L {
-			fmt.Println("factorial_next", factorial_next)
-		}
-		add(copyDecimal(&factorial_next), &ONE, &factorial_next, false) // i + 1
-		if L {
-			fmt.Println("factorial_next", factorial_next)
-		}
-
-		if L {
-			fmt.Println("factorial", factorial)
-		}
-		multiply(copyDecimal(&factorial), &factorial_next, &factorial, false) // i!
-		if L {
-			fmt.Println("factorial", factorial)
-		}
-
-		if L {
-			fmt.Println("factorial_inv", factorial_inv)
-		}
-		inverse(&factorial, &factorial_inv, false) // 1 / i!
-		if L {
-			fmt.Println("factorial_inv", factorial_inv)
-		}
-
-		multiply(&a_power, copyDecimal(&factorial_inv), &factorial_inv, false) // store in factorial_inv as not needed anymore
-		if L {
-			fmt.Println("factorial_inv", factorial_inv)
-		}
-
-		if L {
-			fmt.Println("out", out)
-		}
-		add(copyDecimal(out), &factorial_inv, out, false)
-		if L {
-			fmt.Println("out", out)
-		}
-	}
-
-	if L {
-		fmt.Println("out", out)
+	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
+		a_power.Multiply(a_power, a) // a^i
+		factorial_next.Add(factorial_next, ONE) // i++
+		factorial.Multiply(factorial, factorial_next) // i!
+		factorial_inv.Inverse(factorial) // 1/i!
+		factorial_inv.Multiply(&factorial_inv, a_power) // store a^i/i! in factorial_inv as not needed anymore
+		out.Add(out, &factorial_inv) // out += a^i/i!
 	}
 
 	return out
 }
 
-// http://www.claysturner.com/dsp/BinaryLogarithm.pdf
-// 0 < a
-// func log2(a, out *decimal, precision uint64, L bool) (*decimal) {
+// // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
+// // 0 < a
+// // func log2(a, out *decimal, precision uint64, L bool) (*decimal) {
 
-// 	b := copyDecimal(&ZERO)
+// // 	b := copyDecimal(&ZERO)
 
-// 	var a_norm decimal
-// 	normalize(a, &a_norm, 0, false, false)
+// // 	var a_norm decimal
+// // 	normalize(a, &a_norm, 0, false, false)
 
-// 	if a_vs_zero := a_norm.s.Cmp(ZERO_uint256_Int); a_vs_zero <= 0 {
-// 		out = nil
-// 		return out
-// 	}
+// // 	if a_vs_zero := a_norm.s.Cmp(ZERO_uint256_Int); a_vs_zero <= 0 {
+// // 		out = nil
+// // 		return out
+// // 	}
 
-// 	if isone(&a_norm) {
-// 		return b
-// 	}
+// // 	if isone(&a_norm) {
+// // 		return b
+// // 	}
 
-// 	// double a until 1 <= a
-// 	for {
+// // 	// double a until 1 <= a
+// // 	for {
 
-// 		if a_vs_one := a.Cmp(ONE); a_vs_one != -1 {
-// 			break
-// 		}
+// // 		if a_vs_one := a.Cmp(ONE); a_vs_one != -1 {
+// // 			break
+// // 		}
 
-// 		a.Num().Lsh(a.Num(), 1) // double
-// 		b.Add(b, MINUS_ONE)
-// 	}
-// 	if L {
-// 		fmt.Println("log2 doubled", a.FloatString(10), b.FloatString(10))
-// 	}
+// // 		a.Num().Lsh(a.Num(), 1) // double
+// // 		b.Add(b, MINUS_ONE)
+// // 	}
+// // 	if L {
+// // 		fmt.Println("log2 doubled", a.FloatString(10), b.FloatString(10))
+// // 	}
 
-// 	// half a until a < 2
-// 	for {
+// // 	// half a until a < 2
+// // 	for {
 
-// 		if a_vs_two := a.Cmp(TWO); a_vs_two == -1 {
-// 			break
-// 		}
+// // 		if a_vs_two := a.Cmp(TWO); a_vs_two == -1 {
+// // 			break
+// // 		}
 
-// 		a.Denom().Lsh(a.Denom(), 1) // half
-// 		b.Add(b, ONE)
-// 	}
-// 	if L {
-// 		fmt.Println("log2 halved", a.FloatString(10), b.FloatString(10))
-// 	}
+// // 		a.Denom().Lsh(a.Denom(), 1) // half
+// // 		b.Add(b, ONE)
+// // 	}
+// // 	if L {
+// // 		fmt.Println("log2 halved", a.FloatString(10), b.FloatString(10))
+// // 	}
 
-// 	// from here: 1 <= a < 2 <=> 0 <= b < 1
+// // 	// from here: 1 <= a < 2 <=> 0 <= b < 1
 
-// 	// compare a^2 to 2 to reveal b bit-by-bit
-// 	precision_counter := 0 // for now, precision is naiive
-// 	v := big.NewRat(1, 2)
-// 	for {
-// 		if precision == precision_counter {
-// 			break
-// 		}
+// // 	// compare a^2 to 2 to reveal b bit-by-bit
+// // 	precision_counter := 0 // for now, precision is naiive
+// // 	v := big.NewRat(1, 2)
+// // 	for {
+// // 		if precision == precision_counter {
+// // 			break
+// // 		}
 
-// 		if L {
-// 			fmt.Println("log2 precision_counter", precision_counter)
-// 			fmt.Println("log2 v", v.FloatString(10))
-// 			fmt.Println("log2 a", a.FloatString(10))
-// 			fmt.Println("log2 b", b.FloatString(10))
-// 		}
+// // 		if L {
+// // 			fmt.Println("log2 precision_counter", precision_counter)
+// // 			fmt.Println("log2 v", v.FloatString(10))
+// // 			fmt.Println("log2 a", a.FloatString(10))
+// // 			fmt.Println("log2 b", b.FloatString(10))
+// // 		}
 
-// 		a.Mul(a, a) // THIS IS SLOW
-// 		// a = big.NewRat(a.Num().Int64()*a.Num().Int64(), a.Denom().Int64()*a.Denom().Int64())
+// // 		a.Mul(a, a) // THIS IS SLOW
+// // 		// a = big.NewRat(a.Num().Int64()*a.Num().Int64(), a.Denom().Int64()*a.Denom().Int64())
 
-// 		if L {
-// 			fmt.Println("log2 a^2", a.FloatString(10))
-// 		}
+// // 		if L {
+// // 			fmt.Println("log2 a^2", a.FloatString(10))
+// // 		}
 
-// 		if a2_vs_two := a.Cmp(TWO); a2_vs_two != -1 {
+// // 		if a2_vs_two := a.Cmp(TWO); a2_vs_two != -1 {
 
-// 			if L {
-// 				fmt.Println("log2 2 <= a^2", a.FloatString(10))
-// 			}
+// // 			if L {
+// // 				fmt.Println("log2 2 <= a^2", a.FloatString(10))
+// // 			}
 
-// 			a.Denom().Lsh(a.Denom(), 1) // half
-// 			b.Add(b, v)
-// 		} else {
-// 			if L {
-// 				fmt.Println("log2 a^2 < 2")
-// 			}
-// 		}
+// // 			a.Denom().Lsh(a.Denom(), 1) // half
+// // 			b.Add(b, v)
+// // 		} else {
+// // 			if L {
+// // 				fmt.Println("log2 a^2 < 2")
+// // 			}
+// // 		}
 
-// 		v.Denom().Lsh(v.Denom(), 1) // half
+// // 		v.Denom().Lsh(v.Denom(), 1) // half
 
-// 		precision_counter++
-// 	}
+// // 		precision_counter++
+// // 	}
 
-// 	if L {
-// 		fmt.Println("log2 b", b.FloatString((10)))
-// 	}
+// // 	if L {
+// // 		fmt.Println("log2 b", b.FloatString((10)))
+// // 	}
 
-// 	return b
-// }
+// // 	return b
+// // }
 
-// func round(a, out *decimal, precision uint64, normal bool, L bool) *decimal {
+// // func round(a, out *decimal, precision uint64, normal bool, L bool) *decimal {
 
-// 	var shift uint256.Int
-// 	shift.Add(uint256.NewInt(precision), &a.q)
+// // 	var shift uint256.Int
+// // 	shift.Add(uint256.NewInt(precision), &a.q)
 
-// 	out.c = a.c
-// 	out.q = a.q
+// // 	out.c = a.c
+// // 	out.q = a.q
 
-// 	if shift.Cmp(ZERO_uint256_Int) == 1 || shift.Cmp(&a.q) == -1 {
-// 		if normal {
-// 			return out
-// 		}
-// 		return normalize(out, out, precision, true, L)
-// 	}
+// // 	if shift.Cmp(ZERO_uint256_Int) == 1 || shift.Cmp(&a.q) == -1 {
+// // 		if normal {
+// // 			return out
+// // 		}
+// // 		return normalize(out, out, precision, true, L)
+// // 	}
 
-// 	if L {fmt.Println(showInt(&shift))}
-// 	shift.Neg(&shift) // shift *= -1
-// 	if L {fmt.Println(showInt(&shift))}
-// 	var ten_power uint256.Int
-// 	ten_power.Exp(TEN_uint256_Int, &shift) // 10^shift // TODO if shift<0, problem
-// 	// out.s.Div(&out.s, &ten_power)
-// 	signed_div(&out.c, &ten_power, &out.c, false)
+// // 	if L {fmt.Println(showInt(&shift))}
+// // 	shift.Neg(&shift) // shift *= -1
+// // 	if L {fmt.Println(showInt(&shift))}
+// // 	var ten_power uint256.Int
+// // 	ten_power.Exp(TEN_uint256_Int, &shift) // 10^shift // TODO if shift<0, problem
+// // 	// out.s.Div(&out.s, &ten_power)
+// // 	signed_div(&out.c, &ten_power, &out.c, false)
 
-// 	out.q.Add(&out.q, &shift)
+// // 	out.q.Add(&out.q, &shift)
 
-// 	if normal {
-// 		return out
-// 	}
+// // 	if normal {
+// // 		return out
+// // 	}
 
-// 	return normalize(copyDecimal(out), out, precision, true, L)
-// }
+// // 	return normalize(copyDecimal(out), out, precision, true, L)
+// // }
 
-func find_num_trailing_zeros_signed(a *uint256.Int, L bool) (uint64, uint256.Int) {
-	b := *a
+func find_num_trailing_zeros_signed(a *big.Int) (p, ten_power *big.Int) {
+	var b big.Int
+	b.Set(a)
 	if b.Sign() == -1 {
-		b.Neg(a)
+		b.Neg(&b)
 	}
 
-	p := uint64(0)
-	ten_power := *TEN_uint256_Int
-	if b.Cmp(ZERO_uint256_Int) != 0 { // if b != 0
+	p = big.NewInt(0)
+	ten_power = big.NewInt(10)
+	if b.Cmp(ZERO_BIG) != 0 { // if b != 0
 		for {
-			var m uint256.Int
-			m.Mod(&b, &ten_power)
-			if m.Cmp(ZERO_uint256_Int) != 0 { // if b % 10^(p+1) != 0
+			var m big.Int
+			m.Mod(&b, ten_power)
+			if m.Cmp(ZERO_BIG) != 0 { // if b % 10^(p+1) != 0
 				break
 			}
-			p++
-			ten_power.Mul(&ten_power, TEN_uint256_Int) // 10^(p+1)
+			p.Add(p, ONE_BIG)
+			ten_power.Mul(ten_power, TEN_BIG) // 10^(p+1)
 		}
 	}
-
-	if L {
-		fmt.Println("find_num_trailing_zeros_signed", "p", p, "ten_power", showInt(&ten_power))
-	}
-	signed_div(&ten_power, TEN_uint256_Int, &ten_power, false) // 10^p
-	if L {
-		fmt.Println("find_num_trailing_zeros_signed", "p", p, "ten_power", showInt(&ten_power))
-	}
+	ten_power.Div(ten_power, TEN_BIG)
 
 	return p, ten_power
 }
 
-func normalize(a, out *decimal, precision uint64, rounded bool, L bool) *decimal {
-	if L {
-		fmt.Println("normalize", "a", showDecimal(a))
-	}
-
+func (out *Decimal) Normalize(a *Decimal, precision uint64, rounded bool) *Decimal {
 	// remove trailing zeros in significand
-	p, ten_power := find_num_trailing_zeros_signed(&a.c, false)
-	if L {
-		fmt.Println("normalize", "p", p, "ten_power", showInt(&ten_power))
-	}
+	p, ten_power := find_num_trailing_zeros_signed(&a.c)
+	out.c.Div(&a.c, ten_power)
 
-	signed_div(&a.c, &ten_power, &out.c, false) // out.c = a.c / 10^p
-	if L {
-		fmt.Println("normalize", "out", showDecimal(out))
-	}
-
-	out.q = *ZERO_uint256_Int
-	a_pos := a.c.Sign() == 1
-	if !(out.c.Cmp(ZERO_uint256_Int) == 0 && a_pos) { // if out.c == 0
-		out.q.Add(&a.q, uint256.NewInt(p))
-	}
-	if L {
-		fmt.Println("normalize", "out.e", showDecimal(out))
+	a_neg := a.IsNegative()
+	if out.c.Cmp(ZERO_BIG) != 0 || a_neg {
+		out.q.Add(&a.q, p)
+	} else {
+		out.q.Set(ZERO_BIG)
 	}
 
 	// if rounded {
-		return out
+	return out
 	// }
 
 	// return round(copyDecimal(out), out, precision, true, L)
