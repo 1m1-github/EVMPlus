@@ -130,76 +130,25 @@ func (out *Decimal) Multiply(a, b *Decimal) *Decimal {
 	return out
 }
 
-// func signed_div(numerator, denominator, out *uint256.Int, L bool) *uint256.Int {
-// 	sn := numerator.Sign()
-// 	sd := denominator.Sign()
-// 	if sn == 0 && sd == 0 {
-// 		out = nil
-// 		return nil
-// 	}
-// 	if sn == 0 {
-// 		out = uint256.NewInt(0)
-// 		return out
-// 	}
+// 1 / a
+func (out *Decimal) Inverse(a *Decimal) *Decimal {
+	max_precision := big.NewInt(50) // TODO choose correct max_precision
+	var precision big.Int
+	precision.Add(max_precision, &a.q) // more than max decimal precision on 256 bits
 
-// 	n := *numerator
-// 	if sn == -1 {
-// 		n.Neg(numerator)
-// 	}
+	var aq_m_precision big.Int
+	aq_m_precision.Sub(&precision, &a.q)
+	if aq_m_precision.Cmp(ZERO_BIG) == -1 {
+		panic("ae_m_precision NEGATIVE")
+	}
 
-// 	d := *denominator
-// 	if sd == -1 {
-// 		d.Neg(denominator)
-// 	}
+	out.c.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG)
+	out.c.Div(&out.c, &a.c)
 
-// 	out.Div(&n, &d)
+	out.q.Neg(&precision)
 
-// 	if (sn == -1) != (sd == -1) {
-// 		out.Neg(out)
-// 	}
-
-// 	return out
-// }
-
-// // 1 / a
-// func inverse(a, out *Decimal, L bool) *Decimal {
-// 	if L {
-// 		fmt.Println("inverse", "a", a, a.c.Sign(), a.c.Dec(), a.q.Sign(), a.q.Dec())
-// 	}
-
-// 	max_precision := uint256.NewInt(50) // TODO choose correct max_precision
-// 	var precision uint256.Int
-// 	precision.Add(max_precision, &a.q) // more than max decimal precision on 256 bits
-// 	if L {
-// 		fmt.Println("inverse", "precision", precision, precision.Dec())
-// 	}
-
-// 	ten_power := *TEN_uint256_Int
-// 	ae_m_precision := new(uint256.Int).Neg(&a.q)
-// 	ae_m_precision.Add(ae_m_precision, &precision)
-// 	if L {
-// 		fmt.Println("inverse", "ae_m_precision", ae_m_precision, ae_m_precision.Dec())
-// 	}
-// 	if ae_m_precision.Cmp(ZERO_uint256_Int) == -1 {
-// 		fmt.Println("ae_m_precision NEGATIVE")
-// 		return nil
-// 	}
-// 	ten_power.Exp(&ten_power, ae_m_precision)
-// 	if L {
-// 		fmt.Println("inverse", "ten_power", ten_power, ten_power.Dec())
-// 	}
-// 	signed_div(&ten_power, &a.c, &out.c, false)
-// 	if L {
-// 		fmt.Println("inverse after div", "out.s", out.c, out.c.Dec())
-// 	}
-
-// 	out.q.Sub(ZERO_uint256_Int, &precision)
-// 	if L {
-// 		fmt.Println("inverse after sub", "out.e", out.q, out.q.Dec())
-// 	}
-
-// 	return out
-// }
+	return out
+}
 
 // // a / b
 // func divide(a, b, out *Decimal, L bool) *Decimal {
