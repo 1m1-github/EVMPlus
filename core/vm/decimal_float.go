@@ -179,7 +179,9 @@ func (a *Decimal) LessThan(b *Decimal) bool {
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
 func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
-	out = copyDecimal(ONE)
+	// out = 1
+	out.c.Set(ONE_BIG)
+	out.q.Set(ZERO_BIG)
 
 	if a.IsZero() {
 		return out
@@ -193,11 +195,11 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
 		// fmt.Println("i", i)
 		a_power.Multiply(a_power, a) // a^i
-		// pna("a^i", &a_power)
+		// pna("a^i", a_power)
 		factorial_next.Add(factorial_next, ONE) // i + 1
-		// pna("i+1", &factorial_next)
+		// pna("i+1", factorial_next)
 		factorial.Multiply(factorial, factorial_next) // i!
-		// pna("i!", &factorial)
+		// pna("i!", factorial)
 		// factorial_inv = *factorial.copyDecimal()
 		factorial_inv.Inverse(factorial) // 1 / i!
 		// pna("1 / i!", &factorial_inv)
@@ -206,12 +208,12 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 		out.Add(out, &factorial_inv)
 		// pna("out", out)
 	}
-
+	// pna("out out", out)
 	return out
 }
 // func pna(l string, a *Decimal) {
-// 	na := a.copyDecimal()
-// 	na.Normalize(0, true)
+// 	na := copyDecimal(a)
+// 	na.Normalize(na, 0, true)
 // 	fmt.Println(l, na.String())
 // }
 

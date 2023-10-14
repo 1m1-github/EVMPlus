@@ -296,7 +296,7 @@ func TestLt(t *testing.T) {
 // // }
 
 func TestExp(t *testing.T) {
-	STEPS := uint(3)
+	STEPS := uint(10)
 	tests := []struct {
 		a Decimal
 		b Decimal
