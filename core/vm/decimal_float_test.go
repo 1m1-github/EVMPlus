@@ -35,7 +35,7 @@ func TestEq(t *testing.T) {
 	}
 	for _, tt := range tests {
 		x := tt.d1.Eq(&tt.d2)
-		fmt.Println(String(&tt.d1))
+		fmt.Println(tt.d1.String())
 
 		if x != tt.x {
 			t.Fatal(tt.d1, tt.d2, x, tt.x)
@@ -304,20 +304,20 @@ func TestLt(t *testing.T) {
 // // 	}
 // // }
 
-// func TestExp(t *testing.T) {
-// 	tests := []struct {
-// 		a Decimal
-// 		b Decimal
-// 	}{
-// 		{Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}, Decimal{*big.NewInt(2718281), *new(big.Int).Neg(big.NewInt(6))}},
-// 	}
-// 	for _, tt := range tests {
-// 		var out Decimal
-// 		steps := uint(10)
-// 		exp(&tt.a, &out, steps, false)
-// 		fmt.Println("a", String(&tt.a), "out", String(&out), "b", String(&tt.b))
-// 		// if out != tt.b {
-// 		// 	t.Fatal(tt.a, out, tt.b)
-// 		// }
-// 	}
-// }
+func TestExp(t *testing.T) {
+	tests := []struct {
+		a Decimal
+		b Decimal
+	}{
+		{Decimal{*ONE_BIG, *ZERO_BIG}, Decimal{*big.NewInt(2718281), *big.NewInt(-6)}},
+	}
+	for _, tt := range tests {
+		var out Decimal
+		steps := uint(10)
+		out.Exp(&tt.a, steps)
+		fmt.Println(out.String())
+		// if out != tt.b {
+		// 	t.Fatal(tt.a, out, tt.b)
+		// }
+	}
+}

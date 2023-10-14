@@ -51,7 +51,7 @@ func (d *Decimal) DecimalToUInt256IntTuple() (c, q *uint256.Int) {
 	return c, q
 }
 
-func String(d *Decimal) string {
+func (d *Decimal) String() string {
 	sc := '+'
 	if d.c.Sign() == -1 {
 		sc = '-'
@@ -173,97 +173,36 @@ func (a *Decimal) LessThan(b *Decimal) bool {
 	return diff.c.Sign() == -1
 }
 
-// // e^a
-// // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-// func exp(a, out *Decimal, taylor_steps uint, L bool) *Decimal {
+// e^a
+// total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
+func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
+	if a.IsZero() {
+		out.c = *ONE_BIG
+		out.q = *ZERO_BIG
+		return out
+	}
 
-// 	if L {
-// 		fmt.Println("a", a, "taylor_precision", taylor_steps)
-// 	}
+	ONE := Decimal{*ONE_BIG, *ZERO_BIG}             // 1
+	a_power := Decimal{*ONE_BIG, *ZERO_BIG}         // 1
+	factorial := Decimal{*ONE_BIG, *ZERO_BIG}       // 1
+	factorial_next := Decimal{*ZERO_BIG, *ZERO_BIG} // 0
+	factorial_inv := Decimal{*ONE_BIG, *ZERO_BIG}   // 1
 
-// 	if iszero(a, false) {
-// 		out.c = *ONE_uint256_Int
-// 		out.q = *ZERO_uint256_Int
-// 		return out
-// 	}
+	// out = 1
+	out.c = *ONE_BIG
+	out.q = *ZERO_BIG
 
-// 	ONE := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}             // 1
-// 	a_power := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}         // 1
-// 	factorial := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}       // 1
-// 	factorial_next := Decimal{*ZERO_uint256_Int, *ZERO_uint256_Int} // 0
-// 	factorial_inv := Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}   // 1
+	for i := uint(0); i < taylor_steps; i++ {
+		a_power.Multiply(&a_power, a) // a^i
+		factorial_next.Add(&factorial_next, &ONE) // i + 1
+		factorial.Multiply(&factorial, &factorial_next) // i!
+		factorial_inv.Inverse(&factorial) // 1 / i!
+		factorial_inv.Multiply(&a_power, &factorial_inv) // store in factorial_inv as not needed anymore
+		out.Add(out, &factorial_inv)
+	}
 
-// 	// out = 1
-// 	out.c = *ONE_uint256_Int
-// 	out.q = *ZERO_uint256_Int
-
-// 	if L {
-// 		fmt.Println("out", out)
-// 	}
-
-// 	for i := uint(0); i < taylor_steps; i++ {
-// 		if L {
-// 			fmt.Println("i", i)
-// 		}
-
-// 		if L {
-// 			fmt.Println("a", a)
-// 		}
-// 		if L {
-// 			fmt.Println("a_power", a_power)
-// 		}
-// 		multiply(copyDecimal(&a_power), a, &a_power, false) // a^i
-// 		if L {
-// 			fmt.Println("a_power", a_power)
-// 		}
-
-// 		if L {
-// 			fmt.Println("ONE", ONE_uint256_Int)
-// 		}
-// 		if L {
-// 			fmt.Println("factorial_next", factorial_next)
-// 		}
-// 		add(copyDecimal(&factorial_next), &ONE, &factorial_next, false) // i + 1
-// 		if L {
-// 			fmt.Println("factorial_next", factorial_next)
-// 		}
-
-// 		if L {
-// 			fmt.Println("factorial", factorial)
-// 		}
-// 		multiply(copyDecimal(&factorial), &factorial_next, &factorial, false) // i!
-// 		if L {
-// 			fmt.Println("factorial", factorial)
-// 		}
-
-// 		if L {
-// 			fmt.Println("factorial_inv", factorial_inv)
-// 		}
-// 		inverse(&factorial, &factorial_inv, false) // 1 / i!
-// 		if L {
-// 			fmt.Println("factorial_inv", factorial_inv)
-// 		}
-
-// 		multiply(&a_power, copyDecimal(&factorial_inv), &factorial_inv, false) // store in factorial_inv as not needed anymore
-// 		if L {
-// 			fmt.Println("factorial_inv", factorial_inv)
-// 		}
-
-// 		if L {
-// 			fmt.Println("out", out)
-// 		}
-// 		add(copyDecimal(out), &factorial_inv, out, false)
-// 		if L {
-// 			fmt.Println("out", out)
-// 		}
-// 	}
-
-// 	if L {
-// 		fmt.Println("out", out)
-// 	}
-
-// 	return out
-// }
+	return out
+}
 
 // // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
 // // 0 < a
