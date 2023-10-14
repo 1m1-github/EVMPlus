@@ -45,10 +45,10 @@ func BigIntToUInt256Int(x *big.Int) (y *uint256.Int) {
 	}
 	return y
 }
-func (d *Decimal) DecimalToUInt256IntTuple() (c, q *uint256.Int) {
-	c = BigIntToUInt256Int(&d.c)
-	q = BigIntToUInt256Int(&d.q)
-	return c, q
+func (d *Decimal) SetUInt256IntTupleFromDecimal(c, q *uint256.Int) {
+	c.Set(BigIntToUInt256Int(&d.c))
+	q.Set(BigIntToUInt256Int(&d.q))
+	// return c, q
 }
 
 func (d *Decimal) String() string {
@@ -58,7 +58,7 @@ func (d *Decimal) String() string {
 func copyDecimal(d *Decimal) *Decimal {
 	return createDecimal(&d.c, &d.q)
 }
-func createDecimal(_c, _q *big.Int) (*Decimal) {
+func createDecimal(_c, _q *big.Int) *Decimal {
 	var c, q big.Int
 	c.Set(_c)
 	q.Set(_q)
@@ -190,19 +190,19 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 	if a.IsZero() {
 		return out
 	}
-	
+
 	var factorial_inv Decimal
 	a_power := copyDecimal(ONE)
 	factorial := copyDecimal(ONE)
 	factorial_next := copyDecimal(ZERO)
 
 	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
-		a_power.Multiply(a_power, a) // a^i
-		factorial_next.Add(factorial_next, ONE) // i++
-		factorial.Multiply(factorial, factorial_next) // i!
-		factorial_inv.Inverse(factorial) // 1/i!
+		a_power.Multiply(a_power, a)                    // a^i
+		factorial_next.Add(factorial_next, ONE)         // i++
+		factorial.Multiply(factorial, factorial_next)   // i!
+		factorial_inv.Inverse(factorial)                // 1/i!
 		factorial_inv.Multiply(&factorial_inv, a_power) // store a^i/i! in factorial_inv as not needed anymore
-		out.Add(out, &factorial_inv) // out += a^i/i!
+		out.Add(out, &factorial_inv)                    // out += a^i/i!
 	}
 
 	return out
@@ -239,7 +239,7 @@ func (out *Decimal) Log2(a *Decimal, precision uint) *Decimal {
 			break
 		}
 
-		a.double() // a *= 2
+		a.double()              // a *= 2
 		out.Add(out, MINUS_ONE) // out--
 	}
 
@@ -249,7 +249,7 @@ func (out *Decimal) Log2(a *Decimal, precision uint) *Decimal {
 			break
 		}
 
-		a.halve() // a /= 2
+		a.halve()         // a /= 2
 		out.Add(out, ONE) // out++
 	}
 

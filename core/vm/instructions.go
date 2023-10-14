@@ -942,7 +942,7 @@ func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(bc, bq)
 	b.Add(a, b)
-	bc, bq = b.DecimalToUInt256IntTuple()
+	b.SetUInt256IntTupleFromDecimal(bc, bq)
 	return nil, nil
 }
 
