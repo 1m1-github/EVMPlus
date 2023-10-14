@@ -64,7 +64,13 @@ func (d *Decimal) String() string {
 }
 
 func (d *Decimal) copyDecimal() *Decimal {
-	return &Decimal{d.c, d.q}
+	return createDecimal(&d.c, &d.q)
+}
+func createDecimal(_c, _q *big.Int) (*Decimal) {
+	var c, q big.Int
+	c.Set(_c)
+	q.Set(_q)
+	return &Decimal{c, q}
 }
 
 // TODO all needed?
@@ -73,8 +79,8 @@ var ZERO_BIG = big.NewInt(0)
 var ONE_BIG = big.NewInt(1)
 var TEN_BIG = big.NewInt(10)
 
-var ZERO = Decimal{*ZERO_BIG, *ZERO_BIG}
-var ONE = Decimal{*ONE_BIG, *ZERO_BIG}
+var ZERO = createDecimal(ZERO_BIG, ZERO_BIG)
+var ONE = createDecimal(ONE_BIG, ZERO_BIG)
 
 func min(a, b *big.Int) (c *big.Int) {
 	if a.Cmp(b) == -1 {
@@ -88,7 +94,7 @@ func add_helper(d1, d2 *Decimal) (c big.Int) {
 	var exponent_diff big.Int
 	exponent_diff.Sub(&d1.q, &d2.q)
 	if exponent_diff.Sign() == -1 {
-		exponent_diff = *ZERO_BIG
+		exponent_diff = *ZERO_BIG // shallow copy ok
 	}
 
 	c.Exp(TEN_BIG, &exponent_diff, ZERO_BIG)
@@ -98,40 +104,41 @@ func add_helper(d1, d2 *Decimal) (c big.Int) {
 }
 
 // a + b
-func (out *Decimal) Add(d1, d2 *Decimal) *Decimal {
-	ca := add_helper(d1, d2)
-	cb := add_helper(d2, d1)
+func (a *Decimal) Add(b *Decimal) *Decimal {
+	ca := add_helper(a, b)
+	cb := add_helper(b, a)
 
-	out.c.Add(&ca, &cb)
-	out.q = *min(&d1.q, &d2.q)
+	a.c.Add(&ca, &cb)
+	a.q.Set(min(&a.q, &b.q))
 
-	return out
+	return a
 }
 
 // -a
-func (out *Decimal) Negate(a *Decimal) *Decimal {
-	out.c.Neg(&a.c)
-	out.q = a.q
-	return out
+func (a *Decimal) Negate() *Decimal {
+	a.c.Neg(&a.c)
+	return a
 }
 
 // a - b
-func (out *Decimal) Subtract(a, b *Decimal) *Decimal {
-	out.Negate(b)
-	out.Add(a, out)
-	return out
+func (a *Decimal) Subtract(b *Decimal) *Decimal {
+	// out.Negate(b)
+	b.Negate()
+	a.Add(b)
+	// out.Add(a, out)
+	return a
 }
 
 // a * b
-func (out *Decimal) Multiply(a, b *Decimal) *Decimal {
-	out.c.Mul(&a.c, &b.c)
-	out.q.Add(&a.q, &b.q)
+func (a *Decimal) Multiply(b *Decimal) *Decimal {
+	a.c.Mul(&a.c, &b.c)
+	a.q.Add(&a.q, &b.q)
 	// return normalize(copy(out), out, precision, false, L)
-	return out
+	return a
 }
 
 // 1 / a
-func (out *Decimal) Inverse(a *Decimal) *Decimal {
+func (a *Decimal) Inverse() *Decimal {
 	max_precision := big.NewInt(50) // TODO choose correct max_precision
 	var precision big.Int
 	precision.Add(max_precision, &a.q) // more than max decimal precision on 256 bits
@@ -142,26 +149,19 @@ func (out *Decimal) Inverse(a *Decimal) *Decimal {
 		panic("ae_m_precision NEGATIVE")
 	}
 
-	// TODO need better way
-	// https://stackoverflow.com/questions/77291443/golang-weird-change-of-value-using-exp-for-big-int-inside-a-struct
-	var x big.Int
-	x.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG)
-	out.c = x
-	// out.c.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG)
-	// TODO need better way
+	aq_m_precision.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG) // aq_m_precision not needed after
+	a.c.Div(&aq_m_precision, &a.c)
+	a.q.Neg(&precision)
 
-	out.c.Div(&out.c, &a.c)
-
-	out.q.Neg(&precision)
-
-	return out
+	return a
 }
 
 // a / b
-func (out *Decimal) Divide(a, b *Decimal) *Decimal {
-	out.Inverse(b)
-	out.Multiply(a, out)
-	return out
+func (a *Decimal) Divide(b *Decimal) *Decimal {
+	b_inv := b.copyDecimal()
+	b_inv.Inverse()
+	a.Multiply(b_inv)
+	return a
 }
 
 func (a *Decimal) IsZero() bool {
@@ -173,39 +173,43 @@ func (a *Decimal) IsOne() bool {
 	return a.c.Cmp(ONE_BIG) == 0 && a.q.Cmp(ZERO_BIG) == 0
 }
 
+func (a *Decimal) IsNegative() bool {
+	return a.c.Sign() == -1
+}
+
 // a < b
 func (a *Decimal) LessThan(b *Decimal) bool {
-	var diff Decimal
-	diff.Subtract(a, b)
+	diff := a.copyDecimal()
+	diff.Subtract(b)
 	return diff.c.Sign() == -1
 }
 
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
-	// out = 1
-	out.c = *ONE_BIG
-	out.q = *ZERO_BIG
-
+func (a *Decimal) Exp(taylor_steps uint) *Decimal {
 	if a.IsZero() {
-		return out
+		a = ONE.copyDecimal()
+		return a
 	}
-
-	a_power := Decimal{*ONE_BIG, *ZERO_BIG}         // 1
-	factorial := Decimal{*ONE_BIG, *ZERO_BIG}       // 1
-	factorial_next := Decimal{*ZERO_BIG, *ZERO_BIG} // 0
-	factorial_inv := Decimal{*ONE_BIG, *ZERO_BIG}   // 1
+	
+	a = ONE.copyDecimal()
+	a_power := ONE.copyDecimal()
+	factorial := ONE.copyDecimal()
+	factorial_next := ZERO.copyDecimal()
+	// factorial_inv := ONE.copyDecimal()
+	var factorial_inv Decimal
 
 	for i := uint(0); i < taylor_steps; i++ {
-		a_power.Multiply(&a_power, a) // a^i
-		factorial_next.Add(&factorial_next, &ONE) // i + 1
-		factorial.Multiply(&factorial, &factorial_next) // i!
-		factorial_inv.Inverse(&factorial) // 1 / i!
-		factorial_inv.Multiply(&a_power, &factorial_inv) // store in factorial_inv as not needed anymore
-		out.Add(out, &factorial_inv)
+		a_power.Multiply(a) // a^i
+		factorial_next.Add(ONE) // i + 1
+		factorial.Multiply(factorial_next) // i!
+		factorial_inv = *factorial.copyDecimal()
+		factorial_inv.Inverse() // 1 / i!
+		factorial_inv.Multiply(a_power) // store in factorial_inv as not needed anymore
+		a.Add(&factorial_inv)
 	}
 
-	return out
+	return a
 }
 
 // // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
@@ -337,7 +341,8 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 // // }
 
 func find_num_trailing_zeros_signed(a *big.Int) (p, ten_power *big.Int) {
-	b := *a
+	var b big.Int
+	b.Set(a)
 	if b.Sign() == -1 {
 		b.Neg(&b)
 	}
@@ -360,19 +365,21 @@ func find_num_trailing_zeros_signed(a *big.Int) (p, ten_power *big.Int) {
 	return p, ten_power
 }
 
-func (out *Decimal) Normalize(a *Decimal, precision uint64, rounded bool) *Decimal {
+func (a *Decimal) Normalize(precision uint64, rounded bool) *Decimal {
 	// remove trailing zeros in significand
 	p, ten_power := find_num_trailing_zeros_signed(&a.c)
-	out.c.Div(&a.c, ten_power)
+	a.c.Div(&a.c, ten_power)
 
-	out.q = *ZERO_BIG
-	a_neg := a.c.Sign() == -1
-	if !(out.c.Cmp(ZERO_BIG) == 0 && !a_neg) { // if out.c == 0
-		out.q.Add(&a.q, p)
+	// a.q = *ZERO_BIG
+	a_neg := a.IsNegative()
+	if a.c.Cmp(ZERO_BIG) != 0 || a_neg {
+		a.q.Add(&a.q, p)
+	} else {
+		a.q.Set(ZERO_BIG)
 	}
 
 	// if rounded {
-	return out
+	return a
 	// }
 
 	// return round(copyDecimal(out), out, precision, true, L)
