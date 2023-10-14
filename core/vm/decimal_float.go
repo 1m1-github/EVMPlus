@@ -52,18 +52,10 @@ func (d *Decimal) DecimalToUInt256IntTuple() (c, q *uint256.Int) {
 }
 
 func (d *Decimal) String() string {
-	sc := '+'
-	if d.c.Sign() == -1 {
-		sc = '-'
-	}
-	sq := '+'
-	if d.q.Sign() == -1 {
-		sq = '-'
-	}
-	return fmt.Sprintf("%c%v*10^%c%v", sc, d.c.String(), sq, d.q.String())
+	return fmt.Sprintf("%v*10^%v", d.c.String(), d.q.String())
 }
 
-func (d *Decimal) copyDecimal() *Decimal {
+func copyDecimal(d *Decimal) *Decimal {
 	return createDecimal(&d.c, &d.q)
 }
 func createDecimal(_c, _q *big.Int) (*Decimal) {
@@ -104,41 +96,40 @@ func add_helper(d1, d2 *Decimal) (c big.Int) {
 }
 
 // a + b
-func (a *Decimal) Add(b *Decimal) *Decimal {
+func (out *Decimal) Add(a, b *Decimal) *Decimal {
 	ca := add_helper(a, b)
 	cb := add_helper(b, a)
 
-	a.c.Add(&ca, &cb)
-	a.q.Set(min(&a.q, &b.q))
+	out.c.Add(&ca, &cb)
+	out.q.Set(min(&a.q, &b.q))
 
-	return a
+	return out
 }
 
 // -a
-func (a *Decimal) Negate() *Decimal {
-	a.c.Neg(&a.c)
-	return a
+func (out *Decimal) Negate(a *Decimal) *Decimal {
+	out.c.Neg(&a.c)
+	out.q.Set(&a.q)
+	return out
 }
 
 // a - b
-func (a *Decimal) Subtract(b *Decimal) *Decimal {
-	// out.Negate(b)
-	b.Negate()
-	a.Add(b)
-	// out.Add(a, out)
-	return a
+func (out *Decimal) Subtract(a, b *Decimal) *Decimal {
+	out.Negate(b)
+	out.Add(a, out)
+	return out
 }
 
 // a * b
-func (a *Decimal) Multiply(b *Decimal) *Decimal {
-	a.c.Mul(&a.c, &b.c)
-	a.q.Add(&a.q, &b.q)
-	// return normalize(copy(out), out, precision, false, L)
-	return a
+func (out *Decimal) Multiply(a, b *Decimal) *Decimal {
+	out.c.Mul(&a.c, &b.c)
+	out.q.Add(&a.q, &b.q)
+	// normalize?
+	return out
 }
 
 // 1 / a
-func (a *Decimal) Inverse() *Decimal {
+func (out *Decimal) Inverse(a *Decimal) *Decimal {
 	max_precision := big.NewInt(50) // TODO choose correct max_precision
 	var precision big.Int
 	precision.Add(max_precision, &a.q) // more than max decimal precision on 256 bits
@@ -150,18 +141,19 @@ func (a *Decimal) Inverse() *Decimal {
 	}
 
 	aq_m_precision.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG) // aq_m_precision not needed after
-	a.c.Div(&aq_m_precision, &a.c)
-	a.q.Neg(&precision)
+	out.c.Div(&aq_m_precision, &a.c)
+	out.q.Neg(&precision)
 
-	return a
+	// normalize?
+
+	return out
 }
 
 // a / b
-func (a *Decimal) Divide(b *Decimal) *Decimal {
-	b_inv := b.copyDecimal()
-	b_inv.Inverse()
-	a.Multiply(b_inv)
-	return a
+func (out *Decimal) Divide(a, b *Decimal) *Decimal {
+	out.Inverse(b)
+	out.Multiply(a, out)
+	return out
 }
 
 func (a *Decimal) IsZero() bool {
@@ -179,38 +171,49 @@ func (a *Decimal) IsNegative() bool {
 
 // a < b
 func (a *Decimal) LessThan(b *Decimal) bool {
-	diff := a.copyDecimal()
-	diff.Subtract(b)
+	var diff Decimal
+	diff.Subtract(a, b)
 	return diff.c.Sign() == -1
 }
 
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-func (a *Decimal) Exp(taylor_steps uint) *Decimal {
+func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
+	out = copyDecimal(ONE)
+
 	if a.IsZero() {
-		a = ONE.copyDecimal()
-		return a
+		return out
 	}
 	
-	a = ONE.copyDecimal()
-	a_power := ONE.copyDecimal()
-	factorial := ONE.copyDecimal()
-	factorial_next := ZERO.copyDecimal()
-	// factorial_inv := ONE.copyDecimal()
 	var factorial_inv Decimal
+	a_power := copyDecimal(ONE)
+	factorial := copyDecimal(ONE)
+	factorial_next := copyDecimal(ZERO)
 
-	for i := uint(0); i < taylor_steps; i++ {
-		a_power.Multiply(a) // a^i
-		factorial_next.Add(ONE) // i + 1
-		factorial.Multiply(factorial_next) // i!
-		factorial_inv = *factorial.copyDecimal()
-		factorial_inv.Inverse() // 1 / i!
-		factorial_inv.Multiply(a_power) // store in factorial_inv as not needed anymore
-		a.Add(&factorial_inv)
+	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
+		// fmt.Println("i", i)
+		a_power.Multiply(a_power, a) // a^i
+		// pna("a^i", &a_power)
+		factorial_next.Add(factorial_next, ONE) // i + 1
+		// pna("i+1", &factorial_next)
+		factorial.Multiply(factorial, factorial_next) // i!
+		// pna("i!", &factorial)
+		// factorial_inv = *factorial.copyDecimal()
+		factorial_inv.Inverse(factorial) // 1 / i!
+		// pna("1 / i!", &factorial_inv)
+		factorial_inv.Multiply(&factorial_inv, a_power) // store in factorial_inv as not needed anymore
+		// pna("a^i/i!", &factorial_inv)
+		out.Add(out, &factorial_inv)
+		// pna("out", out)
 	}
 
-	return a
+	return out
 }
+// func pna(l string, a *Decimal) {
+// 	na := a.copyDecimal()
+// 	na.Normalize(0, true)
+// 	fmt.Println(l, na.String())
+// }
 
 // // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
 // // 0 < a
@@ -365,21 +368,20 @@ func find_num_trailing_zeros_signed(a *big.Int) (p, ten_power *big.Int) {
 	return p, ten_power
 }
 
-func (a *Decimal) Normalize(precision uint64, rounded bool) *Decimal {
+func (out *Decimal) Normalize(a *Decimal, precision uint64, rounded bool) *Decimal {
 	// remove trailing zeros in significand
 	p, ten_power := find_num_trailing_zeros_signed(&a.c)
-	a.c.Div(&a.c, ten_power)
+	out.c.Div(&a.c, ten_power)
 
-	// a.q = *ZERO_BIG
 	a_neg := a.IsNegative()
-	if a.c.Cmp(ZERO_BIG) != 0 || a_neg {
-		a.q.Add(&a.q, p)
+	if out.c.Cmp(ZERO_BIG) != 0 || a_neg {
+		out.q.Add(&a.q, p)
 	} else {
-		a.q.Set(ZERO_BIG)
+		out.q.Set(ZERO_BIG)
 	}
 
 	// if rounded {
-	return a
+	return out
 	// }
 
 	// return round(copyDecimal(out), out, precision, true, L)

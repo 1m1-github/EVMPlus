@@ -111,12 +111,11 @@ func TestAdd(t *testing.T) {
 		{*createDecimal(big.NewInt(5), MINUS_ONE_BIG), *createDecimal(big.NewInt(-2), ZERO_BIG), *createDecimal(big.NewInt(-15), MINUS_ONE_BIG)},
 	}
 	for _, tt := range tests {
-		out := tt.a.copyDecimal()
-		out.Add(&tt.b)
+		var out, out2 Decimal
+		out.Add(&tt.a, &tt.b)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
-		out2 := out.copyDecimal()
-		out2.Normalize(0, true)
+		out2.Normalize(&out, 0, true)
 		// fmt.Println("out2", showDecimal(&out2))
 
 		if !out2.Eq(&tt.c) {
@@ -135,14 +134,13 @@ func TestSubtract(t *testing.T) {
 		{*createDecimal(big.NewInt(5), MINUS_ONE_BIG), *createDecimal(big.NewInt(2), ZERO_BIG), *createDecimal(big.NewInt(-15), MINUS_ONE_BIG)},
 	}
 	for _, tt := range tests {
-		out := tt.a.copyDecimal()
-		out.Subtract(&tt.b)
+		var out, out2 Decimal
+		out.Subtract(&tt.a, &tt.b)
 		// fmt.Println("a", showDecimal(&tt.a))
 		// fmt.Println("b", showDecimal(&tt.b))
 		// fmt.Println("out", showDecimal(&out))
 
-		out2 := out.copyDecimal()
-		out2.Normalize(0, true)
+		out2.Normalize(&out, 0, true)
 		// fmt.Println("out2", showDecimal(&out2))
 
 		if !out2.Eq(&tt.c) {
@@ -163,12 +161,10 @@ func TestMultiply(t *testing.T) {
 		{*createDecimal(big.NewInt(-2), ZERO_BIG), *createDecimal(big.NewInt(-5), MINUS_ONE_BIG), *createDecimal(big.NewInt(1), ZERO_BIG)},
 	}
 	for _, tt := range tests {
-		out := tt.a.copyDecimal()
-		out.Multiply(&tt.b)
+		var out, out2 Decimal
+		out.Multiply(&tt.a, &tt.b)
 
-		out2 := out.copyDecimal()
-		out2.Normalize(0, true)
-
+		out2.Normalize(&out, 0, true)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
 		if !out2.Eq(&tt.c) {
@@ -182,17 +178,16 @@ func TestInv(t *testing.T) {
 		a Decimal
 		b Decimal
 	}{
-		{*ONE.copyDecimal(), *ONE.copyDecimal()},
+		{*copyDecimal(ONE), *copyDecimal(ONE)},
 		{*createDecimal(big.NewInt(2), ZERO_BIG), *createDecimal(big.NewInt(5), MINUS_ONE_BIG)},
 		{*createDecimal(big.NewInt(-20), MINUS_ONE_BIG), *createDecimal(big.NewInt(-5), MINUS_ONE_BIG)},
 	}
 	for _, tt := range tests {
-		out := tt.a.copyDecimal()
-		out.Inverse()
+		var out, out2 Decimal
+		out.Inverse(&tt.a)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
-		out2 := out.copyDecimal()
-		out2.Normalize(0, true)
+		out2.Normalize(&out, 0, true)
 		// fmt.Println("out2", showDecimal(&out2))
 
 		if !out2.Eq(&tt.b) {
@@ -207,14 +202,13 @@ func TestDiv(t *testing.T) {
 		b Decimal
 		c Decimal
 	}{
-		{*createDecimal(ONE_BIG, TEN_BIG), *ONE.copyDecimal(), *createDecimal(ONE_BIG, TEN_BIG)},
+		{*createDecimal(ONE_BIG, TEN_BIG), *copyDecimal(ONE), *createDecimal(ONE_BIG, TEN_BIG)},
 	}
 	for _, tt := range tests {
-		out := tt.a.copyDecimal()
-		out.Divide(&tt.b)
+		var out, out2 Decimal
+		out.Divide(&tt.a, &tt.b)
 
-		out2 := out.copyDecimal()
-		out2.Normalize(0, true)
+		out2.Normalize(&out, 0, true)
 
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c), "out2", showDecimal(&out2))
 
@@ -249,15 +243,15 @@ func TestNormalize(t *testing.T) {
 		a Decimal
 		b Decimal
 	}{
-		{*ONE.copyDecimal(), *ONE.copyDecimal()},
-		{*createDecimal(big.NewInt(100), big.NewInt(-2)), *ONE.copyDecimal()},
-		{*createDecimal(LARGE_TEN, NEG_75), *ONE.copyDecimal()},
+		{*copyDecimal(ONE), *copyDecimal(ONE)},
+		{*createDecimal(big.NewInt(100), big.NewInt(-2)), *copyDecimal(ONE)},
+		{*createDecimal(LARGE_TEN, NEG_75), *copyDecimal(ONE)},
 		{*createDecimal(TEN_TEN, NEG_55), *createDecimal(ONE_BIG, NEG_45)},
 		{*createDecimal(&MINUS_FIVE_48, MINUS_49), *createDecimal(MINUS_5, MINUS_ONE_BIG)},
 	}
 	for _, tt := range tests {
-		out := tt.a.copyDecimal()
-		out.Normalize(0, true)
+		var out Decimal
+		out.Normalize(&tt.a, 0, true)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
 		if !out.Eq(&tt.b) {
@@ -302,16 +296,16 @@ func TestLt(t *testing.T) {
 // // }
 
 func TestExp(t *testing.T) {
-	STEPS := uint(10)
+	STEPS := uint(3)
 	tests := []struct {
 		a Decimal
 		b Decimal
 	}{
-		{*ONE.copyDecimal(), *createDecimal(big.NewInt(2718281), big.NewInt(-6))},
+		{*copyDecimal(ONE), *createDecimal(big.NewInt(2718281), big.NewInt(-6))},
 	}
 	for _, tt := range tests {
-		out := tt.a.copyDecimal()
-		out.Exp(STEPS)
+		var out Decimal
+		out.Exp(&tt.a, STEPS)
 		fmt.Println(out.String())
 		// if out != tt.b {
 		// 	t.Fatal(tt.a, out, tt.b)
