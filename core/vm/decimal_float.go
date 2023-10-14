@@ -142,7 +142,14 @@ func (out *Decimal) Inverse(a *Decimal) *Decimal {
 		panic("ae_m_precision NEGATIVE")
 	}
 
-	out.c.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG)
+	// TODO need better way
+	// https://stackoverflow.com/questions/77291443/golang-weird-change-of-value-using-exp-for-big-int-inside-a-struct
+	var x big.Int
+	x.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG)
+	out.c = x
+	// out.c.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG)
+	// TODO need better way
+
 	out.c.Div(&out.c, &a.c)
 
 	out.q.Neg(&precision)
@@ -176,21 +183,18 @@ func (a *Decimal) LessThan(b *Decimal) bool {
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
 func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
+	// out = 1
+	out.c = *ONE_BIG
+	out.q = *ZERO_BIG
+
 	if a.IsZero() {
-		out.c = *ONE_BIG
-		out.q = *ZERO_BIG
 		return out
 	}
 
-	ONE := Decimal{*ONE_BIG, *ZERO_BIG}             // 1
 	a_power := Decimal{*ONE_BIG, *ZERO_BIG}         // 1
 	factorial := Decimal{*ONE_BIG, *ZERO_BIG}       // 1
 	factorial_next := Decimal{*ZERO_BIG, *ZERO_BIG} // 0
 	factorial_inv := Decimal{*ONE_BIG, *ZERO_BIG}   // 1
-
-	// out = 1
-	out.c = *ONE_BIG
-	out.q = *ZERO_BIG
 
 	for i := uint(0); i < taylor_steps; i++ {
 		a_power.Multiply(&a_power, a) // a^i
