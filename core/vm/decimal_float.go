@@ -69,10 +69,14 @@ func createDecimal(_c, _q *big.Int) (*Decimal) {
 var MINUS_ONE_BIG = big.NewInt(-1)
 var ZERO_BIG = big.NewInt(0)
 var ONE_BIG = big.NewInt(1)
+var TWO_BIG = big.NewInt(2)
 var TEN_BIG = big.NewInt(10)
 
-var ZERO = createDecimal(ZERO_BIG, ZERO_BIG)
+var ZERO = createDecimal(ZERO_BIG, ONE_BIG)
+var HALF = createDecimal(big.NewInt(5), MINUS_ONE_BIG)
 var ONE = createDecimal(ONE_BIG, ZERO_BIG)
+var TWO = createDecimal(TWO_BIG, ZERO_BIG)
+var MINUS_ONE = createDecimal(MINUS_ONE_BIG, ZERO_BIG)
 
 func min(a, b *big.Int) (c *big.Int) {
 	if a.Cmp(b) == -1 {
@@ -204,103 +208,77 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 	return out
 }
 
-// // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
-// // 0 < a
-// // func log2(a, out *decimal, precision uint64, L bool) (*decimal) {
+func (out *Decimal) double() {
+	out.c.Lsh(&out.c, 1)
+}
+func (out *Decimal) halve() {
+	out.Multiply(out, HALF)
+}
 
-// // 	b := copyDecimal(&ZERO)
+// http://www.claysturner.com/dsp/BinaryLogarithm.pdf
+// 0 < a
+func (out *Decimal) Log2(a *Decimal, precision uint) *Decimal {
+	if a.c.Sign() != 1 {
+		panic("Log2 needs 0 < a")
+	}
 
-// // 	var a_norm decimal
-// // 	normalize(a, &a_norm, 0, false, false)
+	var a_norm Decimal
+	a_norm.Normalize(a, 0, false)
 
-// // 	if a_vs_zero := a_norm.s.Cmp(ZERO_uint256_Int); a_vs_zero <= 0 {
-// // 		out = nil
-// // 		return out
-// // 	}
+	// out = 0
+	out.c.Set(ZERO_BIG)
+	out.q.Set(ONE_BIG)
 
-// // 	if isone(&a_norm) {
-// // 		return b
-// // 	}
+	if a_norm.IsOne() {
+		return out
+	}
 
-// // 	// double a until 1 <= a
-// // 	for {
+	// double a until 1 <= a
+	for {
+		if !a.LessThan(ONE) {
+			break
+		}
 
-// // 		if a_vs_one := a.Cmp(ONE); a_vs_one != -1 {
-// // 			break
-// // 		}
+		a.double() // a *= 2
+		out.Add(out, MINUS_ONE) // out--
+	}
 
-// // 		a.Num().Lsh(a.Num(), 1) // double
-// // 		b.Add(b, MINUS_ONE)
-// // 	}
-// // 	if L {
-// // 		fmt.Println("log2 doubled", a.FloatString(10), b.FloatString(10))
-// // 	}
+	// half a until a < 2
+	for {
+		if a.LessThan(TWO) {
+			break
+		}
 
-// // 	// half a until a < 2
-// // 	for {
+		a.halve() // a /= 2
+		out.Add(out, ONE) // out++
+	}
 
-// // 		if a_vs_two := a.Cmp(TWO); a_vs_two == -1 {
-// // 			break
-// // 		}
+	// from here: 1 <= a < 2 <=> 0 <= out < 1
 
-// // 		a.Denom().Lsh(a.Denom(), 1) // half
-// // 		b.Add(b, ONE)
-// // 	}
-// // 	if L {
-// // 		fmt.Println("log2 halved", a.FloatString(10), b.FloatString(10))
-// // 	}
+	// compare a^2 to 2 to reveal out bit-by-bit
+	precision_counter := uint(0) // for now, precision is naiive
+	v := copyDecimal(HALF)
+	for {
+		if precision == precision_counter {
+			break
+		}
 
-// // 	// from here: 1 <= a < 2 <=> 0 <= b < 1
+		a.Multiply(a, a) // THIS IS SLOW
 
-// // 	// compare a^2 to 2 to reveal b bit-by-bit
-// // 	precision_counter := 0 // for now, precision is naiive
-// // 	v := big.NewRat(1, 2)
-// // 	for {
-// // 		if precision == precision_counter {
-// // 			break
-// // 		}
+		if !a.LessThan(TWO) {
+			a.halve() // a /= 2
+			out.Add(out, v)
+		}
 
-// // 		if L {
-// // 			fmt.Println("log2 precision_counter", precision_counter)
-// // 			fmt.Println("log2 v", v.FloatString(10))
-// // 			fmt.Println("log2 a", a.FloatString(10))
-// // 			fmt.Println("log2 b", b.FloatString(10))
-// // 		}
+		v.halve()
 
-// // 		a.Mul(a, a) // THIS IS SLOW
-// // 		// a = big.NewRat(a.Num().Int64()*a.Num().Int64(), a.Denom().Int64()*a.Denom().Int64())
+		precision_counter++
+	}
 
-// // 		if L {
-// // 			fmt.Println("log2 a^2", a.FloatString(10))
-// // 		}
+	return out
+}
 
-// // 		if a2_vs_two := a.Cmp(TWO); a2_vs_two != -1 {
-
-// // 			if L {
-// // 				fmt.Println("log2 2 <= a^2", a.FloatString(10))
-// // 			}
-
-// // 			a.Denom().Lsh(a.Denom(), 1) // half
-// // 			b.Add(b, v)
-// // 		} else {
-// // 			if L {
-// // 				fmt.Println("log2 a^2 < 2")
-// // 			}
-// // 		}
-
-// // 		v.Denom().Lsh(v.Denom(), 1) // half
-
-// // 		precision_counter++
-// // 	}
-
-// // 	if L {
-// // 		fmt.Println("log2 b", b.FloatString((10)))
-// // 	}
-
-// // 	return b
-// // }
-
-// // func round(a, out *decimal, precision uint64, normal bool, L bool) *decimal {
+// // func round(a, out *decimal, precision uint, normal bool, L bool) *decimal {
 
 // // 	var shift uint256.Int
 // // 	shift.Add(uint256.NewInt(precision), &a.q)
@@ -357,7 +335,7 @@ func find_num_trailing_zeros_signed(a *big.Int) (p, ten_power *big.Int) {
 	return p, ten_power
 }
 
-func (out *Decimal) Normalize(a *Decimal, precision uint64, rounded bool) *Decimal {
+func (out *Decimal) Normalize(a *Decimal, precision uint, rounded bool) *Decimal {
 	// remove trailing zeros in significand
 	p, ten_power := find_num_trailing_zeros_signed(&a.c)
 	out.c.Div(&a.c, ten_power)

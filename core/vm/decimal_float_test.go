@@ -312,3 +312,22 @@ func TestExp(t *testing.T) {
 		// }
 	}
 }
+
+func TestLog(t *testing.T) {
+	STEPS := uint(10)
+	tests := []struct {
+		a Decimal
+		b Decimal
+	}{
+		{*copyDecimal(HALF), *copyDecimal(MINUS_ONE)},
+	}
+	for _, tt := range tests {
+		var out, out2 Decimal
+		out.Log2(&tt.a, STEPS)
+		
+		out2.Normalize(&out, 0, true)
+		if !out2.Eq(&tt.b) {
+			t.Fatal(tt.a, out, tt.b)
+		}
+	}
+}
