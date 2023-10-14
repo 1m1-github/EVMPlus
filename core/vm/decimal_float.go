@@ -150,44 +150,28 @@ func (out *Decimal) Inverse(a *Decimal) *Decimal {
 	return out
 }
 
-// // a / b
-// func divide(a, b, out *Decimal, L bool) *Decimal {
-// 	if L {
-// 		fmt.Println("divide", "a", a, "b", b)
-// 	}
+// a / b
+func (out *Decimal) Divide(a, b *Decimal) *Decimal {
+	out.Inverse(b)
+	out.Multiply(a, out)
+	return out
+}
 
-// 	inverse(b, out, L)
-// 	multiply(a, copyDecimal(out), out, L)
-// 	return out
-// }
+func (a *Decimal) IsZero() bool {
+	return a.c.Cmp(ZERO_BIG) == 0
+}
 
-// func iszero(a *Decimal, L bool) bool {
-// 	return a.c.IsZero()
-// }
+// a should be normalized
+func (a *Decimal) IsOne() bool {
+	return a.c.Cmp(ONE_BIG) == 0 && a.q.Cmp(ZERO_BIG) == 0
+}
 
-// // a should be normalized
-// func isone(a *Decimal, L bool) bool {
-// 	return a.c.Eq(ONE_uint256_Int) && a.q.Eq(ZERO_uint256_Int)
-// }
-
-// // a < b
-// func lessthan(a, b *Decimal, L bool) bool {
-// 	if L {
-// 		fmt.Println("lessthan", String(a), String(b))
-// 	}
-// 	var diff Decimal
-// 	subtract(a, b, &diff, false)
-// 	if L {
-// 		fmt.Println("lessthan diff", String(&diff))
-// 	}
-// 	return diff.c.Sign() == -1
-// }
-
-// // a == b
-// // a,b should be both normalized
-// func equal(a, b *Decimal) bool {
-// 	return a.c.Eq(&b.c) && a.q.Eq(&b.q)
-// }
+// a < b
+func (a *Decimal) LessThan(b *Decimal) bool {
+	var diff Decimal
+	diff.Subtract(a, b)
+	return diff.c.Sign() == -1
+}
 
 // // e^a
 // // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)

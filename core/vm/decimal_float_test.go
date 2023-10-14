@@ -203,28 +203,28 @@ func TestInv(t *testing.T) {
 	}
 }
 
-// func TestDiv(t *testing.T) {
-// 	tests := []struct {
-// 		a Decimal
-// 		b Decimal
-// 		c Decimal
-// 	}{
-// 		{Decimal{*ONE_uint256_Int, *TEN_uint256_Int}, Decimal{*ONE_uint256_Int, *ZERO_uint256_Int}, Decimal{*ONE_uint256_Int, *TEN_uint256_Int}},
-// 	}
-// 	for _, tt := range tests {
-// 		var out Decimal
-// 		divide(&tt.a, &tt.b, &out, false)
+func TestDiv(t *testing.T) {
+	tests := []struct {
+		a Decimal
+		b Decimal
+		c Decimal
+	}{
+		{Decimal{*ONE_BIG, *TEN_BIG}, Decimal{*ONE_BIG, *ZERO_BIG}, Decimal{*ONE_BIG, *TEN_BIG}},
+	}
+	for _, tt := range tests {
+		var out Decimal
+		out.Divide(&tt.a, &tt.b)
 
-// 		var out2 Decimal
-// 		normalize(&out, &out2, 0, true, false)
+		var out2 Decimal
+		out2.Normalize(&out, 0, true)
 
-// 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c), "out2", showDecimal(&out2))
+		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c), "out2", showDecimal(&out2))
 
-// 		if out2 != tt.c {
-// 			t.Fatal(tt.a, tt.b, out, out2, tt.c)
-// 		}
-// 	}
-// }
+		if !out2.Eq(&tt.c) {
+			t.Fatal(tt.a, tt.b, out, out2, tt.c)
+		}
+	}
+}
 
 func TestNormalize(t *testing.T) {
 
@@ -269,25 +269,22 @@ func TestNormalize(t *testing.T) {
 	}
 }
 
-// func TestLt(t *testing.T) {
-// 	tests := []struct {
-// 		a Decimal
-// 		b Decimal
-// 		c bool
-// 	}{
-// 		{Decimal{*big.NewInt(5), *ZERO_uint256_Int}, Decimal{*big.NewInt(2), *ZERO_uint256_Int}, false},
-// 		{Decimal{*big.NewInt(5), *MINUS_ONE_uint256_Int}, Decimal{*big.NewInt(2), *ZERO_uint256_Int}, true},
-// 	}
-// 	for _, tt := range tests {
-// 		// fmt.Println("a", showDecimal(&tt.a))
-// 		// fmt.Println("b", showDecimal(&tt.b))
-// 		lt := lessthan(&tt.a, &tt.b, false)
-// 		// fmt.Println("lt", lt)
-// 		if lt != tt.c {
-// 			t.Fatal(tt.a, tt.b, tt.c)
-// 		}
-// 	}
-// }
+func TestLt(t *testing.T) {
+	tests := []struct {
+		a Decimal
+		b Decimal
+		c bool
+	}{
+		{Decimal{*big.NewInt(5), *ZERO_BIG}, Decimal{*big.NewInt(2), *ZERO_BIG}, false},
+		{Decimal{*big.NewInt(5), *MINUS_ONE_BIG}, Decimal{*big.NewInt(2), *ZERO_BIG}, true},
+	}
+	for _, tt := range tests {
+		lt := tt.a.LessThan(&tt.b)
+		if lt != tt.c {
+			t.Fatal(tt.a, tt.b, tt.c)
+		}
+	}
+}
 
 // // func TestRound(t *testing.T) {
 // // 	tests := []struct {
