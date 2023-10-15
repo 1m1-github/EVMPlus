@@ -426,15 +426,18 @@ func TestExp(t *testing.T) {
 	// }
 	// for _, tt := range tests {
 
-		ac := uint256.NewInt(1)
-		aq := uint256.NewInt(0)
-		fmt.Println("opDecExp", ac.Dec(), aq.Dec())
+		// ac := uint256.NewInt(1)
+		// aq := uint256.NewInt(0)
+		// fmt.Println("opDecExp", ac.Dec(), aq.Dec())
 		// log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
-		a := UInt256IntTupleToDecimal(ac, aq)
+		// a := UInt256IntTupleToDecimal(ac, aq)
+		a := createDecimal(big.NewInt(1), big.NewInt(0))
+		// a := createDecimal(big.NewInt(1), big.NewInt(0))
 		// log.Info("----opDecExp----- 2", "a", a.String())
 		a.Exp(a, 10) // TODO steps as input argument
-		a.SetUInt256IntTupleFromDecimal(ac, aq)
 		fmt.Println(a.String())
+		// a.SetUInt256IntTupleFromDecimal(ac, aq)
+		// fmt.Println(a.String())
 
 		// var out Decimal
 		// out.Exp(&tt.a, STEPS)
