@@ -353,3 +353,31 @@ func (out *Decimal) Normalize(a *Decimal, precision uint, rounded bool) *Decimal
 
 	// return round(copyDecimal(out), out, precision, true, L)
 }
+
+// sin(a)
+// TODO
+func (out *Decimal) Sin(a *Decimal, taylor_steps uint) *Decimal {
+	// out = 1
+	out.c.Set(ONE_BIG)
+	out.q.Set(ZERO_BIG)
+
+	if a.IsZero() {
+		return out
+	}
+
+	var factorial_inv Decimal
+	a_power := copyDecimal(ONE)
+	factorial := copyDecimal(ONE)
+	factorial_next := copyDecimal(ZERO)
+
+	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
+		a_power.Multiply(a_power, a)                    // a^i
+		factorial_next.Add(factorial_next, ONE)         // i++
+		factorial.Multiply(factorial, factorial_next)   // i!
+		factorial_inv.Inverse(factorial)                // 1/i!
+		factorial_inv.Multiply(&factorial_inv, a_power) // store a^i/i! in factorial_inv as not needed anymore
+		out.Add(out, &factorial_inv)                    // out += a^i/i!
+	}
+
+	return out
+}

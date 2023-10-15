@@ -43,18 +43,17 @@ const (
 	EXP        OpCode = 0xa
 	SIGNEXTEND OpCode = 0xb
 
-	DEC_ADD OpCode = 0xd0
-	DEC_MUL OpCode = 0xd1
-	DEC_SUB OpCode = 0xd2
-	DEC_DIV OpCode = 0xd3
-	DEC_EXP OpCode = 0xd4
-	DEC_LN OpCode = 0xd5
-	DEC_SIN OpCode = 0xd6
-	DEC_TAU OpCode = 0xd7
-	DEC_EQ OpCode = 0xd8
-	DEC_LT OpCode = 0xd9
+	DEC_ADD  OpCode = 0xd0
+	DEC_MUL  OpCode = 0xd1
+	DEC_SUB  OpCode = 0xd2
+	DEC_DIV  OpCode = 0xd3
+	DEC_EXP  OpCode = 0xd4
+	DEC_LOG2 OpCode = 0xd5
+	DEC_SIN  OpCode = 0xd6
+	DEC_TAU  OpCode = 0xd7
+	DEC_EQ   OpCode = 0xd8
+	DEC_LT   OpCode = 0xd9
 	DEC_NORM OpCode = 0xdA
-
 )
 
 // 0x10 range - comparison ops.
@@ -421,25 +420,25 @@ func (op OpCode) String() string {
 }
 
 var stringToOp = map[string]OpCode{
-	"STOP":           STOP,
-	"ADD":            ADD,
-	"MUL":            MUL,
-	"SUB":            SUB,
-	"DIV":            DIV,
-	"SDIV":           SDIV,
-	"MOD":            MOD,
-	"SMOD":           SMOD,
-	"EXP":            EXP,
-	"NOT":            NOT,
-	"LT":             LT,
-	"GT":             GT,
-	"SLT":            SLT,
-	"SGT":            SGT,
-	"EQ":             EQ,
-	"ISZERO":         ISZERO,
-	"SIGNEXTEND":     SIGNEXTEND,
+	"STOP":       STOP,
+	"ADD":        ADD,
+	"MUL":        MUL,
+	"SUB":        SUB,
+	"DIV":        DIV,
+	"SDIV":       SDIV,
+	"MOD":        MOD,
+	"SMOD":       SMOD,
+	"EXP":        EXP,
+	"NOT":        NOT,
+	"LT":         LT,
+	"GT":         GT,
+	"SLT":        SLT,
+	"SGT":        SGT,
+	"EQ":         EQ,
+	"ISZERO":     ISZERO,
+	"SIGNEXTEND": SIGNEXTEND,
 
-	"DEC_ADD":        DEC_ADD,
+	"DEC_ADD": DEC_ADD,
 
 	"AND":            AND,
 	"OR":             OR,
