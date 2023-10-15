@@ -32,7 +32,7 @@ func UInt256IntToBigInt(x *uint256.Int) (y *big.Int) {
 func UInt256IntTupleToDecimal(_c, _q *uint256.Int) *Decimal {
 	c := UInt256IntToBigInt(_c)
 	q := UInt256IntToBigInt(_q)
-	return &Decimal{*c, *q}
+	return createDecimal(c, q)
 }
 
 func BigIntToUInt256Int(x *big.Int) (y *uint256.Int) {
