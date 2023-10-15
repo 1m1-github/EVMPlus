@@ -17,6 +17,7 @@
 package vm
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -942,14 +943,14 @@ func makeSwap(size int64) executionFunc {
 // ac * 10^ aq + bc * 10^ bq
 func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecAdd----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecAdd----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	log.Info("----opDecAdd----- 2", "a", a.String(), "b", b.String())
+	// log.Info("----opDecAdd----- 2", "a", a.String(), "b", b.String())
 	b.Add(a, b)
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
-	log.Info("----opDecAdd----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
-	log.Info("----opDecAdd----- 4", "a", a.String(), "b", b.String())
+	// log.Info("----opDecAdd----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecAdd----- 4", "a", a.String(), "b", b.String())
 
 	scope.Stack.push(&bq)
 	scope.Stack.push(&bc)
@@ -1010,13 +1011,14 @@ func opDecDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq := scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
+	fmt.Println("opDecExp", ac.Dec(), aq.Dec())
+	// log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	log.Info("----opDecExp----- 2", "a", a.String())
+	// log.Info("----opDecExp----- 2", "a", a.String())
 	a.Exp(a, 10) // TODO steps as input argument
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
-	log.Info("----opDecExp----- 4", "a", a.String())
+	// log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
+	// log.Info("----opDecExp----- 4", "a", a.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)

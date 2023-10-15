@@ -48,6 +48,15 @@ testing the correctness of the math itself is trivial. we can achieve as high a 
 
 the opcodes will have as an input the desired target precion of the user. this will render the calculation deterministic. e.g. we know how many Taylor steps we need to achieve a certain precision.
 
+on my M1 macbook air:
+ADD opcode has gas cost 3 (GasFastestStep)
+`go test -bench BenchmarkOpAdd128` gives ca. 9ns
+`go test -bench BenchmarkOpDecAdd` gives ca. 500ns
+=> DEC_ADD needs 167 gas cost
+=> DEC_EXP needs  gas cost
+
+
+
 ### binary vs decimal float
 
 most apps created by humans work with decimal values.
