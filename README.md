@@ -1,20 +1,20 @@
 ## EVM+
 
 Add arbitrary precision, complex decimal float math to the EVM.
-Add OPCODES: +, - , *, /, EXP, LOG, SIN, PI
+Add OPCODES: +, - , *, /, EXP, LOG2, SIN, TAU, EQ, LT, NORM
 
 ### decimal float
 
-$x = s * 10^e$
+$x = c * 10^q$
 
-with $e$ (significand) and $e$ (exponent) are $int$.
+with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpreted as `int256`.
 
 ### derived functions
 
 in the smart contract code (or as precompiled smart contracts), we can easily get the following functions:
 
-a^b = POW(a, b) = EXP(b * LOG(a))
-COS(a) = SIN(PI/2 - a)  
+a^b = POW(a, b) = EXP(b * LOG2(a) * LN(2)) // LN(2) is a constant added by the user to desired precision  
+COS(a) = SIN(TAU/4 - a)  
 TAN(a) = SIN(a) / COS(a)  
 ...
 
@@ -22,10 +22,10 @@ TAN(a) = SIN(a) / COS(a)
 
 1. define +, -, *, /
 2. EXP as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
-3. LOG using a binary algorithm
+3. LOG2 using a binary algorithm (not LN since LOG2 is much faster)
 2. SIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
 
-use big.Int or what is already used in geth. need arbitrary precision.
+use big.Int from math/big, a arbitrary precision standard golang lib.
 
 ### use cases
 
@@ -56,10 +56,12 @@ adding the ability to represent any decimal value precisely and do calculations 
 
 ### plan
 
-1. run private EVM network from local code
+1. run private EVM network from local geth
 2. add +, -, *, /
-3. add EXP, LOG, SIN, PI
+3. add EXP, LOG2, SIN, TAU
 4. workout, test and analyze gas correctly
+5. write example smart contracts
+6. write EIP
 
 ### *virtual* machine
 
