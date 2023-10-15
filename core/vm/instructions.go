@@ -1014,11 +1014,12 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	fmt.Println("opDecExp", ac.Dec(), aq.Dec())
 	// log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	// log.Info("----opDecExp----- 2", "a", a.String())
-	a.Exp(a, 10) // TODO steps as input argument
-	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	// log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
-	// log.Info("----opDecExp----- 4", "a", a.String())
+	log.Info("----opDecExp----- 2", "a", a.String())
+	var out Decimal
+	out.Exp(a, 10) // TODO steps as input argument
+	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
+	log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
+	log.Info("----opDecExp----- 4", "out", out.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
@@ -1116,10 +1117,11 @@ func opDecNorm(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 	log.Info("----opDecNorm----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	log.Info("----opDecNorm----- 2", "a", a.String())
-	a.Normalize(a, 5, true) // TODO precision as input argument
-	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
+	var out Decimal
+	out.Normalize(a, 5, true) // TODO precision as input argument
+	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
 	log.Info("----opDecNorm----- 3", "ac", ac, "aq", aq)
-	log.Info("----opDecNorm----- 4", "a", a.String())
+	log.Info("----opDecNorm----- 4", "out", out.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
