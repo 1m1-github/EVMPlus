@@ -32,7 +32,7 @@ func UInt256IntToBigInt(x *uint256.Int) (y *big.Int) {
 func UInt256IntTupleToDecimal(_c, _q *uint256.Int) *Decimal {
 	c := UInt256IntToBigInt(_c)
 	q := UInt256IntToBigInt(_q)
-	return createDecimal(c, q)
+	return &Decimal{*c, *q}
 }
 
 func BigIntToUInt256Int(x *big.Int) (y *uint256.Int) {
@@ -235,21 +235,21 @@ func (out *Decimal) Log2(a *Decimal, precision uint) *Decimal {
 
 	// double a until 1 <= a
 	for {
-		if !a.LessThan(ONE) {
+		if !a_norm.LessThan(ONE) {
 			break
 		}
 
-		a.double()              // a *= 2
+		a_norm.double()              // a *= 2
 		out.Add(out, MINUS_ONE) // out--
 	}
 
 	// half a until a < 2
 	for {
-		if a.LessThan(TWO) {
+		if a_norm.LessThan(TWO) {
 			break
 		}
 
-		a.halve()         // a /= 2
+		a_norm.halve()         // a /= 2
 		out.Add(out, ONE) // out++
 	}
 
@@ -263,10 +263,10 @@ func (out *Decimal) Log2(a *Decimal, precision uint) *Decimal {
 			break
 		}
 
-		a.Multiply(a, a) // THIS IS SLOW
+		a_norm.Multiply(&a_norm, &a_norm) // THIS IS SLOW
 
-		if !a.LessThan(TWO) {
-			a.halve() // a /= 2
+		if !a_norm.LessThan(TWO) {
+			a_norm.halve() // a /= 2
 			out.Add(out, v)
 		}
 
