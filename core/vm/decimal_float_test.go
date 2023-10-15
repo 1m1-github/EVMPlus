@@ -21,97 +21,47 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
 
-func TestBenchmarkOpDecExp(t *testing.T) {
-	// ac := "1"
-	// aq := "0"
-	// args := []string{ac, aq}
 
-	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(1)}
-
-	op := opDecExp
-
-	var (
-		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})
-		stack          = newstack()
-		scope          = &ScopeContext{nil, stack, nil}
-		evmInterpreter = NewEVMInterpreter(env)
-	)
-
-	env.interpreter = evmInterpreter
-	// convert args
-	// intArgs := make([]*uint256.Int, len(args))
-	// for i, arg := range args {
-	// 	intArgs[i] = new(uint256.Int).SetBytes(common.Hex2Bytes(arg))
-	// }
-	pc := uint64(0)
-	for i := 0; i < 1; i++ {
-		for _, arg := range intArgs {
-			stack.push(arg)
-			fmt.Println("arg", arg.Dec())
-		}
-		op(&pc, evmInterpreter, scope)
-		stack.pop()
-		stack.pop()
-	}
+func BenchmarkOpDecAdd(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecAdd)
 }
 
-func BenchmarkOpDecExp(bench *testing.B) {
-	// ac := "1"
-	// aq := "0"
-	// args := []string{ac, aq}
-
-	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(1)}
-
-	op := opDecExp
-
-	var (
-		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})
-		stack          = newstack()
-		scope          = &ScopeContext{nil, stack, nil}
-		evmInterpreter = NewEVMInterpreter(env)
-	)
-
-	env.interpreter = evmInterpreter
-	// convert args
-	// intArgs := make([]*uint256.Int, len(args))
-	// for i, arg := range args {
-	// 	intArgs[i] = new(uint256.Int).SetBytes(common.Hex2Bytes(arg))
-	// }
-	pc := uint64(0)
-	bench.ResetTimer()
-	for i := 0; i < 1; i++ {
-	// for i := 0; i < bench.N; i++ {
-		for _, arg := range intArgs {
-			stack.push(arg)
-			fmt.Println("arg", arg.Dec())
-		}
-		op(&pc, evmInterpreter, scope)
-		stack.pop()
-		stack.pop()
-	}
-	bench.StopTimer()
-
-	// for i, arg := range args {
-	// 	want := new(uint256.Int).SetBytes(common.Hex2Bytes(arg))
-	// 	if have := intArgs[i]; !want.Eq(have) {
-	// 		bench.Fatalf("input #%d mutated, have %x want %x", i, have, want)
-	// 	}
-	// }
+func BenchmarkOpDecSub(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecSub)
 }
 
-func BenchmarkOpDecAdd(bench *testing.B) {
-	ac := "f5470b43c6549b016288e9a65629687"
-	aq := "f5470b43c6549b016288e9a65629687"
-	bc := "f5470b43c6549b016288e9a65629687"
-	bq := "f5470b43c6549b016288e9a65629687"
-	args := []string{ac, aq, bc, bq}
-	op := opDecAdd
+func BenchmarkOpDecMul(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecMul)
+}
 
+func BenchmarkOpDecDiv(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecDiv)
+}
+
+func BenchmarkOpDecExp(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(1)}
+	benchmarkOpDec(b, intArgs, opDecExp)
+}
+
+func BenchmarkOpDecLog2(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(1)}
+	benchmarkOpDec(b, intArgs, opDecLog2)
+}
+
+func BenchmarkOpDecNorm(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(10000)}
+	benchmarkOpDec(b, intArgs, opDecNorm)
+}
+
+func benchmarkOpDec(b *testing.B, intArgs[]*uint256.Int, op executionFunc) {
 	var (
 		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})
 		stack          = newstack()
@@ -120,14 +70,10 @@ func BenchmarkOpDecAdd(bench *testing.B) {
 	)
 
 	env.interpreter = evmInterpreter
-	// convert args
-	intArgs := make([]*uint256.Int, len(args))
-	for i, arg := range args {
-		intArgs[i] = new(uint256.Int).SetBytes(common.Hex2Bytes(arg))
-	}
+	
 	pc := uint64(0)
-	bench.ResetTimer()
-	for i := 0; i < bench.N; i++ {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
 		for _, arg := range intArgs {
 			stack.push(arg)
 		}
@@ -135,14 +81,7 @@ func BenchmarkOpDecAdd(bench *testing.B) {
 		stack.pop()
 		stack.pop()
 	}
-	bench.StopTimer()
-
-	for i, arg := range args {
-		want := new(uint256.Int).SetBytes(common.Hex2Bytes(arg))
-		if have := intArgs[i]; !want.Eq(have) {
-			bench.Fatalf("input #%d mutated, have %x want %x", i, have, want)
-		}
-	}
+	b.StopTimer()
 }
 
 func TestEq(t *testing.T) {
@@ -417,40 +356,23 @@ func TestLt(t *testing.T) {
 // // }
 
 func TestExp(t *testing.T) {
-	// STEPS := uint(10)
-	// tests := []struct {
-	// 	a Decimal
-	// 	b Decimal
-	// }{
-	// 	{*copyDecimal(ONE), *createDecimal(big.NewInt(2718281), big.NewInt(-6))},
-	// }
-	// for _, tt := range tests {
+	STEPS := uint(10)
+	tests := []struct {
+		a Decimal
+		b Decimal
+	}{
+		{*copyDecimal(ONE), *createDecimal(big.NewInt(2718281), big.NewInt(-6))},
+	}
+	for _, tt := range tests {
 
-		// ac := uint256.NewInt(1)
-		// aq := uint256.NewInt(0)
-		// fmt.Println("opDecExp", ac.Dec(), aq.Dec())
-		// log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
-		// a := UInt256IntTupleToDecimal(ac, aq)
-		a := createDecimal(big.NewInt(1), big.NewInt(0))
-		// a := createDecimal(big.NewInt(1), big.NewInt(0))
-		// log.Info("----opDecExp----- 2", "a", a.String())
-		a.Exp(a, 10) // TODO steps as input argument
-		fmt.Println(a.String())
-		// a.SetUInt256IntTupleFromDecimal(ac, aq)
-		// fmt.Println(a.String())
-
-		// var out Decimal
-		// out.Exp(&tt.a, STEPS)
-		// fmt.Println(out.String())
-
-		// var ac, aq uint256.Int
-		// out.SetUInt256IntTupleFromDecimal(&ac, &aq)
-		// fmt.Println(ac.Dec(), aq.Dec())
+		var out Decimal
+		out.Exp(&tt.a, STEPS)
+		fmt.Println(out.String())
 
 		// if out != tt.b {
 		// 	t.Fatal(tt.a, out, tt.b)
 		// }
-	// }
+	}
 }
 
 func TestLog(t *testing.T) {

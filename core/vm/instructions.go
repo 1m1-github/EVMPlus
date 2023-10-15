@@ -17,13 +17,11 @@
 package vm
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
@@ -958,16 +956,16 @@ func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecSub(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecMul----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecSub----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	log.Info("----opDecMul----- 2", "a", a.String(), "b", b.String())
-	b.Multiply(a, b)
+	// log.Info("----opDecSub----- 2", "a", a.String(), "b", b.String())
+	b.Subtract(a, b)
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
-	log.Info("----opDecMul----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
-	log.Info("----opDecMul----- 4", "a", a.String(), "b", b.String())
+	// log.Info("----opDecSub----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecSub----- 4", "a", a.String(), "b", b.String())
 
 	scope.Stack.push(&bq)
 	scope.Stack.push(&bc)
@@ -975,16 +973,16 @@ func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecSub(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecSub----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecMul----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	log.Info("----opDecSub----- 2", "a", a.String(), "b", b.String())
-	b.Subtract(a, b)
+	// log.Info("----opDecMul----- 2", "a", a.String(), "b", b.String())
+	b.Multiply(a, b)
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
-	log.Info("----opDecSub----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
-	log.Info("----opDecSub----- 4", "a", a.String(), "b", b.String())
+	// log.Info("----opDecMul----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecMul----- 4", "a", a.String(), "b", b.String())
 
 	scope.Stack.push(&bq)
 	scope.Stack.push(&bc)
@@ -994,14 +992,14 @@ func opDecSub(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 func opDecDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecDiv----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecDiv----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	log.Info("----opDecDiv----- 2", "a", a.String(), "b", b.String())
+	// log.Info("----opDecDiv----- 2", "a", a.String(), "b", b.String())
 	b.Divide(a, b)
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
-	log.Info("----opDecDiv----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
-	log.Info("----opDecDiv----- 4", "a", a.String(), "b", b.String())
+	// log.Info("----opDecDiv----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecDiv----- 4", "a", a.String(), "b", b.String())
 
 	scope.Stack.push(&bq)
 	scope.Stack.push(&bc)
@@ -1011,15 +1009,14 @@ func opDecDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq := scope.Stack.pop(), scope.Stack.pop()
-	fmt.Println("opDecExp", ac.Dec(), aq.Dec())
 	// log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	log.Info("----opDecExp----- 2", "a", a.String())
+	// log.Info("----opDecExp----- 2", "a", a.String())
 	var out Decimal
 	out.Exp(a, 10) // TODO steps as input argument
 	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
-	log.Info("----opDecExp----- 4", "out", out.String())
+	// log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
+	// log.Info("----opDecExp----- 4", "out", out.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
@@ -1029,13 +1026,13 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq := scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecLog2----- 1", "ac", ac, "aq", aq)
+	// log.Info("----opDecLog2----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	log.Info("----opDecLog2----- 2", "a", a.String())
+	// log.Info("----opDecLog2----- 2", "a", a.String())
 	a.Log2(a, 5) // TODO precision as input argument
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	log.Info("----opDecLog2----- 3", "ac", ac, "aq", aq)
-	log.Info("----opDecLog2----- 4", "a", a.String())
+	// log.Info("----opDecLog2----- 3", "ac", ac, "aq", aq)
+	// log.Info("----opDecLog2----- 4", "a", a.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
@@ -1045,13 +1042,13 @@ func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 
 func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq := scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecSin----- 1", "ac", ac, "aq", aq)
+	// log.Info("----opDecSin----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	log.Info("----opDecSin----- 2", "a", a.String())
+	// log.Info("----opDecSin----- 2", "a", a.String())
 	a.Sin(a, 10) // TODO steps as input argument
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	log.Info("----opDecSin----- 3", "ac", ac, "aq", aq)
-	log.Info("----opDecSin----- 4", "a", a.String())
+	// log.Info("----opDecSin----- 3", "ac", ac, "aq", aq)
+	// log.Info("----opDecSin----- 4", "a", a.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
@@ -1063,8 +1060,8 @@ func opDecTau(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	a := createDecimal(big.NewInt(62831852), big.NewInt(-7))
 	var ac, aq uint256.Int
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	log.Info("----opDecTau----- 3", "ac", ac, "aq", aq)
-	log.Info("----opDecTau----- 4", "a", a.String())
+	// log.Info("----opDecTau----- 3", "ac", ac, "aq", aq)
+	// log.Info("----opDecTau----- 4", "a", a.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
@@ -1074,13 +1071,13 @@ func opDecTau(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 func opDecEq(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecEq----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecEq----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	log.Info("----opDecEq----- 2", "a", a.String(), "b", b.String())
+	// log.Info("----opDecEq----- 2", "a", a.String(), "b", b.String())
 	x := b.Eq(a)
-	log.Info("----opDecEq----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
-	log.Info("----opDecEq----- 4", "a", a.String(), "b", b.String(), "x", x)
+	// log.Info("----opDecEq----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecEq----- 4", "a", a.String(), "b", b.String(), "x", x)
 
 	r := uint256.NewInt(0)
 	if x {
@@ -1094,13 +1091,13 @@ func opDecEq(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]by
 
 func opDecLt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecLt----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecLt----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	log.Info("----opDecLt----- 2", "a", a.String(), "b", b.String())
+	// log.Info("----opDecLt----- 2", "a", a.String(), "b", b.String())
 	x := b.LessThan(a)
-	log.Info("----opDecLt----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
-	log.Info("----opDecLt----- 4", "a", a.String(), "b", b.String(), "x", x)
+	// log.Info("----opDecLt----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	// log.Info("----opDecLt----- 4", "a", a.String(), "b", b.String(), "x", x)
 
 	r := uint256.NewInt(0)
 	if x {
@@ -1114,14 +1111,14 @@ func opDecLt(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]by
 
 func opDecNorm(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq := scope.Stack.pop(), scope.Stack.pop()
-	log.Info("----opDecNorm----- 1", "ac", ac, "aq", aq)
+	// log.Info("----opDecNorm----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	log.Info("----opDecNorm----- 2", "a", a.String())
+	// log.Info("----opDecNorm----- 2", "a", a.String())
 	var out Decimal
 	out.Normalize(a, 5, true) // TODO precision as input argument
 	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	log.Info("----opDecNorm----- 3", "ac", ac, "aq", aq)
-	log.Info("----opDecNorm----- 4", "out", out.String())
+	// log.Info("----opDecNorm----- 3", "ac", ac, "aq", aq)
+	// log.Info("----opDecNorm----- 4", "out", out.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
