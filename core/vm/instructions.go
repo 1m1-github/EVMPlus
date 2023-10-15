@@ -1057,7 +1057,7 @@ func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 }
 
 func opDecTau(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	a := createDecimal(big.NewInt(31415926), big.NewInt(-7))
+	a := createDecimal(big.NewInt(62831852), big.NewInt(-7))
 	var ac, aq uint256.Int
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 	log.Info("----opDecTau----- 3", "ac", ac, "aq", aq)
