@@ -20,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
@@ -938,11 +939,19 @@ func makeSwap(size int64) executionFunc {
 
 // ac * 10^ aq + bc * 10^ bq
 func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.peek(), scope.Stack.peek()
+	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+	log.Info("----opDecAdd----- 1", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	b := UInt256IntTupleToDecimal(bc, bq)
+	b := UInt256IntTupleToDecimal(&bc, &bq)
+	log.Info("----opDecAdd----- 2", "a", a.String(), "b", b.String())
 	b.Add(a, b)
-	b.SetUInt256IntTupleFromDecimal(bc, bq)
+	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
+	log.Info("----opDecAdd----- 3", "ac", ac, "aq", aq, "bc", bc, "bq", bq)
+	log.Info("----opDecAdd----- 4", "a", a.String(), "b", b.String())
+
+	scope.Stack.push(&bq)
+	scope.Stack.push(&bc)
+
 	return nil, nil
 }
 
