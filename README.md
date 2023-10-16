@@ -55,8 +55,10 @@ DEC_SUB 150
 DEC_MUL 110
 DEC_DIV 200
 DEC_LOG2 120
-DEC_EXP 2000
+DEC_EXP 
 DEC_NORM 200
+
+DEC_EXP 2000/10 steps 3700/20 steps => 
 
 
 ### binary vs decimal float

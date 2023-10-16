@@ -1008,12 +1008,12 @@ func opDecDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 }
 
 func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	ac, aq := scope.Stack.pop(), scope.Stack.pop()
+	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 	// log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	// log.Info("----opDecExp----- 2", "a", a.String())
 	var out Decimal
-	out.Exp(a, 10) // TODO steps as input argument
+	out.Exp(a, steps) // TODO steps as input argument
 	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
 	// log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
 	// log.Info("----opDecExp----- 4", "out", out.String())

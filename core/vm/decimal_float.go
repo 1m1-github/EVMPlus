@@ -182,7 +182,7 @@ func (a *Decimal) LessThan(b *Decimal) bool {
 
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
+func (out *Decimal) Exp(a *Decimal, taylor_steps uint256.Int) *Decimal {
 	// out = 1
 	out.c.Set(ONE_BIG)
 	out.q.Set(ZERO_BIG)
@@ -196,7 +196,7 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 	factorial := copyDecimal(ONE)
 	factorial_next := copyDecimal(ZERO)
 
-	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
+	for i := uint256.NewInt(1); i <= taylor_steps.i; i++ { // step 0 skipped as a set to 1
 		a_power.Multiply(a_power, a)                    // a^i
 		factorial_next.Add(factorial_next, ONE)         // i++
 		factorial.Multiply(factorial, factorial_next)   // i!
