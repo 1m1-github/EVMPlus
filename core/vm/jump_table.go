@@ -366,12 +366,6 @@ func newFrontierInstructionSet() JumpTable {
 			minStack:    minStack(2, 2),
 			maxStack:    maxStack(2, 2),
 		},
-		DEC_TAU: {
-			execute:     opDecTau,
-			constantGas: GasFastStep,
-			minStack:    minStack(0, 2),
-			maxStack:    maxStack(0, 2),
-		},
 		DEC_EQ: {
 			execute:     opDecEq,
 			constantGas: GasFastStep,

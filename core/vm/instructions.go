@@ -17,8 +17,6 @@
 package vm
 
 import (
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -1008,12 +1006,12 @@ func opDecDiv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 }
 
 func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	ac, aq := scope.Stack.pop(), scope.Stack.pop()
+	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 	// log.Info("----opDecExp----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	// log.Info("----opDecExp----- 2", "a", a.String())
 	var out Decimal
-	out.Exp(a, 10) // TODO steps as input argument
+	out.Exp(a, uint(steps.Uint64())) // TODO handle steps overflow
 	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
 	// log.Info("----opDecExp----- 3", "ac", ac, "aq", aq)
 	// log.Info("----opDecExp----- 4", "out", out.String())
@@ -1025,11 +1023,11 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 }
 
 func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	ac, aq := scope.Stack.pop(), scope.Stack.pop()
+	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 	// log.Info("----opDecLog2----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	// log.Info("----opDecLog2----- 2", "a", a.String())
-	a.Log2(a, 5) // TODO precision as input argument
+	a.Log2(a, uint(steps.Uint64())) // TODO handle steps overflow
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 	// log.Info("----opDecLog2----- 3", "ac", ac, "aq", aq)
 	// log.Info("----opDecLog2----- 4", "a", a.String())
@@ -1041,27 +1039,14 @@ func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 }
 
 func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	ac, aq := scope.Stack.pop(), scope.Stack.pop()
+	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 	// log.Info("----opDecSin----- 1", "ac", ac, "aq", aq)
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	// log.Info("----opDecSin----- 2", "a", a.String())
-	a.Sin(a, 10) // TODO steps as input argument
+	a.Sin(a, uint(steps.Uint64())) // TODO handle steps overflow
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 	// log.Info("----opDecSin----- 3", "ac", ac, "aq", aq)
 	// log.Info("----opDecSin----- 4", "a", a.String())
-
-	scope.Stack.push(&aq)
-	scope.Stack.push(&ac)
-
-	return nil, nil
-}
-
-func opDecTau(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	a := createDecimal(big.NewInt(62831852), big.NewInt(-7))
-	var ac, aq uint256.Int
-	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
-	// log.Info("----opDecTau----- 3", "ac", ac, "aq", aq)
-	// log.Info("----opDecTau----- 4", "a", a.String())
 
 	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
@@ -1115,7 +1100,7 @@ func opDecNorm(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	// log.Info("----opDecNorm----- 2", "a", a.String())
 	var out Decimal
-	out.Normalize(a, 5, true) // TODO precision as input argument
+	out.Normalize(a, 0, true)
 	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
 	// log.Info("----opDecNorm----- 3", "ac", ac, "aq", aq)
 	// log.Info("----opDecNorm----- 4", "out", out.String())

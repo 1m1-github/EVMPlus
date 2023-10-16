@@ -50,10 +50,9 @@ const (
 	DEC_EXP  OpCode = 0xd4
 	DEC_LOG2 OpCode = 0xd5
 	DEC_SIN  OpCode = 0xd6
-	DEC_TAU  OpCode = 0xd7
-	DEC_EQ   OpCode = 0xd8
-	DEC_LT   OpCode = 0xd9
-	DEC_NORM OpCode = 0xdA
+	DEC_EQ   OpCode = 0xd7
+	DEC_LT   OpCode = 0xd8
+	DEC_NORM OpCode = 0xd9
 )
 
 // 0x10 range - comparison ops.
