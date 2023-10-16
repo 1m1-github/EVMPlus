@@ -393,3 +393,21 @@ func TestLog(t *testing.T) {
 		}
 	}
 }
+
+func TestSin(t *testing.T) {
+	STEPS := uint(10)
+	tests := []struct {
+		a Decimal
+		b Decimal
+	}{
+		{*copyDecimal(ONE), *createDecimal(big.NewInt(841470), big.NewInt(-6))},
+	}
+	for _, tt := range tests {
+		var out Decimal
+		out.Sin(&tt.a, STEPS)
+		fmt.Println(out.String())
+		// if out != tt.b {
+		// 	t.Fatal(tt.a, out, tt.b)
+		// }
+	}
+}

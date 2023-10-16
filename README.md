@@ -1,7 +1,7 @@
 ## EVM+
 
 Add arbitrary precision, complex decimal float math to the EVM.
-Add OPCODES: +, - , *, /, EXP, LOG2, SIN, TAU, EQ, LT, NORM
+Add OPCODES: +, - , *, /, EXP, LOG2, SIN, EQ, LT, NORM
 
 ### decimal float
 
@@ -14,7 +14,7 @@ with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpret
 in the smart contract code (or as precompiled smart contracts), we can easily get the following functions:
 
 a^b = POW(a, b) = EXP(b * LOG2(a) * LN(2)) // LN(2) is a constant added by the user to desired precision  
-COS(a) = SIN(TAU/4 - a)  
+COS(a) = SIN(TAU/4 - a) // TAU is a constant added by the user to desired precision  
 TAN(a) = SIN(a) / COS(a)  
 ...
 
@@ -27,9 +27,11 @@ TAN(a) = SIN(a) / COS(a)
 
 use big.Int from math/big, a arbitrary precision standard golang lib.
 
+c, q are provided on stack. some OPCODES need a target precision defined by the user (DEC_EXP, DEC_LOG2, DEC_SIN). these could be provided as immediates or stack elements. for now, we will use the stack, though immediates would be more memory efficient. in fact, all inputs could be provided as immediates making all of this more memory efficient. TODO if users care about saving stack slots.
+
 ### use cases
 
-lots of scientific, mathematical and financial calculations require universal functions such as EXP, LOG, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
+lots of scientific, mathematical, financial, digital art calculations require universal functions such as EXP, LOG, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
 
 these new capabilities will invite large universes of apps into Ethereum.
 
@@ -71,7 +73,7 @@ adding the ability to represent any decimal value precisely and do calculations 
 
 1. run private EVM network from local geth
 2. add +, -, *, /
-3. add EXP, LOG2, SIN, TAU
+3. add EXP, LOG2, SIN
 4. workout, test and analyze gas correctly
 5. write example smart contracts
 6. write EIP
@@ -89,6 +91,8 @@ The first version allows for 256 bits of precision for the significand and expon
 ### EIP
 
 no shrinking from real line to [0, 1], as is often done, because this is an OPCODE, it was to provide the most basic functionality. the user can shrink *using* OPCODEs made available here (e.g. for the logistic function) to improve efficiency (faster convergence in [0,1]).
+
+constants (like tau, ln(2)) should be hardcoded by the user to desired precision vs having computed everytime.
 
 ## Go Ethereum
 
