@@ -196,7 +196,7 @@ func (out *Decimal) Exp(a *Decimal, taylor_steps uint) *Decimal {
 	factorial := copyDecimal(ONE)
 	factorial_next := copyDecimal(ZERO)
 
-	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
+	for i := uint(1); i < taylor_steps; i++ { // step 0 skipped as out set to 1
 		a_power.Multiply(a_power, a)                    // a^i
 		factorial_next.Add(factorial_next, ONE)         // i++
 		factorial.Multiply(factorial, factorial_next)   // i!
@@ -357,26 +357,37 @@ func (out *Decimal) Normalize(a *Decimal, precision uint, rounded bool) *Decimal
 // sin(a)
 // TODO
 func (out *Decimal) Sin(a *Decimal, taylor_steps uint) *Decimal {
-	// out = 1
-	out.c.Set(ONE_BIG)
-	out.q.Set(ZERO_BIG)
+	// out = a
+	out.c.Set(&a.c)
+	out.q.Set(&a.q)
 
-	if a.IsZero() {
+	if a.IsZero() || taylor_steps == 1 {
 		return out
 	}
 
-	var factorial_inv Decimal
+	var a_squared, factorial_inv Decimal
+	a_squared.Multiply(a, a)
 	a_power := copyDecimal(ONE)
 	factorial := copyDecimal(ONE)
-	factorial_next := copyDecimal(ZERO)
+	factorial_next := copyDecimal(ONE)
+	negate := true
 
-	for i := uint(1); i <= taylor_steps; i++ { // step 0 skipped as a set to 1
-		a_power.Multiply(a_power, a)                    // a^i
+	for i := uint(1); i < taylor_steps; i++ { // step 0 skipped as out set to a
+		a_power.Multiply(a_power, &a_squared)           // a^(2i+1)
+
 		factorial_next.Add(factorial_next, ONE)         // i++
-		factorial.Multiply(factorial, factorial_next)   // i!
-		factorial_inv.Inverse(factorial)                // 1/i!
-		factorial_inv.Multiply(&factorial_inv, a_power) // store a^i/i! in factorial_inv as not needed anymore
-		out.Add(out, &factorial_inv)                    // out += a^i/i!
+		factorial.Multiply(factorial, factorial_next)   // i!*2i
+		factorial_next.Add(factorial_next, ONE)         // i++
+		factorial.Multiply(factorial, factorial_next)   // (2i+1)!
+
+		factorial_inv.Inverse(factorial)                // 1/(2i+1)!
+		factorial_inv.Multiply(&factorial_inv, a_power) // store a^(2i+1)/(2i+1)! in factorial_inv as not needed anymore
+		if negate {
+			factorial_inv.Negate(&factorial_inv)        // (-1)^i*a^(2i+1)/(2i+1)!
+		}
+		negate = !negate
+
+		out.Add(out, &factorial_inv)                    // out += (-1)^i*a^(2i+1)/(2i+1)!
 	}
 
 	return out
