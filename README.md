@@ -73,6 +73,10 @@ The algorithms implemented allow for arbitrary precision. Practically, as we alw
 
 The first version allows for 256 bits of precision for the significand and exponent each. This corresponds to single elements of the EVM stack. If there is demand for higher precision, we can relatively easily expand to occupying the entire stack. (todo-if-demand)
 
+### EIP
+
+no shrinking from real line to [0, 1], as is often done, because this is an OPCODE, it was to provide the most basic functionality. the user can shrink *using* OPCODEs made available here (e.g. for the logistic function) to improve efficiency (faster convergence in [0,1]).
+
 ## Go Ethereum
 
 Official Golang execution layer implementation of the Ethereum protocol.
