@@ -355,7 +355,6 @@ func (out *Decimal) Normalize(a *Decimal, precision uint, rounded bool) *Decimal
 }
 
 // sin(a)
-// TODO
 func (out *Decimal) Sin(a *Decimal, taylor_steps uint) *Decimal {
 	// out = a
 	out.c.Set(&a.c)
