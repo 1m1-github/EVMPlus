@@ -50,6 +50,19 @@ testing the correctness of the math itself is trivial. we can achieve as high a 
 
 the opcodes will have as an input the desired target precion of the user. this will render the calculation deterministic. e.g. we know how many Taylor steps we need to achieve a certain precision.
 
+on my M1 macbook air:
+based on ADD opcode having gas cost 3 (GasFastestStep), we get the following ca. gas costs using benchmarks:
+DEC_ADD 150
+DEC_SUB 150
+DEC_MUL 110
+DEC_DIV 200
+DEC_LOG2 120
+DEC_EXP 
+DEC_NORM 200
+
+DEC_EXP 2000/10 steps 3700/20 steps => 
+
+
 ### binary vs decimal float
 
 most apps created by humans work with decimal values.

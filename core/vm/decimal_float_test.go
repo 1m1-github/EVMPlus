@@ -21,8 +21,68 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
+
+
+func BenchmarkOpDecAdd(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecAdd)
+}
+
+func BenchmarkOpDecSub(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecSub)
+}
+
+func BenchmarkOpDecMul(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecMul)
+}
+
+func BenchmarkOpDecDiv(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecDiv)
+}
+
+func BenchmarkOpDecExp(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(1)}
+	benchmarkOpDec(b, intArgs, opDecExp)
+}
+
+func BenchmarkOpDecLog2(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(1)}
+	benchmarkOpDec(b, intArgs, opDecLog2)
+}
+
+func BenchmarkOpDecNorm(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(10000)}
+	benchmarkOpDec(b, intArgs, opDecNorm)
+}
+
+func benchmarkOpDec(b *testing.B, intArgs[]*uint256.Int, op executionFunc) {
+	var (
+		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})
+		stack          = newstack()
+		scope          = &ScopeContext{nil, stack, nil}
+		evmInterpreter = NewEVMInterpreter(env)
+	)
+
+	env.interpreter = evmInterpreter
+	
+	pc := uint64(0)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, arg := range intArgs {
+			stack.push(arg)
+		}
+		op(&pc, evmInterpreter, scope)
+		stack.pop()
+		stack.pop()
+	}
+	b.StopTimer()
+}
 
 func TestEq(t *testing.T) {
 	tests := []struct {
@@ -304,9 +364,11 @@ func TestExp(t *testing.T) {
 		{*copyDecimal(ONE), *createDecimal(big.NewInt(2718281), big.NewInt(-6))},
 	}
 	for _, tt := range tests {
+
 		var out Decimal
 		out.Exp(&tt.a, STEPS)
 		fmt.Println(out.String())
+
 		// if out != tt.b {
 		// 	t.Fatal(tt.a, out, tt.b)
 		// }
