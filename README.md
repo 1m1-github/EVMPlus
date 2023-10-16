@@ -27,9 +27,11 @@ TAN(a) = SIN(a) / COS(a)
 
 use big.Int from math/big, a arbitrary precision standard golang lib.
 
+c, q are provided on stack. some OPCODES need a target precision defined by the user (DEC_EXP, DEC_LOG2, DEC_SIN). these could be provided as immediates or stack elements. for now, we will use the stack, though immediates would be more memory efficient. in fact, all inputs could be provided as immediates making all of this more memory efficient. TODO if users care about saving stack slots.
+
 ### use cases
 
-lots of scientific, mathematical and financial calculations require universal functions such as EXP, LOG, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
+lots of scientific, mathematical, financial, digital art calculations require universal functions such as EXP, LOG, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
 
 these new capabilities will invite large universes of apps into Ethereum.
 
