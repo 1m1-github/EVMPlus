@@ -25,6 +25,10 @@ import (
 	"github.com/holiman/uint256"
 )
 
+func (d *Decimal) String() string {
+	return fmt.Sprintf("%v*10^%v", d.c.String(), d.q.String())
+}
+
 func BenchmarkOpDecAdd(b *testing.B) {
 	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
 	benchmarkOpDec(b, intArgs, opDecAdd)
@@ -78,23 +82,9 @@ func benchmarkOpDec(b *testing.B, intArgs []*uint256.Int, op executionFunc) {
 	b.StopTimer()
 }
 
-func TestEq(t *testing.T) {
-	tests := []struct {
-		d1 Decimal
-		d2 Decimal
-		x  bool
-	}{
-		{*createDecimal(big.NewInt(5), big.NewInt(2)), *createDecimal(big.NewInt(5), big.NewInt(2)), true},
-		// {*createDecimal(big.NewInt(10), *big.NewInt(2)}, *createDecimal(big.NewInt(100), *big.NewInt(1)}, true},
-	}
-	for _, tt := range tests {
-		x := tt.d1.Eq(&tt.d2)
-		fmt.Println(tt.d1.String())
-
-		if x != tt.x {
-			t.Fatal(tt.d1, tt.d2, x, tt.x)
-		}
-	}
+// TODO normalize first?
+func (d2 *Decimal) Eq(d1 *Decimal) bool {
+	return d1.c.Cmp(&d2.c) == 0 && d1.q.Cmp(&d2.q) == 0
 }
 
 func TestUInt256IntToBigInt(t *testing.T) {
@@ -169,7 +159,7 @@ func TestAdd(t *testing.T) {
 		out.Add(&tt.a, &tt.b)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
-		out2.Normalize(&out, 0, true)
+		out2.normalize(&out)
 		// fmt.Println("out2", showDecimal(&out2))
 
 		if !out2.Eq(&tt.c) {
@@ -178,27 +168,26 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-func TestSubtract(t *testing.T) {
+func TestNegate(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
-		c Decimal
 	}{
-		{*createDecimal(big.NewInt(2), ZERO_BIG), *createDecimal(big.NewInt(5), MINUS_ONE_BIG), *createDecimal(big.NewInt(15), MINUS_ONE_BIG)},
-		{*createDecimal(big.NewInt(5), MINUS_ONE_BIG), *createDecimal(big.NewInt(2), ZERO_BIG), *createDecimal(big.NewInt(-15), MINUS_ONE_BIG)},
+		{*createDecimal(big.NewInt(2), ZERO_BIG), *createDecimal(big.NewInt(-2), ZERO_BIG)},
+		{*createDecimal(big.NewInt(5), MINUS_ONE_BIG), *createDecimal(big.NewInt(-5), MINUS_ONE_BIG)},
 	}
 	for _, tt := range tests {
 		var out, out2 Decimal
-		out.Subtract(&tt.a, &tt.b)
+		out.Negate(&tt.a)
 		// fmt.Println("a", showDecimal(&tt.a))
 		// fmt.Println("b", showDecimal(&tt.b))
 		// fmt.Println("out", showDecimal(&out))
 
-		out2.Normalize(&out, 0, true)
+		out2.normalize(&out)
 		// fmt.Println("out2", showDecimal(&out2))
 
-		if !out2.Eq(&tt.c) {
-			t.Fatal(tt.a, tt.b, out, out2, tt.c)
+		if !out2.Eq(&tt.b) {
+			t.Fatal(tt.a, tt.b, out, out2)
 		}
 	}
 }
@@ -218,7 +207,7 @@ func TestMultiply(t *testing.T) {
 		var out, out2 Decimal
 		out.Multiply(&tt.a, &tt.b)
 
-		out2.Normalize(&out, 0, true)
+		out2.normalize(&out)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
 		if !out2.Eq(&tt.c) {
@@ -238,36 +227,14 @@ func TestInv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out, out2 Decimal
-		out.Inverse(&tt.a)
+		out.Inverse(&tt.a, *big.NewInt(5))
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
-		out2.Normalize(&out, 0, true)
+		out2.normalize(&out)
 		// fmt.Println("out2", showDecimal(&out2))
 
 		if !out2.Eq(&tt.b) {
 			t.Fatal(tt.a, out, tt.b)
-		}
-	}
-}
-
-func TestDiv(t *testing.T) {
-	tests := []struct {
-		a Decimal
-		b Decimal
-		c Decimal
-	}{
-		{*createDecimal(ONE_BIG, TEN_BIG), *copyDecimal(ONE), *createDecimal(ONE_BIG, TEN_BIG)},
-	}
-	for _, tt := range tests {
-		var out, out2 Decimal
-		out.Divide(&tt.a, &tt.b)
-
-		out2.Normalize(&out, 0, true)
-
-		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c), "out2", showDecimal(&out2))
-
-		if !out2.Eq(&tt.c) {
-			t.Fatal(tt.a, tt.b, out, out2, tt.c)
 		}
 	}
 }
@@ -305,7 +272,7 @@ func TestNormalize(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Normalize(&tt.a, 0, true)
+		out.normalize(&tt.a)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
 		if !out.Eq(&tt.b) {
@@ -314,43 +281,7 @@ func TestNormalize(t *testing.T) {
 	}
 }
 
-func TestLt(t *testing.T) {
-	tests := []struct {
-		a Decimal
-		b Decimal
-		c bool
-	}{
-		{*createDecimal(big.NewInt(5), ZERO_BIG), *createDecimal(big.NewInt(2), ZERO_BIG), false},
-		{*createDecimal(big.NewInt(5), MINUS_ONE_BIG), *createDecimal(big.NewInt(2), ZERO_BIG), true},
-	}
-	for _, tt := range tests {
-		lt := tt.a.LessThan(&tt.b)
-		if lt != tt.c {
-			t.Fatal(tt.a, tt.b, tt.c)
-		}
-	}
-}
-
-// // func TestRound(t *testing.T) {
-// // 	tests := []struct {
-// // 		a decimal
-// // 		b decimal
-// // 	}{
-// // 		{*createDecimal(big.NewInt(31415926), *new(big.Int).Neg(big.NewInt(1))}, *createDecimal(big.NewInt(2718281), *new(big.Int).Neg(big.NewInt(6))}},
-// // 	}
-// // 	for _, tt := range tests {
-// // 		var out decimal
-// // 		precision := uint64(4)
-// // 		round(&tt.a, &out, precision, true, false)
-// // 		fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
-// // 		if out != tt.b {
-// // 			t.Fatal(tt.a, out, tt.b)
-// // 		}
-// // 	}
-// // }
-
 func TestExp(t *testing.T) {
-	STEPS := uint(10)
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -360,7 +291,7 @@ func TestExp(t *testing.T) {
 	for _, tt := range tests {
 
 		var out Decimal
-		out.Exp(&tt.a, STEPS)
+		out.Exp(&tt.a, *big.NewInt(5))
 		fmt.Println(out.String())
 
 		// if out != tt.b {
@@ -370,7 +301,6 @@ func TestExp(t *testing.T) {
 }
 
 func TestLog(t *testing.T) {
-	STEPS := uint(10)
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -379,9 +309,9 @@ func TestLog(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out, out2 Decimal
-		out.Log2(&tt.a, STEPS)
+		out.Log2(&tt.a, *big.NewInt(5))
 
-		out2.Normalize(&out, 0, true)
+		out2.normalize(&out)
 		if !out2.Eq(&tt.b) {
 			t.Fatal(tt.a, out, tt.b)
 		}
@@ -389,7 +319,6 @@ func TestLog(t *testing.T) {
 }
 
 func TestSin(t *testing.T) {
-	STEPS := uint(10)
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -398,7 +327,7 @@ func TestSin(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Sin(&tt.a, STEPS)
+		out.Sin(&tt.a, *big.NewInt(5))
 		fmt.Println(out.String())
 		// if out != tt.b {
 		// 	t.Fatal(tt.a, out, tt.b)

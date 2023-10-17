@@ -979,10 +979,11 @@ func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 }
 
 func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
-	ac, aq := scope.Stack.pop(), scope.Stack.pop()
+	ac, aq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	a.Inverse(a)
+	a.Inverse(a, *UInt256IntToBigInt(&precision))
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
 	scope.Stack.push(&aq)
@@ -996,7 +997,7 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	var out Decimal
-	out.Exp(a, uint(steps.Uint64())) // TODO handle steps overflow
+	out.Exp(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
 	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
 	scope.Stack.push(&aq)
@@ -1009,7 +1010,7 @@ func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	a.Log2(a, uint(steps.Uint64())) // TODO handle steps overflow
+	a.Log2(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
 	scope.Stack.push(&aq)
@@ -1022,7 +1023,7 @@ func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
-	a.Sin(a, uint(steps.Uint64())) // TODO handle steps overflow
+	a.Sin(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
 	scope.Stack.push(&aq)

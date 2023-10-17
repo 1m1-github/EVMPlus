@@ -310,42 +310,42 @@ func enableEVMPlus(jt *JumpTable) {
 		execute:     opDecAdd,
 		constantGas: GasFastStep, // TODO
 		minStack:    minStack(4, 2),
-		maxStack:    maxStack(4, 2),
+		maxStack:    maxStack(4, 2), // ?
 	}
 	jt[DECNEG] = &operation{
 		execute:     opDecNeg,
 		constantGas: GasFastStep, // TODO
 		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
+		maxStack:    maxStack(2, 2), // ?
 	}
 	jt[DECMUL] = &operation{
 		execute:     opDecMul,
 		constantGas: GasFastStep, // TODO
 		minStack:    minStack(4, 2),
-		maxStack:    maxStack(4, 2),
+		maxStack:    maxStack(4, 2), // ?
 	}
 	jt[DECINV] = &operation{
 		execute:     opDecInv,
 		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
+		minStack:    minStack(3, 2),
+		maxStack:    maxStack(3, 2), // ?
 	}
 	jt[DECEXP] = &operation{
 		execute:     opDecExp,
 		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
+		minStack:    minStack(3, 2),
+		maxStack:    maxStack(3, 2), // ?
 	}
 	jt[DECLOG2] = &operation{
 		execute:     opDecLog2,
 		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
+		minStack:    minStack(3, 2),
+		maxStack:    maxStack(3, 2), // ?
 	}
 	jt[DECSIN] = &operation{
 		execute:     opDecSin,
 		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
+		minStack:    minStack(3, 2),
+		maxStack:    maxStack(3, 2), // ?
 	}
 }
