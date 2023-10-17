@@ -57,6 +57,7 @@ var (
 	mergeInstructionSet            = newMergeInstructionSet()
 	shanghaiInstructionSet         = newShanghaiInstructionSet()
 	cancunInstructionSet           = newCancunInstructionSet()
+	evmPlusInstructionSet          = newEVMPlusInstructionSet()
 )
 
 // JumpTable contains the EVM opcodes supported at a given fork.
@@ -78,6 +79,53 @@ func validate(jt JumpTable) JumpTable {
 		}
 	}
 	return jt
+}
+
+func newEVMPlusInstructionSet() JumpTable {
+	instructionSet := newCancunInstructionSet()
+	instructionSet[DECADD] = &operation{
+		execute:     opDecAdd,
+		constantGas: GasFastStep, // TODO
+		minStack:    minStack(4, 2),
+		maxStack:    maxStack(4, 2),
+	}
+	instructionSet[DECNEG] = &operation{
+		execute:     opDecNeg,
+		constantGas: GasFastStep, // TODO
+		minStack:    minStack(2, 2),
+		maxStack:    maxStack(2, 2),
+	}
+	instructionSet[DECMUL] = &operation{
+		execute:     opDecMul,
+		constantGas: GasFastStep, // TODO
+		minStack:    minStack(4, 2),
+		maxStack:    maxStack(4, 2),
+	}
+	instructionSet[DECINV] = &operation{
+		execute:     opDecInv,
+		constantGas: GasFastStep, // TODO
+		minStack:    minStack(2, 2),
+		maxStack:    maxStack(2, 2),
+	}
+	instructionSet[DECEXP] = &operation{
+		execute:     opDecExp,
+		constantGas: GasFastStep, // TODO
+		minStack:    minStack(2, 2),
+		maxStack:    maxStack(2, 2),
+	}
+	instructionSet[DECLOG2] = &operation{
+		execute:     opDecLog2,
+		constantGas: GasFastStep, // TODO
+		minStack:    minStack(2, 2),
+		maxStack:    maxStack(2, 2),
+	}
+	instructionSet[DECSIN] = &operation{
+		execute:     opDecSin,
+		constantGas: GasFastStep, // TODO
+		minStack:    minStack(2, 2),
+		maxStack:    maxStack(2, 2),
+	}
+	return validate(instructionSet)
 }
 
 func newCancunInstructionSet() JumpTable {
@@ -323,68 +371,6 @@ func newFrontierInstructionSet() JumpTable {
 			minStack:    minStack(2, 1),
 			maxStack:    maxStack(2, 1),
 		},
-
-		DEC_ADD: {
-			execute:     opDecAdd,
-			constantGas: GasFastStep,
-			minStack:    minStack(4, 2),
-			maxStack:    maxStack(4, 2),
-		},
-		DEC_MUL: {
-			execute:     opDecMul,
-			constantGas: GasFastStep,
-			minStack:    minStack(4, 2),
-			maxStack:    maxStack(4, 2),
-		},
-		DEC_SUB: {
-			execute:     opDecSub,
-			constantGas: GasFastStep,
-			minStack:    minStack(4, 2),
-			maxStack:    maxStack(4, 2),
-		},
-		DEC_DIV: {
-			execute:     opDecDiv,
-			constantGas: GasFastStep,
-			minStack:    minStack(4, 2),
-			maxStack:    maxStack(4, 2),
-		},
-		DEC_EXP: {
-			execute:     opDecExp,
-			constantGas: GasFastStep,
-			minStack:    minStack(2, 2),
-			maxStack:    maxStack(2, 2),
-		},
-		DEC_LOG2: {
-			execute:     opDecLog2,
-			constantGas: GasFastStep,
-			minStack:    minStack(2, 2),
-			maxStack:    maxStack(2, 2),
-		},
-		DEC_SIN: {
-			execute:     opDecSin,
-			constantGas: GasFastStep,
-			minStack:    minStack(2, 2),
-			maxStack:    maxStack(2, 2),
-		},
-		DEC_EQ: {
-			execute:     opDecEq,
-			constantGas: GasFastStep,
-			minStack:    minStack(0, 2),
-			maxStack:    maxStack(0, 2),
-		},
-		DEC_LT: {
-			execute:     opDecLt,
-			constantGas: GasFastStep,
-			minStack:    minStack(0, 2),
-			maxStack:    maxStack(0, 2),
-		},
-		DEC_NORM: {
-			execute:     opDecNorm,
-			constantGas: GasFastStep,
-			minStack:    minStack(0, 2),
-			maxStack:    maxStack(0, 2),
-		},
-
 		LT: {
 			execute:     opLt,
 			constantGas: GasFastestStep,

@@ -42,17 +42,6 @@ const (
 	MULMOD     OpCode = 0x9
 	EXP        OpCode = 0xa
 	SIGNEXTEND OpCode = 0xb
-
-	DEC_ADD  OpCode = 0xd0
-	DEC_SUB  OpCode = 0xd1
-	DEC_MUL  OpCode = 0xd2
-	DEC_DIV  OpCode = 0xd3
-	DEC_EXP  OpCode = 0xd4
-	DEC_LOG2 OpCode = 0xd5
-	DEC_SIN  OpCode = 0xd6
-	DEC_EQ   OpCode = 0xd7
-	DEC_LT   OpCode = 0xd8
-	DEC_NORM OpCode = 0xd9
 )
 
 // 0x10 range - comparison ops.
@@ -219,6 +208,17 @@ const (
 	LOG4
 )
 
+// 0xd0 range - decimal float ops.
+const (
+	DECADD  OpCode = 0xd0
+	DECNEG  OpCode = 0xd1
+	DECMUL  OpCode = 0xd2
+	DECINV  OpCode = 0xd3
+	DECEXP  OpCode = 0xd4
+	DECLOG2 OpCode = 0xd5
+	DECSIN  OpCode = 0xd6
+)
+
 // 0xf0 range - closures.
 const (
 	CREATE       OpCode = 0xf0
@@ -254,8 +254,6 @@ var opCodeToString = map[OpCode]string{
 	EQ:         "EQ",
 	ISZERO:     "ISZERO",
 	SIGNEXTEND: "SIGNEXTEND",
-
-	DEC_ADD: "DEC_ADD",
 
 	// 0x10 range - bit ops.
 	AND:    "AND",
@@ -396,6 +394,15 @@ var opCodeToString = map[OpCode]string{
 	LOG3: "LOG3",
 	LOG4: "LOG4",
 
+	// 0xd0 range - decimal float ops.
+	DECADD: "DECADD",
+	DECNEG: "DECNEG",
+	DECMUL: "DECMUL",
+	DECINV: "DECINV",
+	DECEXP: "DECEXP",
+	DECLOG2: "DECLOG2",
+	DECSIN: "DECSIN",
+
 	// 0xf0 range - closures.
 	CREATE:       "CREATE",
 	CALL:         "CALL",
@@ -436,9 +443,6 @@ var stringToOp = map[string]OpCode{
 	"EQ":         EQ,
 	"ISZERO":     ISZERO,
 	"SIGNEXTEND": SIGNEXTEND,
-
-	"DEC_ADD": DEC_ADD,
-
 	"AND":            AND,
 	"OR":             OR,
 	"XOR":            XOR,
@@ -562,6 +566,13 @@ var stringToOp = map[string]OpCode{
 	"LOG2":           LOG2,
 	"LOG3":           LOG3,
 	"LOG4":           LOG4,
+	"DECADD": 		  DECADD,
+	"DECNEG": 		  DECNEG,
+	"DECMUL": 		  DECMUL,
+	"DECINV": 		  DECINV,
+	"DECEXP": 		  DECEXP,
+	"DECLOG2": 		  DECLOG2,
+	"DECSIN": 		  DECSIN,
 	"CREATE":         CREATE,
 	"CREATE2":        CREATE2,
 	"CALL":           CALL,

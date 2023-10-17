@@ -318,7 +318,8 @@ type ChainConfig struct {
 	CancunTime   *uint64 `json:"cancunTime,omitempty"`   // Cancun switch time (nil = no fork, 0 = already on cancun)
 	PragueTime   *uint64 `json:"pragueTime,omitempty"`   // Prague switch time (nil = no fork, 0 = already on prague)
 	VerkleTime   *uint64 `json:"verkleTime,omitempty"`   // Verkle switch time (nil = no fork, 0 = already on verkle)
-
+	EVMPlusTime   *uint64 `json:"evmPlisTime,omitempty"`   // EVMPlus switch time (nil = no fork, 0 = already on ?)
+	
 	// TerminalTotalDifficulty is the amount of total difficulty reached by
 	// the network that triggers the consensus upgrade.
 	TerminalTotalDifficulty *big.Int `json:"terminalTotalDifficulty,omitempty"`
@@ -543,6 +544,11 @@ func (c *ChainConfig) IsPrague(num *big.Int, time uint64) bool {
 // IsVerkle returns whether num is either equal to the Verkle fork time or greater.
 func (c *ChainConfig) IsVerkle(num *big.Int, time uint64) bool {
 	return c.IsLondon(num) && isTimestampForked(c.VerkleTime, time)
+}
+
+// IsCancun returns whether num is either equal to the Cancun fork time or greater.
+func (c *ChainConfig) IsEVMPlus(num *big.Int, time uint64) bool {
+	return c.IsLondon(num) && isTimestampForked(c.EVMPlusTime, time)
 }
 
 // CheckCompatible checks whether scheduled fork transitions have been imported
@@ -852,6 +858,7 @@ type Rules struct {
 	IsBerlin, IsLondon                                      bool
 	IsMerge, IsShanghai, IsCancun, IsPrague                 bool
 	IsVerkle                                                bool
+	IsEVMPlus                                               bool
 }
 
 // Rules ensures c's ChainID is not nil.
@@ -877,5 +884,6 @@ func (c *ChainConfig) Rules(num *big.Int, isMerge bool, timestamp uint64) Rules 
 		IsCancun:         c.IsCancun(num, timestamp),
 		IsPrague:         c.IsPrague(num, timestamp),
 		IsVerkle:         c.IsVerkle(num, timestamp),
+		IsEVMPlus:        c.IsEVMPlus(num, timestamp),
 	}
 }

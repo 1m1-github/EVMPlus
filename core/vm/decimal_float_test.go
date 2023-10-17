@@ -25,15 +25,14 @@ import (
 	"github.com/holiman/uint256"
 )
 
-
 func BenchmarkOpDecAdd(b *testing.B) {
 	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
 	benchmarkOpDec(b, intArgs, opDecAdd)
 }
 
-func BenchmarkOpDecSub(b *testing.B) {
-	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
-	benchmarkOpDec(b, intArgs, opDecSub)
+func BenchmarkOpDecNeg(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecNeg)
 }
 
 func BenchmarkOpDecMul(b *testing.B) {
@@ -41,9 +40,9 @@ func BenchmarkOpDecMul(b *testing.B) {
 	benchmarkOpDec(b, intArgs, opDecMul)
 }
 
-func BenchmarkOpDecDiv(b *testing.B) {
-	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
-	benchmarkOpDec(b, intArgs, opDecDiv)
+func BenchmarkOpDecInv(b *testing.B) {
+	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecInv)
 }
 
 func BenchmarkOpDecExp(b *testing.B) {
@@ -56,12 +55,7 @@ func BenchmarkOpDecLog2(b *testing.B) {
 	benchmarkOpDec(b, intArgs, opDecLog2)
 }
 
-func BenchmarkOpDecNorm(b *testing.B) {
-	intArgs := []*uint256.Int{uint256.NewInt(0), uint256.NewInt(10000)}
-	benchmarkOpDec(b, intArgs, opDecNorm)
-}
-
-func benchmarkOpDec(b *testing.B, intArgs[]*uint256.Int, op executionFunc) {
+func benchmarkOpDec(b *testing.B, intArgs []*uint256.Int, op executionFunc) {
 	var (
 		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})
 		stack          = newstack()
@@ -70,7 +64,7 @@ func benchmarkOpDec(b *testing.B, intArgs[]*uint256.Int, op executionFunc) {
 	)
 
 	env.interpreter = evmInterpreter
-	
+
 	pc := uint64(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -386,7 +380,7 @@ func TestLog(t *testing.T) {
 	for _, tt := range tests {
 		var out, out2 Decimal
 		out.Log2(&tt.a, STEPS)
-		
+
 		out2.Normalize(&out, 0, true)
 		if !out2.Eq(&tt.b) {
 			t.Fatal(tt.a, out, tt.b)
