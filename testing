@@ -12,6 +12,8 @@ go run . --datadir /Users/1m1/Downloads/chaindata --dev --nodiscover console
 go run . --datadir /Users/1m1/Downloads/chaindata --dev --nodiscover account new
 go run . --datadir /Users/1m1/Downloads/chaindata --dev --nodiscover account list
 
+debug.traceTransaction
+
 pragma solidity ^0.8.0;
 contract EVM+Test {
     function testadd(int ac, int aq, int bc, int bq) public pure returns (int, int) {
