@@ -186,7 +186,7 @@ func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
 		out.Add(out, ONE) // out++
 	}
 
-	// from here: 1 <= a < 2 <=> 0 <= out < 1
+	// from here: 1 < a < 2 <=> 0 < out < 1
 
 	// compare a^2 to 2 to reveal out bit-by-bit
 	steps_counter := big.NewInt(0) // for now, precision is naiive
@@ -205,7 +205,7 @@ func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
 
 		v.halve()
 
-		steps_counter.Add(&steps, ONE_BIG)
+		steps_counter.Add(steps_counter, ONE_BIG)
 	}
 
 	return out

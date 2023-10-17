@@ -87,7 +87,7 @@ func (d2 *Decimal) Eq(d1 *Decimal) bool {
 	return d1.c.Cmp(&d2.c) == 0 && d1.q.Cmp(&d2.q) == 0
 }
 
-func TestUInt256IntToBigInt(t *testing.T) {
+func TestDecUInt256IntToBigInt(t *testing.T) {
 	tests := []struct {
 		x uint256.Int
 		y big.Int
@@ -106,7 +106,7 @@ func TestUInt256IntToBigInt(t *testing.T) {
 	}
 }
 
-func TestUInt256IntTupleToDecimal(t *testing.T) {
+func TestDecUInt256IntTupleToDecimal(t *testing.T) {
 	tests := []struct {
 		c uint256.Int
 		q uint256.Int
@@ -126,7 +126,7 @@ func TestUInt256IntTupleToDecimal(t *testing.T) {
 	}
 }
 
-func TestBigIntToUInt256Int(t *testing.T) {
+func TestDecBigIntToUInt256Int(t *testing.T) {
 	tests := []struct {
 		x big.Int
 		y uint256.Int
@@ -143,7 +143,7 @@ func TestBigIntToUInt256Int(t *testing.T) {
 	}
 }
 
-func TestAdd(t *testing.T) {
+func TestDecAdd(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -168,7 +168,7 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-func TestNegate(t *testing.T) {
+func TestDecNegate(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -192,7 +192,7 @@ func TestNegate(t *testing.T) {
 	}
 }
 
-func TestMultiply(t *testing.T) {
+func TestDecMultiply(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -216,7 +216,7 @@ func TestMultiply(t *testing.T) {
 	}
 }
 
-func TestInv(t *testing.T) {
+func TestDecInv(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -239,7 +239,7 @@ func TestInv(t *testing.T) {
 	}
 }
 
-func TestNormalize(t *testing.T) {
+func TestDecNormalize(t *testing.T) {
 
 	LARGE_TEN := big.NewInt(10)
 	LARGE_TEN.Exp(LARGE_TEN, big.NewInt(75), ZERO_BIG)
@@ -281,7 +281,7 @@ func TestNormalize(t *testing.T) {
 	}
 }
 
-func TestExp(t *testing.T) {
+func TestDecExp(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -300,7 +300,7 @@ func TestExp(t *testing.T) {
 	}
 }
 
-func TestLog(t *testing.T) {
+func TestDecLog2(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -318,7 +318,7 @@ func TestLog(t *testing.T) {
 	}
 }
 
-func TestSin(t *testing.T) {
+func TestDecSin(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
