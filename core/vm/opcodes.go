@@ -44,8 +44,8 @@ const (
 	SIGNEXTEND OpCode = 0xb
 
 	DEC_ADD  OpCode = 0xd0
-	DEC_MUL  OpCode = 0xd1
-	DEC_SUB  OpCode = 0xd2
+	DEC_SUB  OpCode = 0xd1
+	DEC_MUL  OpCode = 0xd2
 	DEC_DIV  OpCode = 0xd3
 	DEC_EXP  OpCode = 0xd4
 	DEC_LOG2 OpCode = 0xd5
