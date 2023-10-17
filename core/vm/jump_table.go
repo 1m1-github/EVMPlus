@@ -83,48 +83,7 @@ func validate(jt JumpTable) JumpTable {
 
 func newEVMPlusInstructionSet() JumpTable {
 	instructionSet := newCancunInstructionSet()
-	instructionSet[DECADD] = &operation{
-		execute:     opDecAdd,
-		constantGas: GasFastStep, // TODO
-		minStack:    minStack(4, 2),
-		maxStack:    maxStack(4, 2),
-	}
-	instructionSet[DECNEG] = &operation{
-		execute:     opDecNeg,
-		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
-	}
-	instructionSet[DECMUL] = &operation{
-		execute:     opDecMul,
-		constantGas: GasFastStep, // TODO
-		minStack:    minStack(4, 2),
-		maxStack:    maxStack(4, 2),
-	}
-	instructionSet[DECINV] = &operation{
-		execute:     opDecInv,
-		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
-	}
-	instructionSet[DECEXP] = &operation{
-		execute:     opDecExp,
-		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
-	}
-	instructionSet[DECLOG2] = &operation{
-		execute:     opDecLog2,
-		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
-	}
-	instructionSet[DECSIN] = &operation{
-		execute:     opDecSin,
-		constantGas: GasFastStep, // TODO
-		minStack:    minStack(2, 2),
-		maxStack:    maxStack(2, 2),
-	}
+	enableEVMPlus(&instructionSet)
 	return validate(instructionSet)
 }
 
@@ -141,6 +100,8 @@ func newShanghaiInstructionSet() JumpTable {
 	instructionSet := newMergeInstructionSet()
 	enable3855(&instructionSet) // PUSH0 instruction
 	enable3860(&instructionSet) // Limit and meter initcode
+
+	enableEVMPlus(&instructionSet) // EVMPlus - for testing as local runs as Shanghai
 
 	return validate(instructionSet)
 }
