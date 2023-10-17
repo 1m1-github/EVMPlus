@@ -1,0 +1,133 @@
+# github.com/karalabe/usb
+In file included from /Users/1m1/go/pkg/mod/github.com/karalabe/usb@v0.0.2/libs.go:50:
+/Users/1m1/go/pkg/mod/github.com/karalabe/usb@v0.0.2/libusb/libusb/os/darwin_usb.c:53:29: warning: macro 'ATOMIC_VAR_INIT' has been marked as deprecated [-Wdeprecated-pragma]
+/Library/Developer/CommandLineTools/usr/lib/clang/14.0.3/include/stdatomic.h:51:41: note: macro marked 'deprecated' here
+INFO [10-16|15:58:01.554] Starting Geth in ephemeral dev mode... 
+WARN [10-16|15:58:01.554] You are running Geth in --dev mode. Please note the following:
+
+  1. This mode is only intended for fast, iterative development without assumptions on
+     security or persistence.
+  2. The database is created in memory unless specified otherwise. Therefore, shutting down
+     your computer or losing power will wipe your entire block data and chain state for
+     your dev environment.
+  3. A random, pre-allocated developer account will be available and unlocked as
+     eth.coinbase, which can be used for testing. The random dev account is temporary,
+     stored on a ramdisk, and will be lost if your machine is restarted.
+  4. Mining is enabled by default. However, the client will only seal blocks if transactions
+     are pending in the mempool. The miner's minimum accepted gas price is 1.
+  5. Networking is disabled; there is no listen-address, the maximum number of peers is set
+     to 0, and discovery is disabled.
+ 
+INFO [10-16|15:58:01.556] Maximum peer count                       ETH=50 LES=0 total=50
+INFO [10-16|15:58:01.559] Defaulting to pebble as the backing database 
+INFO [10-16|15:58:01.559] Allocated cache and file handles         database=/Users/1m1/Downloads/chaindata/geth/chaindata cache=512.00MiB handles=5120
+INFO [10-16|15:58:01.634] Opened ancient database                  database=/Users/1m1/Downloads/chaindata/geth/chaindata/ancient/chain readonly=false
+INFO [10-16|15:58:01.634] State schema set to default              scheme=hash
+INFO [10-16|15:58:01.634] Freezer shutting down 
+INFO [10-16|15:58:01.647] Set global gas cap                       cap=50,000,000
+INFO [10-16|15:58:01.783] Using developer account                  address=0xB7d965e23031efD3bB66B7dfEbe6cEE3B51cfbf6
+INFO [10-16|15:58:01.783] Using pebble as the backing database 
+INFO [10-16|15:58:01.783] Allocated cache and file handles         database=/Users/1m1/Downloads/chaindata/geth/chaindata cache=512.00MiB handles=5120
+INFO [10-16|15:58:01.784] Opened ancient database                  database=/Users/1m1/Downloads/chaindata/geth/chaindata/ancient/chain readonly=true
+INFO [10-16|15:58:01.784] Initializing the KZG library             backend=gokzg
+INFO [10-16|15:58:01.812] Allocated trie memory caches             clean=154.00MiB dirty=256.00MiB
+INFO [10-16|15:58:01.812] Using pebble as the backing database 
+INFO [10-16|15:58:01.812] Allocated cache and file handles         database=/Users/1m1/Downloads/chaindata/geth/chaindata cache=512.00MiB handles=5120
+INFO [10-16|15:58:01.846] Opened ancient database                  database=/Users/1m1/Downloads/chaindata/geth/chaindata/ancient/chain readonly=false
+INFO [10-16|15:58:01.846] Initialising Ethereum protocol           network=1337 dbversion=<nil>
+INFO [10-16|15:58:01.851] Writing custom genesis block 
+INFO [10-16|15:58:01.855] Persisted trie from memory database      nodes=12 size=1.83KiB time=3.363542ms gcnodes=0 gcsize=0.00B gctime=0s livenodes=0 livesize=0.00B
+INFO [10-16|15:58:01.891]  
+INFO [10-16|15:58:01.891] --------------------------------------------------------------------------------------------------------------------------------------------------------- 
+INFO [10-16|15:58:01.891] Chain ID:  1337 (unknown) 
+INFO [10-16|15:58:01.891] Consensus: unknown 
+INFO [10-16|15:58:01.891]  
+INFO [10-16|15:58:01.891] Pre-Merge hard forks (block based): 
+INFO [10-16|15:58:01.891]  - Homestead:                   #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/homestead.md) 
+INFO [10-16|15:58:01.891]  - Tangerine Whistle (EIP 150): #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/tangerine-whistle.md) 
+INFO [10-16|15:58:01.891]  - Spurious Dragon/1 (EIP 155): #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/spurious-dragon.md) 
+INFO [10-16|15:58:01.891]  - Spurious Dragon/2 (EIP 158): #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/spurious-dragon.md) 
+INFO [10-16|15:58:01.891]  - Byzantium:                   #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/byzantium.md) 
+INFO [10-16|15:58:01.891]  - Constantinople:              #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/constantinople.md) 
+INFO [10-16|15:58:01.891]  - Petersburg:                  #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/petersburg.md) 
+INFO [10-16|15:58:01.891]  - Istanbul:                    #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/istanbul.md) 
+INFO [10-16|15:58:01.891]  - Muir Glacier:                #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/muir-glacier.md) 
+INFO [10-16|15:58:01.891]  - Berlin:                      #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/berlin.md) 
+INFO [10-16|15:58:01.891]  - London:                      #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/london.md) 
+INFO [10-16|15:58:01.891]  - Arrow Glacier:               #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/arrow-glacier.md) 
+INFO [10-16|15:58:01.891]  - Gray Glacier:                #0        (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/gray-glacier.md) 
+INFO [10-16|15:58:01.891]  
+INFO [10-16|15:58:01.891] Merge configured: 
+INFO [10-16|15:58:01.891]  - Hard-fork specification:    https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/paris.md 
+INFO [10-16|15:58:01.891]  - Network known to be merged: true 
+INFO [10-16|15:58:01.891]  - Total terminal difficulty:  0 
+INFO [10-16|15:58:01.891]  
+INFO [10-16|15:58:01.891] Post-Merge hard forks (timestamp based): 
+INFO [10-16|15:58:01.891]  - Shanghai:                    @0          (https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/shanghai.md) 
+INFO [10-16|15:58:01.891]  
+INFO [10-16|15:58:01.891] --------------------------------------------------------------------------------------------------------------------------------------------------------- 
+INFO [10-16|15:58:01.891]  
+INFO [10-16|15:58:01.891] Loaded most recent local block           number=0 hash=31d5fb..fc6fc6 td=0 age=54y6mo3w
+WARN [10-16|15:58:01.891] Failed to load snapshot                  err="missing or corrupted snapshot"
+INFO [10-16|15:58:01.900] Rebuilding state snapshot 
+INFO [10-16|15:58:01.904] Resuming state snapshot generation       root=12c5df..1af2fb accounts=0 slots=0 storage=0.00B dangling=0 elapsed=3.955ms
+INFO [10-16|15:58:01.904] Initialized transaction indexer          limit=2,350,000
+INFO [10-16|15:58:01.904] Regenerated local transaction journal    transactions=0 accounts=0
+INFO [10-16|15:58:01.908] Generated state snapshot                 accounts=10 slots=0 storage=412.00B dangling=0 elapsed=7.852ms
+INFO [10-16|15:58:01.917] Chain post-merge, sync via beacon client 
+INFO [10-16|15:58:01.917] Gasprice oracle is ignoring threshold set threshold=2
+INFO [10-16|15:58:01.926] Entered PoS stage 
+INFO [10-16|15:58:01.930] Starting peer-to-peer node               instance=Geth/v1.13.3-unstable/darwin-arm64/go1.21.3
+WARN [10-16|15:58:01.930] P2P server will be useless, neither dialing nor listening 
+INFO [10-16|15:58:01.954] IPC endpoint opened                      url=/Users/1m1/Downloads/chaindata/geth.ipc
+INFO [10-16|15:58:01.955] New local node record                    seq=1,697,497,081,954 id=5537c372fd8b044c ip=127.0.0.1 udp=0 tcp=0
+INFO [10-16|15:58:01.955] HTTP server started                      endpoint=127.0.0.1:8545 auth=false prefix= cors=https://remix.ethereum.org vhosts=localhost
+INFO [10-16|15:58:01.955] Started P2P networking                   self=enode://56c1ca769be7a86fa1ad6fb319c0af8f8ceea8dae814c9feaa24b29ae5f106421416df55b51d3fc9baf6ab68b81ec322c540db247e4d30b4c087f85296c7e82c@127.0.0.1:0
+INFO [10-16|15:58:57.724] Setting new local account                address=0xB7d965e23031efD3bB66B7dfEbe6cEE3B51cfbf6
+INFO [10-16|15:58:57.724] Submitted contract creation              hash=0x6f706c462bd2fef29d39d04a06a3bcdb3033c74f8cc1d250f8cab0304899ff45 from=0xB7d965e23031efD3bB66B7dfEbe6cEE3B51cfbf6 nonce=0 contract=0x8d2C5BDF5B1b87bd34041A9F08cA443DC14bfa1E value=0
+INFO [10-16|15:58:57.730] Starting work on payload                 id=0x1754961f0cfa461c
+INFO [10-16|15:58:57.730] Updated payload                          id=0x1754961f0cfa461c number=1 hash=7d6ae7..abe173 txs=1 withdrawals=0 gas=65522 fees=6.5522e-14 root=2b04b6..788224 elapsed="248.125µs"
+INFO [10-16|15:58:57.730] Stopping work on payload                 id=0x1754961f0cfa461c reason=delivery
+INFO [10-16|15:58:57.740] Imported new potential chain segment     number=1 hash=7d6ae7..abe173 blocks=1 txs=1 mgas=0.066 elapsed=10.115ms    mgasps=6.477 snapdiffs=177.00B triedirty=2.29KiB
+INFO [10-16|15:58:57.745] Chain head was updated                   number=1 hash=7d6ae7..abe173 root=2b04b6..788224 elapsed=4.990583ms
+WARN [10-16|15:59:52.782] Served eth_call                          reqid=20 duration="254.625µs" err="execution reverted"
+INFO [10-16|15:59:57.888] Submitted transaction                    hash=0xf0855a924fbd1dd2faa475805fbed9cd37e78e194d04e5754ab0ac138e71c567 from=0xB7d965e23031efD3bB66B7dfEbe6cEE3B51cfbf6 nonce=1 recipient=0x8d2C5BDF5B1b87bd34041A9F08cA443DC14bfa1E value=0
+INFO [10-16|15:59:57.894] Starting work on payload                 id=0x07468e62f8a228a4
+INFO [10-16|15:59:57.894] Updated payload                          id=0x07468e62f8a228a4 number=2 hash=1e1a04..ce4f55 txs=1 withdrawals=0 gas=21118 fees=2.1118e-14 root=ccdec6..d8c9c7 elapsed="241.583µs"
+INFO [10-16|15:59:57.894] Stopping work on payload                 id=0x07468e62f8a228a4 reason=delivery
+INFO [10-16|15:59:57.898] Imported new potential chain segment     number=2 hash=1e1a04..ce4f55 blocks=1 txs=1 mgas=0.021 elapsed=4.203ms     mgasps=5.024 snapdiffs=286.00B triedirty=3.45KiB
+INFO [10-16|15:59:57.903] Chain head was updated                   number=2 hash=1e1a04..ce4f55 root=ccdec6..d8c9c7 elapsed=4.884791ms
+INFO [10-16|16:03:21.548] Legacy pool tip threshold updated        tip=1
+INFO [10-16|16:03:23.687] Submitted transaction                    hash=0x9387e1ef8a562b5c091399c3260d1d229d82e9a331d27c7dcc98fa2a4e8736dd from=0xB7d965e23031efD3bB66B7dfEbe6cEE3B51cfbf6 nonce=2 recipient=0x8d2C5BDF5B1b87bd34041A9F08cA443DC14bfa1E value=0
+INFO [10-16|16:03:23.692] Starting work on payload                 id=0x11cf6373cab66842
+INFO [10-16|16:03:23.693] Updated payload                          id=0x11cf6373cab66842 number=3 hash=b200bd..e75b98 txs=1 withdrawals=0 gas=21118 fees=2.1118e-14 root=a45064..0e988a elapsed="244.833µs"
+INFO [10-16|16:03:23.693] Stopping work on payload                 id=0x11cf6373cab66842 reason=delivery
+INFO [10-16|16:03:23.697] Imported new potential chain segment     number=3 hash=b200bd..e75b98 blocks=1 txs=1 mgas=0.021 elapsed=4.380ms     mgasps=4.821 snapdiffs=395.00B triedirty=4.61KiB
+INFO [10-16|16:03:23.701] Chain head was updated                   number=3 hash=b200bd..e75b98 root=a45064..0e988a elapsed=3.624542ms
+INFO [10-16|16:13:44.246] Submitted contract creation              hash=0xa6b8bbeaadf894bd7c47b706f20938c89a90182eb1439162f813bf09c89d8db9 from=0xB7d965e23031efD3bB66B7dfEbe6cEE3B51cfbf6 nonce=3 contract=0x2ba322Bfd099763E807f4c70abFC8Fb5EF783dfE value=0
+INFO [10-16|16:13:44.252] Starting work on payload                 id=0x5151ed2d1b5cf4f7
+INFO [10-16|16:13:44.252] Updated payload                          id=0x5151ed2d1b5cf4f7 number=4 hash=a022b6..8f818b txs=1 withdrawals=0 gas=63792 fees=6.3792e-14 root=4a92c0..8d7d7a elapsed="207.75µs"
+INFO [10-16|16:13:44.252] Stopping work on payload                 id=0x5151ed2d1b5cf4f7 reason=delivery
+INFO [10-16|16:13:44.259] Imported new potential chain segment     number=4 hash=a022b6..8f818b blocks=1 txs=1 mgas=0.064 elapsed=6.531ms     mgasps=9.766 snapdiffs=573.00B triedirty=6.45KiB
+INFO [10-16|16:13:44.264] Chain head was updated                   number=4 hash=a022b6..8f818b root=4a92c0..8d7d7a elapsed=5.179417ms
+INFO [10-16|16:15:33.446] Submitted contract creation              hash=0x9632421cc545bf51fb4c107b23e82e01c6a009906eb9c5844b0fd71dac1a40be from=0xB7d965e23031efD3bB66B7dfEbe6cEE3B51cfbf6 nonce=4 contract=0x0d4bE2c578B6643F0990d012F26b5B67c119073b value=0
+INFO [10-16|16:15:33.450] Starting work on payload                 id=0x5c4d9a7a5111f5d6
+INFO [10-16|16:15:33.451] Updated payload                          id=0x5c4d9a7a5111f5d6 number=5 hash=8e2899..ab04fa txs=1 withdrawals=0 gas=63792 fees=6.3792e-14 root=57f515..b1be06 elapsed="247.916µs"
+INFO [10-16|16:15:33.451] Stopping work on payload                 id=0x5c4d9a7a5111f5d6 reason=delivery
+INFO [10-16|16:15:33.458] Imported new potential chain segment     number=5 hash=8e2899..ab04fa blocks=1 txs=1 mgas=0.064 elapsed=7.657ms     mgasps=8.331 snapdiffs=751.00B triedirty=8.29KiB
+INFO [10-16|16:15:33.460] Chain head was updated                   number=5 hash=8e2899..ab04fa root=57f515..b1be06 elapsed=1.921583ms
+INFO [10-16|16:15:40.562] HTTP server stopped                      endpoint=127.0.0.1:8545
+INFO [10-16|16:15:40.564] IPC endpoint closed                      url=/Users/1m1/Downloads/chaindata/geth.ipc
+INFO [10-16|16:15:40.564] Ethereum protocol stopped 
+INFO [10-16|16:15:40.564] Transaction pool stopped 
+INFO [10-16|16:15:40.578] Writing cached state to disk             block=5 hash=8e2899..ab04fa root=57f515..b1be06
+INFO [10-16|16:15:40.581] Persisted trie from memory database      nodes=15 size=2.15KiB time=2.957417ms gcnodes=0 gcsize=0.00B gctime=0s livenodes=16 livesize=3.00KiB
+INFO [10-16|16:15:40.581] Writing cached state to disk             block=4 hash=a022b6..8f818b root=4a92c0..8d7d7a
+INFO [10-16|16:15:40.586] Persisted trie from memory database      nodes=4  size=768.00B time=4.842042ms gcnodes=0 gcsize=0.00B gctime=0s livenodes=12 livesize=2.25KiB
+INFO [10-16|16:15:40.586] Writing snapshot state to disk           root=12c5df..1af2fb
+INFO [10-16|16:15:40.586] Persisted trie from memory database      nodes=0  size=0.00B   time="6.709µs"  gcnodes=0 gcsize=0.00B gctime=0s livenodes=12 livesize=2.25KiB
+INFO [10-16|16:15:40.586] Blockchain stopped 
+# github.com/karalabe/usb
+In file included from /Users/1m1/go/pkg/mod/github.com/karalabe/usb@v0.0.2/libs.go:50:
+/Users/1m1/go/pkg/mod/github.com/karalabe/usb@v0.0.2/libusb/libusb/os/darwin_usb.c:53:29: warning: macro 'ATOMIC_VAR_INIT' has been marked as deprecated [-Wdeprecated-pragma]
+/Library/Developer/CommandLineTools/usr/lib/clang/14.0.3/include/stdatomic.h:51:41: note: macro marked 'deprecated' here
