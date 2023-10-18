@@ -2,7 +2,7 @@ package vm
 
 import (
 	"math/big"
-
+	"fmt"
 	"github.com/holiman/uint256"
 )
 
@@ -212,6 +212,106 @@ func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
 	return out
 }
 
+// ln(1+x/y) using continued fractions: https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
+func ln10CF(steps big.Int) *big.Rat {
+	a := lnCF(ONE_BIG, big.NewInt(4), steps)
+	b := lnCF(big.NewInt(3), big.NewInt(125), steps)
+	a.Num().Mul(a.Num(), TEN_BIG)
+	b.Num().Mul(b.Num(), big.NewInt(3))
+	a.Add(a, b)
+	return a
+}
+func lnCF(x, y *big.Int, steps big.Int) *big.Rat {
+	var (
+		two_y_plus_x big.Int
+		two_x big.Rat
+	)
+	
+	two_y_plus_x.Add(y, y)
+	two_y_plus_x.Add(&two_y_plus_x, x)
+	
+	two_x.Num().Mul(TWO_BIG, x)
+
+	step := big.NewInt(1)
+
+	r := lnCF_recur(x, &two_y_plus_x, step, &steps)
+	r.Inv(r)
+	
+	r.Mul(r, &two_x)
+
+	return r
+}
+func lnCF_recur(x, two_y_plus_x, step, max_steps *big.Int) *big.Rat {
+	var r big.Rat
+	r.Num().Add(step, step)
+	r.Num().Sub(r.Num(), ONE_BIG)
+	r.Num().Mul(r.Num(), two_y_plus_x)
+
+	if step.Cmp(max_steps) == 0 {	
+		return &r
+	}
+
+	var nextStep big.Int ; nextStep.Add(step, ONE_BIG)
+	r2 := lnCF_recur(x, two_y_plus_x, &nextStep, max_steps)
+	r2.Inv(r2)
+
+	var num big.Rat
+	num.Num().Mul(step, x)
+	num.Num().Mul(num.Num(), num.Num())
+
+	r2.Mul(r2, &num)
+
+	return r.Sub(&r, r2)
+}
+
+// ln(1+a), |a|<1
+func (out *Decimal) Ln(a *Decimal, steps big.Int) *Decimal {
+
+	// ln(a) not defined not a<=0
+	var abs_a Decimal
+	abs_a.c.Abs(&a.c)
+	abs_a.q.Set(&a.q)
+	if !abs_a.lessThan(ONE) {
+		panic("|a|<1")
+	}
+
+	if a.isOne() {
+		out.c.Set(ZERO_BIG)
+		out.q.Set(ONE_BIG)
+		return out
+	}
+
+	// out = a
+	out.c.Set(&a.c)
+	out.q.Set(&a.q)
+
+	var factor Decimal
+	a_power := copyDecimal(a)
+	i := copyDecimal(TWO)
+	max_i := createDecimal(&steps, ZERO_BIG)
+	max_i.Add(max_i, ONE)
+	negate := true
+
+	for ; i.lessThan(max_i); i.Add(i, ONE) { // step 0 skipped as out set to a
+		a_power.Multiply(a_power, a) // a^i
+
+		factor.Inverse(i, steps)         // 1/i
+		factor.Multiply(&factor, a_power) // store a^i/i in factor as not needed anymore
+		if negate {
+			factor.Negate(&factor) // (-1)^i*a^i/i
+		}
+		negate = !negate
+
+		out.Add(out, &factor) // out += (-1)^i*a^i/i
+	}
+
+	return out
+}
+
+func (d *Decimal) String() string {
+	return fmt.Sprintf("%v*10^%v", d.c.String(), d.q.String())
+}
+
 // sin(a)
 func (out *Decimal) Sin(a *Decimal, steps big.Int) *Decimal {
 	// out = a
@@ -224,7 +324,7 @@ func (out *Decimal) Sin(a *Decimal, steps big.Int) *Decimal {
 
 	var a_squared, factorial_inv Decimal
 	a_squared.Multiply(a, a)
-	a_power := copyDecimal(ONE)
+	a_power := copyDecimal(a)
 	factorial := copyDecimal(ONE)
 	factorial_next := copyDecimal(ONE)
 	negate := true
