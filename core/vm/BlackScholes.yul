@@ -15,9 +15,10 @@ object "BlackScholes" {
                 // 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320
                 calldatacopy(0, 4, 352)
 
-                d_plus()
+                let ac, aq := callprice()
                 
-                return(0, 32)
+                sstore(0, ac)
+                sstore(1, aq)
             }
             default {
                 revert(0, 0)
@@ -66,53 +67,94 @@ object "BlackScholes" {
             }
 
             function d_plus() {
+                r_s2_T()
                 let r_s2_T_c := mload(352)
                 let r_s2_T_q := mload(384)
+                ln_S_K()
                 let ln_S_K_c := mload(416)
                 let ln_S_K_q := mload(448)
-                let d_plus_c, d_plus_q := dec_add(ln_S_K_c,ln_S_K_q, r_s2_T_c, r_s2_T_q)
+                let ln_S_K_p_r_s2_T_c, ln_S_K_p_r_s2_T_q := dec_add(ln_S_K_c,ln_S_K_q, r_s2_T_c, r_s2_T_q)
                 
                 let sc := mload(192)
                 let sq := mload(224)
                 let Tc := mload(256)
                 let Tq := mload(288)
                 let precision := mload(320)
-                let s_sqrt_T_c, s_sqrt_T_q := dec_sqrt(Tc, Tq, precision)
-                s_sqrt_T_c, s_sqrt_T_q := dec_mul(sc, sq, s_sqrt_T_c, s_sqrt_T_q)
+                let sqrt_T_c, sqrt_T_q := dec_sqrt(Tc, Tq, precision)
+                let s_sqrt_T_c, s_sqrt_T_q := dec_mul(sc, sq, sqrt_T_c, sqrt_T_q)
                 mstore(352, s_sqrt_T_c)
                 mstore(384, s_sqrt_T_q)
 
-                d_plus_c, d_plus_q := dec_div(d_plus_c, d_plus_q, s_sqrt_T_c, s_sqrt_T_q, precision)
+                let d_plus_c, d_plus_q := dec_div(ln_S_K_p_r_s2_T_c, ln_S_K_p_r_s2_T_q, s_sqrt_T_c, s_sqrt_T_q, precision)
                 mstore(416, d_plus_c)
                 mstore(448, d_plus_q)
             }
+            function d_minus() {
+                let d_plus_c := mload(416)
+                let d_plus_q := mload(448)
+                let s_sqrt_T_c := mload(352)
+                let s_sqrt_T_q := mload(384)
+                let d_minus_c, d_minus_q := dec_sub(d_plus_c, d_plus_q, s_sqrt_T_c, s_sqrt_T_q)
+                mstore(352, d_minus_c)
+                mstore(384, d_minus_q)
+            }
             // approximation
             // 1/(1+dec_exp(-1.65451*a))
-            // function CDF(ac, aq, precision) -> bc, bq {
-            //     let C := 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd79b5 // -165451
-            //     let MINUS_FIVE := 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb // -5
-            //     bc, bq := dec_mul(C, MINUS_FIVE, ac, aq)
-            //     bc, bq := dec_exp(bc, bq, precision)
-            //     bc, bq := dec_add(bc, bq, 1, 0)
-            //     bc, bq := dec_div(1, 0, bc, bq)
-            // }
-            // function callprice(Sc, Sq, Kc, Kq, rc, rq, sc, sq, Tc, Tq, precision) -> ac, aq {
-            // function callprice() -> ac, aq {
-            //     // let dp_c, dp_q, s_sqrt_T_c, s_sqrt_T_q := d_plus(Sc, Sq, Kc, Kq, rc, rq, sc, sq, Tc, Tq, precision)
-            //     let dp_c, dp_q, s_sqrt_T_c, s_sqrt_T_q := d_plus()
-            //     let dm_c, dm_q := dec_sub(dp_c, dp_q, s_sqrt_T_c, s_sqrt_T_q)
-            //     let bc, bq := CDF(dp_c, dp_q, precision)
-            //     bc, bq := dec_mul(Sc, Sq, bc, bq)
-            //     let cdf_dm_c, cdf_dm_q := CDF(dm_c, dm_q, precision)
+            function CDF(ac, aq) -> bc, bq {
+                let C := 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd79b5 // -165451
+                let MINUS_FIVE := 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb // -5
+                let precision := mload(320)
+                let b1_c, b1_q := dec_mul(C, MINUS_FIVE, ac, aq)
+                let b2_c, b2_q := dec_exp(b1_c, b1_q, precision)
+                let b3_c, b3_q := dec_add(b2_c, b2_q, 1, 0)
+                bc, bq := dec_div(1, 0, b3_c, b3_q, precision)
+            }
+            function cdf_dp_S() {
+                let d_plus_c := mload(416)
+                let d_plus_q := mload(448)
+                let cdf_dp_c, cdf_dp_q := CDF(d_plus_c, d_plus_q)
                 
-            //     let MINUS_ONE := 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff // -1
-            //     let cc, cq := dec_mul(MINUS_ONE, 0, rc, rq)
-            //     cc, cq := dec_mul(cc, cq, Tc, Tq)
-            //     cc, cq := dec_exp(cc, cq, precision)
-            //     cc, cq := dec_mul(Kc, Kq, cc, cq)
-            //     cc, cq := dec_mul(cdf_dm_c, cdf_dm_q, cc, cq)
-            //     ac, aq := dec_sub(bc, bq, cc, cq)
-            // }
+                let Sc := mload(0)
+                let Sq := mload(32)
+                let cdf_dp_S_c, cdf_dp_S_q := dec_mul(Sc, Sq, cdf_dp_c, cdf_dp_q)
+
+                mstore(416, cdf_dp_S_c)
+                mstore(448, cdf_dp_S_q)
+            }
+            function cdf_dm_K() {
+                let rc := mload(128)
+                let rq := mload(160)
+                let r_n_c, r_n_q := dec_neg(rc, rq)
+                let Tc := mload(256)
+                let Tq := mload(288)
+                let r_T_c, r_T_q := dec_mul(r_n_c, r_n_q, Tc, Tq)
+                let precision := mload(320)
+                let exp_r_T_c, exp_r_T_q := dec_exp(r_T_c, r_T_q, precision)
+                let Kc := mload(64)
+                let Kq := mload(96)
+                let K_exp_r_T_c, K_exp_r_T_q := dec_mul(Kc, Kq, exp_r_T_c, exp_r_T_q)
+
+                let d_minus_c := mload(352)
+                let d_minus_q := mload(384)
+                let cdf_dm_c, cdf_dm_q := CDF(d_minus_c, d_minus_q)
+                let cdf_dm_K_c, cdf_dm_K_q := dec_mul(cdf_dm_c, cdf_dm_q, K_exp_r_T_c, K_exp_r_T_q)
+                
+                mstore(352, cdf_dm_K_c)
+                mstore(384, cdf_dm_K_q)
+            }
+            function callprice() -> ac, aq {
+                d_plus()
+                d_minus()
+                cdf_dp_S()
+                cdf_dm_K()
+
+                let cdf_dm_K_c := mload(352)
+                let cdf_dm_K_q := mload(384)
+                let cdf_dp_S_c := mload(416)
+                let cdf_dp_S_q := mload(448)
+
+                ac, aq := dec_sub(cdf_dp_S_c, cdf_dp_S_q, cdf_dm_K_c, cdf_dm_K_q)
+            }
 
             // OPCODE -> function
 

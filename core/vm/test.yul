@@ -11,16 +11,24 @@ object "BlackScholes" {
             // Dispatcher
             switch selector()
             case 0xc4df80c7 /* "callprice(int256,int256,int256,int256,int256,int256,int256,int256,int256,int256,int256)" */ {
-                calldatacopy(0, 4, 96)
-                let ac := mload(0)
-                let aq := mload(32)
-                let precision := mload(64)
-                let cc := dec_exp(ac, aq, precision)
-                // let cc, cq := dec_exp(ac, aq, precision)
-                pop(aq)
-                sstore(0, cc)
-                // sstore(1, cq)
-                sstore(2, ac)
+                // calldatacopy(0, 4, 96)
+                // let ac := mload(0)
+                // let aq := mload(32)
+                // let precision := mload(64)
+                // let cc := dec_exp(ac, aq, precision)
+                // // let cc, cq := dec_exp(ac, aq, precision)
+                // pop(aq)
+                // sstore(0, cc)
+                // // sstore(1, cq)
+                // sstore(2, ac)
+
+                let a1 := 1
+                // let b := d(a1)
+                a1 := d(a1)
+
+                sstore(0, a1)
+                // sstore(1, b)
+
                 return(0, 32)
             }
             default {
@@ -28,6 +36,10 @@ object "BlackScholes" {
             }
             function selector() -> s {
                 s := div(calldataload(0), 0x100000000000000000000000000000000000000000000000000000000)
+            }
+
+            function d(a) -> b {
+                b := add(a, a)
             }
 
             // OPCODE -> function
