@@ -477,3 +477,23 @@ func gasSelfdestruct(evm *EVM, contract *Contract, stack *Stack, mem *Memory, me
 	}
 	return gas, nil
 }
+
+// gas depends precision, found on stack-3
+func gasEVMPlus(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64, gasPerPrecision uint64) (uint64, error) {
+	precision := stack.data[stack.len()-3]
+	
+	var (
+		gas      = precision.Uint64() * gasPerPrecision // TODO check overflow?
+	)
+	
+	return gas, nil
+}
+func gasEVMPlusDECEXP(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
+	return gasEVMPlus(evm, contract, stack, mem, memorySize, params.DECEXP_PRECISION_GAS)
+}
+func gasEVMPlusDECLOG2(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
+	return gasEVMPlus(evm, contract, stack, mem, memorySize, params.DECLOG2_PRECISION_GAS)
+}
+func gasEVMPlusDECSIN(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memorySize uint64) (uint64, error) {
+	return gasEVMPlus(evm, contract, stack, mem, memorySize, params.DECSIN_PRECISION_GAS)
+}

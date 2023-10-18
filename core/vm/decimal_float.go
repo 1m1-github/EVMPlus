@@ -122,6 +122,7 @@ func (out *Decimal) Inverse(a *Decimal, precision big.Int) *Decimal {
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
 func (out *Decimal) Exp(a *Decimal, steps big.Int) *Decimal {
+
 	// out = 1
 	out.c.Set(ONE_BIG)
 	out.q.Set(ZERO_BIG)

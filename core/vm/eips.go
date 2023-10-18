@@ -308,43 +308,46 @@ func enable6780(jt *JumpTable) {
 func enableEVMPlus(jt *JumpTable) {
 	jt[DECADD] = &operation{
 		execute:     opDecAdd,
-		constantGas: GasFastStep, // TODO
+		constantGas: 25*GasFastestStep,
 		minStack:    minStack(4, 2),
 		maxStack:    maxStack(4, 2), // ?
 	}
 	jt[DECNEG] = &operation{
 		execute:     opDecNeg,
-		constantGas: GasFastStep, // TODO
+		constantGas: 10*GasFastestStep,
 		minStack:    minStack(2, 2),
 		maxStack:    maxStack(2, 2), // ?
 	}
 	jt[DECMUL] = &operation{
 		execute:     opDecMul,
-		constantGas: GasFastStep, // TODO
+		constantGas: 20*GasFastestStep,
 		minStack:    minStack(4, 2),
 		maxStack:    maxStack(4, 2), // ?
 	}
 	jt[DECINV] = &operation{
 		execute:     opDecInv,
-		constantGas: GasFastStep, // TODO
+		constantGas: 25*GasFastestStep,
 		minStack:    minStack(3, 2),
 		maxStack:    maxStack(3, 2), // ?
 	}
 	jt[DECEXP] = &operation{
 		execute:     opDecExp,
-		constantGas: GasFastStep, // TODO
+		constantGas: params.DECEXP_FIXED_GAS,
+		dynamicGas:  gasEVMPlusDECEXP,
 		minStack:    minStack(3, 2),
 		maxStack:    maxStack(3, 2), // ?
 	}
 	jt[DECLOG2] = &operation{
 		execute:     opDecLog2,
-		constantGas: GasFastStep, // TODO
+		constantGas: params.DECLOG2_FIXED_GAS,
+		dynamicGas:  gasEVMPlusDECLOG2,
 		minStack:    minStack(3, 2),
 		maxStack:    maxStack(3, 2), // ?
 	}
 	jt[DECSIN] = &operation{
 		execute:     opDecSin,
-		constantGas: GasFastStep, // TODO
+		constantGas: params.DECSIN_FIXED_GAS,
+		dynamicGas:  gasEVMPlusDECSIN,
 		minStack:    minStack(3, 2),
 		maxStack:    maxStack(3, 2), // ?
 	}

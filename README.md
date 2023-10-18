@@ -1,13 +1,24 @@
 ## EVM+
 
 Add arbitrary precision, complex decimal float math to the EVM.
-Add OPCODES: +, - , *, /, EXP, LOG2, SIN, EQ, LT, NORM
 
 ### decimal float
 
-$x = c * 10^q$
+A decimal defined as $c * 10^q$
 
-with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpreted as `int256`.
+with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpreted as `int256` (via twos complement).
+
+### OPCODE defs
+
+Add OPCODES: DECADD, DECNEG , DECMUL, DECINV, DECEXP, DECLOG2, DECSIN
+
+DECADD  a + b  OpCode = 0xd0  (ac, aq, bc, bq) -> (cc, cq)  
+DECNEG  -a  OpCode = 0xd1  (ac, aq) -> (bc, bq)  
+DECMUL  a * b  OpCode = 0xd2  (ac, aq, bc, bq) -> (cc, cq)  
+DECINV  1/a  OpCode = 0xd3  (ac, aq, precision) -> (bc, bq)  // precision = # digits  
+DECEXP  exp(a)  OpCode = 0xd4  (ac, aq, precision) -> (bc, bq)  // precision = # num Taylor steps  
+DECLOG2 log2(a)  OpCode = 0xd5  (ac, aq, precision) -> (bc, bq)  // precision = # digits  
+DECSIN  sin(a)  OpCode = 0xd6  (ac, aq, precision) -> (bc, bq)  // precision = # num Taylor steps  
 
 ### derived functions
 
@@ -20,10 +31,9 @@ TAN(a) = SIN(a) / COS(a)
 
 ### implementation
 
-1. define +, -, *, /
-2. EXP as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
-3. LOG2 using a binary algorithm (not LN since LOG2 is much faster)
-2. SIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
+1. define DECADD, DECNEG , DECMUL, DECINV
+2. EXP, SIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
+3. LOG2 using a binary algorithm (not LN since LOG2 is much faster; Taylor expansion of LN does not converge everywhere)
 
 use big.Int from math/big, a arbitrary precision standard golang lib.
 
@@ -31,7 +41,7 @@ c, q are provided on stack. some OPCODES need a target precision defined by the 
 
 ### use cases
 
-lots of scientific, mathematical, financial, digital art calculations require universal functions such as EXP, LOG, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
+lots of scientific, mathematical, financial, digital art calculations require universal functions such as EXP, LOG2, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
 
 these new capabilities will invite large universes of apps into Ethereum.
 
@@ -50,18 +60,17 @@ testing the correctness of the math itself is trivial. we can achieve as high a 
 
 the opcodes will have as an input the desired target precion of the user. this will render the calculation deterministic. e.g. we know how many Taylor steps we need to achieve a certain precision.
 
-on my M1 macbook air:
-based on ADD opcode having gas cost 3 (GasFastestStep), we get the following ca. gas costs using benchmarks:
-DEC_ADD 150
-DEC_SUB 150
-DEC_MUL 110
-DEC_DIV 200
-DEC_LOG2 120
-DEC_EXP 
-DEC_NORM 200
+tested on a M1 macbook air
+based on ADD opcode having gas cost 3 (GasFastestStep), we get the following ca. gas costs using golang (runtime) benchmarks:
+DECADD 75
+DECNEG 30
+DECMUL 60
+DECINV 75
+DECEXP 100+100*precision
+DECLOG2 200+200*precision
+DECSIN 100+100*precision
 
-DEC_EXP 2000/10 steps 3700/20 steps => 
-
+the above values fluctuate in benchmark testing; it would make sense to have more tests to determine conservative gas costs
 
 ### binary vs decimal float
 
@@ -72,8 +81,8 @@ adding the ability to represent any decimal value precisely and do calculations 
 ### plan
 
 1. run private EVM network from local geth
-2. add +, -, *, /
-3. add EXP, LOG2, SIN
+2. add DECADD, DECNEG , DECMUL, DECINV
+3. add DECEXP, DECLOG2, DECSIN
 4. workout, test and analyze gas correctly
 5. write example smart contracts
 6. write EIP
@@ -92,7 +101,7 @@ The first version allows for 256 bits of precision for the significand and expon
 
 no shrinking from real line to [0, 1], as is often done, because this is an OPCODE, it was to provide the most basic functionality. the user can shrink *using* OPCODEs made available here (e.g. for the logistic function) to improve efficiency (faster convergence in [0,1]).
 
-constants (like tau, ln(2)) should be hardcoded by the user to desired precision vs having computed everytime.
+constants (like TAU, LN_2) should be hardcoded by the user to desired precision vs having computed everytime.
 
 ## Go Ethereum
 

@@ -981,7 +981,6 @@ func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
-
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	a.Inverse(a, *UInt256IntToBigInt(&precision))
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)

@@ -1,0 +1,93 @@
+1m1@1m1s-Air vm % go test -bench BenchmarkOpDec   
+27182815251*10^-10
+-1*10^0
+5849609375*10^-10
+8414709849*10^-10
+goos: darwin
+goarch: arm64
+pkg: github.com/ethereum/go-ethereum/core/vm
+BenchmarkOpDecAdd-8     	 2699557	       437.8 ns/op
+BenchmarkOpDecNeg-8     	 6750136	       171.8 ns/op
+BenchmarkOpDecMul-8     	 3678192	       317.1 ns/op
+BenchmarkOpDecInv-8     	 2794888	       413.2 ns/op
+BenchmarkOpDecExp precision= 1
+BenchmarkOpDecExp1-8    	BenchmarkOpDecExp precision= 1
+BenchmarkOpDecExp precision= 1
+BenchmarkOpDecExp precision= 1
+BenchmarkOpDecExp precision= 1
+ 3100802	       380.6 ns/op
+BenchmarkOpDecExp precision= 2
+BenchmarkOpDecExp2-8    	BenchmarkOpDecExp precision= 2
+BenchmarkOpDecExp precision= 2
+BenchmarkOpDecExp precision= 2
+BenchmarkOpDecExp precision= 2
+ 1221554	      1132 ns/op
+BenchmarkOpDecExp precision= 4
+BenchmarkOpDecExp4-8    	BenchmarkOpDecExp precision= 4
+BenchmarkOpDecExp precision= 4
+BenchmarkOpDecExp precision= 4
+  522782	      2464 ns/op
+BenchmarkOpDecExp precision= 8
+BenchmarkOpDecExp8-8    	BenchmarkOpDecExp precision= 8
+BenchmarkOpDecExp precision= 8
+BenchmarkOpDecExp precision= 8
+  207217	      6837 ns/op
+BenchmarkOpDecLog2 precision= 1
+BenchmarkOpDecLog21-8   	BenchmarkOpDecLog2 precision= 1
+BenchmarkOpDecLog2 precision= 1
+BenchmarkOpDecLog2 precision= 1
+  495872	      2460 ns/op
+BenchmarkOpDecLog2 precision= 2
+BenchmarkOpDecLog22-8   	BenchmarkOpDecLog2 precision= 2
+BenchmarkOpDecLog2 precision= 2
+BenchmarkOpDecLog2 precision= 2
+  384048	      3590 ns/op
+BenchmarkOpDecLog2 precision= 4
+BenchmarkOpDecLog24-8   	BenchmarkOpDecLog2 precision= 4
+BenchmarkOpDecLog2 precision= 4
+BenchmarkOpDecLog2 precision= 4
+  211027	      5058 ns/op
+BenchmarkOpDecLog2 precision= 8
+BenchmarkOpDecLog28-8   	BenchmarkOpDecLog2 precision= 8
+BenchmarkOpDecLog2 precision= 8
+BenchmarkOpDecLog2 precision= 8
+  127537	      9292 ns/op
+BenchmarkOpDecSin precision= 1
+BenchmarkOpDecSin1-8    	BenchmarkOpDecSin precision= 1
+BenchmarkOpDecSin precision= 1
+BenchmarkOpDecSin precision= 1
+BenchmarkOpDecSin precision= 1
+ 2773756	       440.4 ns/op
+BenchmarkOpDecSin precision= 2
+BenchmarkOpDecSin2-8    	BenchmarkOpDecSin precision= 2
+BenchmarkOpDecSin precision= 2
+BenchmarkOpDecSin precision= 2
+  578509	      1992 ns/op
+BenchmarkOpDecSin precision= 4
+BenchmarkOpDecSin4-8    	BenchmarkOpDecSin precision= 4
+BenchmarkOpDecSin precision= 4
+BenchmarkOpDecSin precision= 4
+  252613	      7439 ns/op
+BenchmarkOpDecSin precision= 8
+BenchmarkOpDecSin8-8    	BenchmarkOpDecSin precision= 8
+BenchmarkOpDecSin precision= 8
+BenchmarkOpDecSin precision= 8
+  124575	      9022 ns/op
+PASS
+ok  	github.com/ethereum/go-ethereum/core/vm	25.535s
+
+1m1@1m1s-Air vm % go test -bench BenchmarkOpAdd
+27182815251*10^-10
+-1*10^0
+5849609375*10^-10
+8414709849*10^-10
+goos: darwin
+goarch: arm64
+pkg: github.com/ethereum/go-ethereum/core/vm
+BenchmarkOpAdd-8      	16593379	        78.92 ns/op
+BenchmarkOpAdd64-8    	42510291	        27.09 ns/op
+BenchmarkOpAdd128-8   	53369011	        21.79 ns/op
+BenchmarkOpAdd256-8   	63212233	        16.85 ns/op
+BenchmarkOpAddmod-8   	33543601	        36.59 ns/op
+PASS
+ok  	github.com/ethereum/go-ethereum/core/vm	9.816s
