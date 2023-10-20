@@ -3,8 +3,26 @@
 package vm
 
 import (
+	"fmt"
+
 	"github.com/holiman/uint256"
 )
+
+func (d *Decimal256) String() string {
+	c := new(uint256.Int).Set(&d.c)
+	q := new(uint256.Int).Set(&d.q)
+	cs := ""
+	if c.Sign() == -1 {
+		cs = "-"
+		c.Neg(c)
+	}
+	qs := ""
+	if q.Sign() == -1 {
+		qs = "-"
+		q.Neg(q)
+	}
+	return fmt.Sprintf("%v%v*10^%v%v", cs, c.Dec(), qs, q.Dec())
+}
 
 type int256 = uint256.Int
 
@@ -178,13 +196,15 @@ func (out *Decimal256) Log2(a *Decimal256, precision, steps *int256) *Decimal256
 		panic("Log2 needs 0 < a")
 	}
 
+	// isOne needs a normalized
+	var a_norm Decimal256
+	a_norm.normalize(a, precision, false)
+	
+	// after a_norm.normalize, in case out == a
 	// out = 0
 	out.c.Set(ZERO_INT256)
 	out.q.Set(ONE_INT256)
 
-	// isOne needs a normalized
-	var a_norm Decimal256
-	a_norm.normalize(a, precision, false)
 	if a_norm.isOne() {
 		return out
 	}
@@ -196,6 +216,7 @@ func (out *Decimal256) Log2(a *Decimal256, precision, steps *int256) *Decimal256
 		}
 
 		a_norm.double()                               // a *= 2
+		// fmt.Println("log2 after double", a_norm.String())
 		out.Add(out, MINUS_ONE_DECIMAL256, precision) // out--
 	}
 
@@ -361,6 +382,7 @@ func (d2 *Decimal256) eq(d1 *Decimal256, precision *int256) bool {
 func (a *Decimal256) lessThan(b *Decimal256, precision *int256) bool {
 	var diff Decimal256
 	diff.Add(a, diff.Negate(b), precision)
+	// fmt.Println("lessThan", a.String(), diff.String())
 	return diff.c.Sign() == -1
 }
 
