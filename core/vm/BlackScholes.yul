@@ -17,10 +17,11 @@ object "BlackScholes" {
                 // 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352
                 calldatacopy(0, 4, 384)
 
-                let ac, aq := callprice()
-                sstore(0, ac)
-                sstore(1, aq)
+                // let ac, aq := callprice()
+                // sstore(0, ac)
+                // sstore(1, aq)
 
+                r_s2_T()
                 // d_plus()
                 // d_minus()
                 // cdf_dp_S()
@@ -60,6 +61,19 @@ object "BlackScholes" {
 
                 mstore(384, r_s2_T_c)
                 mstore(416, r_s2_T_q)
+
+                //debug
+                sstore(0, sc)
+                sstore(1, sq)
+                sstore(2, s_sqr_c)
+                sstore(3, s_sqr_q)
+                sstore(4, sigma_sqr_half_c)
+                sstore(5, sigma_sqr_half_q)
+                sstore(6, r_p_s_c)
+                sstore(7, r_p_s_q)
+                sstore(8, r_s2_T_c)
+                sstore(9, r_s2_T_q)
+                //debug
             }
 
             function ln_S_K() {
@@ -109,8 +123,14 @@ object "BlackScholes" {
                 mstore(480, d_plus_q)
 
                 //debug
-                // sstore(12, d_plus_c)
-                // sstore(13, d_plus_q)
+                sstore(0, r_s2_T_c)
+                sstore(1, r_s2_T_q)
+                sstore(2, ln_S_K_c)
+                sstore(3, ln_S_K_q)
+                sstore(4, s_sqrt_T_c)
+                sstore(5, s_sqrt_T_q)
+                sstore(6, d_plus_c)
+                sstore(7, d_plus_q)
                 //debug
             }
             function d_minus() {
@@ -125,8 +145,8 @@ object "BlackScholes" {
                 mstore(416, d_minus_q)
 
                 //debug
-                // sstore(10, d_minus_c)
-                // sstore(11, d_minus_q)
+                sstore(10, d_minus_c)
+                sstore(11, d_minus_q)
                 //debug
             }
             // approximation
@@ -158,8 +178,8 @@ object "BlackScholes" {
                 mstore(480, cdf_dp_S_q)
 
                 //debug
-                // sstore(8, cdf_dp_c)
-                // sstore(9, cdf_dp_q)
+                sstore(8, cdf_dp_c)
+                sstore(9, cdf_dp_q)
                 // sstore(6, cdf_dp_S_c)
                 // sstore(7, cdf_dp_S_q)
                 //debug
@@ -181,11 +201,6 @@ object "BlackScholes" {
 
                 mstore(384, K_exp_r_T_c)
                 mstore(416, K_exp_r_T_q)
-
-                //debug
-                // sstore(6, cdf_dm_c)
-                // sstore(7, cdf_dm_q)
-                //debug
             }
             function cdf_dm_K() {
                 let precision := mload(320)
@@ -205,8 +220,8 @@ object "BlackScholes" {
                 mstore(416, cdf_dm_K_q)
 
                 //debug
-                // sstore(6, cdf_dm_c)
-                // sstore(7, cdf_dm_q)
+                sstore(6, cdf_dm_c)
+                sstore(7, cdf_dm_q)
                 //debug
             }
             function callprice() -> ac, aq {
@@ -223,10 +238,10 @@ object "BlackScholes" {
                 let cdf_dp_S_q := mload(480)
 
                 //debug
-                // sstore(2, cdf_dm_K_c)
-                // sstore(3, cdf_dm_K_q)
-                // sstore(4, cdf_dp_S_c)
-                // sstore(5, cdf_dp_S_q)
+                sstore(2, cdf_dm_K_c)
+                sstore(3, cdf_dm_K_q)
+                sstore(4, cdf_dp_S_c)
+                sstore(5, cdf_dp_S_q)
                 //debug
 
                 ac, aq := dec_sub(cdf_dp_S_c, cdf_dp_S_q, cdf_dm_K_c, cdf_dm_K_q, precision)

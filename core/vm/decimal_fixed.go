@@ -64,7 +64,7 @@ var TWO_DECIMAL256 = createDecimal256(TWO_INT256, ZERO_INT256)
 // a + b
 func DecAdd(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
 	a := createDecimal256(ac, aq)
-	b := createDecimal256(ac, aq)
+	b := createDecimal256(bc, bq)
 	a.Add(a, b, precision)
 	cc = &a.c
 	cq = &a.q
@@ -103,7 +103,7 @@ func (out *Decimal256) Negate(a *Decimal256) *Decimal256 {
 // a * b
 func DecMultiply(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
 	a := createDecimal256(ac, aq)
-	b := createDecimal256(ac, aq)
+	b := createDecimal256(bc, bq)
 	a.Multiply(a, b, precision)
 	cc = &a.c
 	cq = &a.q

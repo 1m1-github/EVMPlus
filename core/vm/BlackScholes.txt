@@ -12,9 +12,7 @@ object "BlackScholes" {
             switch selector()
             case 0xc4df80c7 {
                 calldatacopy(0, 4, 384)
-                let ac, aq := callprice()
-                sstore(0, ac)
-                sstore(1, aq)
+                r_s2_T()
             }
             default { revert(0, 0) }
             function selector() -> s
@@ -36,6 +34,16 @@ object "BlackScholes" {
                 let r_s2_T_c, r_s2_T_q := dec_mul(r_p_s_c, r_p_s_q, Tc, Tq, precision)
                 mstore(384, r_s2_T_c)
                 mstore(416, r_s2_T_q)
+                sstore(0, sc)
+                sstore(1, sq)
+                sstore(2, s_sqr_c)
+                sstore(3, s_sqr_q)
+                sstore(4, sigma_sqr_half_c)
+                sstore(5, sigma_sqr_half_q)
+                sstore(6, r_p_s_c)
+                sstore(7, r_p_s_q)
+                sstore(8, r_s2_T_c)
+                sstore(9, r_s2_T_q)
             }
             function ln_S_K()
             {
@@ -80,6 +88,14 @@ object "BlackScholes" {
                 let d_plus_c, d_plus_q := dec_div(ln_S_K_p_r_s2_T_c, ln_S_K_p_r_s2_T_q, s_sqrt_T_c, s_sqrt_T_q, precision)
                 mstore(448, d_plus_c)
                 mstore(480, d_plus_q)
+                sstore(0, r_s2_T_c)
+                sstore(1, r_s2_T_q)
+                sstore(2, ln_S_K_c)
+                sstore(3, ln_S_K_q)
+                sstore(4, s_sqrt_T_c)
+                sstore(5, s_sqrt_T_q)
+                sstore(6, d_plus_c)
+                sstore(7, d_plus_q)
             }
             function d_minus()
             {
@@ -91,6 +107,8 @@ object "BlackScholes" {
                 let d_minus_c, d_minus_q := dec_sub(d_plus_c, d_plus_q, s_sqrt_T_c, s_sqrt_T_q, precision)
                 mstore(384, d_minus_c)
                 mstore(416, d_minus_q)
+                sstore(10, d_minus_c)
+                sstore(11, d_minus_q)
             }
             function CDF(ac, aq) -> bc, bq
             {
@@ -114,6 +132,8 @@ object "BlackScholes" {
                 let cdf_dp_S_c, cdf_dp_S_q := dec_mul(Sc, Sq, cdf_dp_c, cdf_dp_q, precision)
                 mstore(448, cdf_dp_S_c)
                 mstore(480, cdf_dp_S_q)
+                sstore(8, cdf_dp_c)
+                sstore(9, cdf_dp_q)
             }
             function cdf_dm_K_exp_r_T()
             {
@@ -145,6 +165,8 @@ object "BlackScholes" {
                 let cdf_dm_K_c, cdf_dm_K_q := dec_mul(cdf_dm_c, cdf_dm_q, K_exp_r_T_c, K_exp_r_T_q, precision)
                 mstore(384, cdf_dm_K_c)
                 mstore(416, cdf_dm_K_q)
+                sstore(6, cdf_dm_c)
+                sstore(7, cdf_dm_q)
             }
             function callprice() -> ac, aq
             {
@@ -157,6 +179,10 @@ object "BlackScholes" {
                 let cdf_dm_K_q := mload(416)
                 let cdf_dp_S_c := mload(448)
                 let cdf_dp_S_q := mload(480)
+                sstore(2, cdf_dm_K_c)
+                sstore(3, cdf_dm_K_q)
+                sstore(4, cdf_dp_S_c)
+                sstore(5, cdf_dp_S_q)
                 ac, aq := dec_sub(cdf_dp_S_c, cdf_dp_S_q, cdf_dm_K_c, cdf_dm_K_q, precision)
             }
             function dec_add(ac, aq, bc, bq, precision) -> cc, cq
@@ -225,7 +251,7 @@ object "BlackScholes" {
 
 
 Binary representation:
-61057761000e5f396105775ff3fe610007610034565b63c4df80c78114610016575f80fd5b61018060045f3761002561036b565b815f5580600155505050610576565b5f7c01000000000000000000000000000000000000000000000000000000005f3504905090565b6101405160c05160e05161007083828461055b565b61007e855f6002848661045c565b60805160a05161009189828486886103bb565b61010051610120516100a68d828486886103e1565b8161018052806101a052505050505050505050505050505050565b61014051610160515f516020516040516060516100e1868284868861045c565b6100ed87898385610488565b816101c052806101e05250505050505050505050565b610140516101605160c05160e05161010051610120516101258587838561051b565b610132888284888a6103e1565b8161018052806101a05250505050505050505050565b610140516101605161015861005b565b610180516101a0516101686100c1565b6101c0516101e05161017d86848684866103bb565b610185610103565b610180516101a05161019a8a8284868861045c565b816101c052806101e052505050505050505050505050565b610140516101c0516101e051610180516101a0516101d38582848688610431565b8161018052806101a05250505050505050565b5f8061014051610160517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd79b57ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb61023f84898984866103e1565b61024b85878385610409565b610259885f600184866103bb565b6102648a82846103f7565b9b509b50505050505050505050509250929050565b610140516101c0516101e05161028f81836101e6565b5f516020516102a187848684866103e1565b816101c052806101e052505050505050505050565b610140516101605160805160a0516102ce81836103d1565b61010051610120516102e388828486886103e1565b6102ef898b8385610409565b6040516060516103028e848684866103e1565b8161018052806101a05250505050505050505050505050505050565b6101405161016051610180516101a0516103366102b6565b610180516101a05161034883856101e6565b61035588848684866103e1565b8161018052806101a05250505050505050505050565b5f8061014051610379610148565b6103816101b2565b610389610279565b61039161031e565b610180516101a0516101c0516101e0516103ae8584868486610431565b9650965050505050509091565b5f808686868686d0915091509550959350505050565b5f808383d1915091509250929050565b5f808686868686d2915091509550959350505050565b5f80848484d391509150935093915050565b5f8085858585d49150915094509492505050565b5f8085858585d59150915094509492505050565b5f8061043d86866103d1565b9150915061044e87828487876103bb565b915091509550959350505050565b5f806104698787876103f7565b9150915061047a87828487876103e1565b915091509550959350505050565b5f8064019d25ddbd7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff66104bd8888888861041d565b935093506104ce87848684866103e1565b93509350505094509492505050565b5f806104eb88888686610488565b915091506104fc87828489896103e1565b9150915061050c88888385610409565b91509150965096945050505050565b5f807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff61054d878783600589896104dd565b925092505094509492505050565b5f8061056a85858587876103e1565b91509150935093915050565b
+61016561000e5f396101655ff3fe61000761002b565b63c4df80c78114610016575f80fd5b61018060045f37610025610052565b50610164565b5f7c01000000000000000000000000000000000000000000000000000000005f3504905090565b6101405160c05160e051610067838284610149565b610075855f6002848661011d565b60805160a05161008889828486886100df565b610100516101205161009d8d828486886100f5565b8161018052806101a0528d5f558c6001558b6002558a600355896004558860055585600655846007558160085580600955505050505050505050505050505050565b5f808686868686d0915091509550959350505050565b5f808686868686d2915091509550959350505050565b5f80848484d391509150935093915050565b5f8061012a87878761010b565b9150915061013b87828487876100f5565b915091509550959350505050565b5f8061015885858587876100f5565b91509150935093915050565b
 
 Text representation:
     /* "BlackScholes.yul":142:161   */
@@ -252,18 +278,18 @@ sub_0: assembly {
     tag_25:
         /* "BlackScholes.yul":408:418   */
       0xc4df80c7
-        /* "BlackScholes.yul":403:970   */
+        /* "BlackScholes.yul":403:1004   */
       dup2
       eq
       tag_27
       jumpi
-        /* "BlackScholes.yul":1019:1020   */
+        /* "BlackScholes.yul":1053:1054   */
       0x00
-        /* "BlackScholes.yul":1016:1017   */
+        /* "BlackScholes.yul":1050:1051   */
       dup1
-        /* "BlackScholes.yul":1009:1021   */
+        /* "BlackScholes.yul":1043:1055   */
       revert
-        /* "BlackScholes.yul":403:970   */
+        /* "BlackScholes.yul":403:1004   */
     tag_27:
         /* "BlackScholes.yul":727:730   */
       0x0180
@@ -273,1058 +299,298 @@ sub_0: assembly {
       0x00
         /* "BlackScholes.yul":708:731   */
       calldatacopy
-        /* "BlackScholes.yul":763:774   */
+        /* "BlackScholes.yul":861:869   */
       tag_28
-      tag_11
+      tag_2
       jump	// in
     tag_28:
-        /* "BlackScholes.yul":801:803   */
-      dup2
-        /* "BlackScholes.yul":798:799   */
-      0x00
-        /* "BlackScholes.yul":791:804   */
-      sstore
-        /* "BlackScholes.yul":831:833   */
-      dup1
-        /* "BlackScholes.yul":828:829   */
-      0x01
-        /* "BlackScholes.yul":821:834   */
-      sstore
-        /* "BlackScholes.yul":541:970   */
+        /* "BlackScholes.yul":373:1069   */
       pop
-      pop
-        /* "BlackScholes.yul":373:1035   */
-      pop
-        /* "BlackScholes.yul":1048:1191   */
+        /* "BlackScholes.yul":1082:1225   */
       jump(tag_29)
     tag_1:
-        /* "BlackScholes.yul":1071:1072   */
+        /* "BlackScholes.yul":1105:1106   */
       0x00
-        /* "BlackScholes.yul":1117:1176   */
+        /* "BlackScholes.yul":1151:1210   */
       0x0100000000000000000000000000000000000000000000000000000000
-        /* "BlackScholes.yul":1113:1114   */
+        /* "BlackScholes.yul":1147:1148   */
       0x00
-        /* "BlackScholes.yul":1100:1115   */
+        /* "BlackScholes.yul":1134:1149   */
       calldataload
-        /* "BlackScholes.yul":1096:1177   */
+        /* "BlackScholes.yul":1130:1211   */
       div
-        /* "BlackScholes.yul":1091:1177   */
+        /* "BlackScholes.yul":1125:1211   */
       swap1
       pop
-        /* "BlackScholes.yul":1048:1191   */
+        /* "BlackScholes.yul":1082:1225   */
       swap1
       jump	// out
-        /* "BlackScholes.yul":1373:2127   */
+        /* "BlackScholes.yul":1407:2570   */
     tag_2:
-        /* "BlackScholes.yul":1432:1435   */
+        /* "BlackScholes.yul":1466:1469   */
       0x0140
-        /* "BlackScholes.yul":1426:1436   */
+        /* "BlackScholes.yul":1460:1470   */
       mload
-        /* "BlackScholes.yul":1470:1473   */
+        /* "BlackScholes.yul":1504:1507   */
       0xc0
-        /* "BlackScholes.yul":1464:1474   */
+        /* "BlackScholes.yul":1498:1508   */
       mload
-        /* "BlackScholes.yul":1507:1510   */
+        /* "BlackScholes.yul":1541:1544   */
       0xe0
-        /* "BlackScholes.yul":1501:1511   */
+        /* "BlackScholes.yul":1535:1545   */
       mload
-        /* "BlackScholes.yul":1552:1578   */
+        /* "BlackScholes.yul":1586:1612   */
       tag_32
-        /* "BlackScholes.yul":1568:1577   */
+        /* "BlackScholes.yul":1602:1611   */
       dup4
-        /* "BlackScholes.yul":1564:1566   */
+        /* "BlackScholes.yul":1598:1600   */
       dup3
-        /* "BlackScholes.yul":1560:1562   */
+        /* "BlackScholes.yul":1594:1596   */
       dup5
-        /* "BlackScholes.yul":1552:1578   */
+        /* "BlackScholes.yul":1586:1612   */
       tag_24
       jump	// in
     tag_32:
-        /* "BlackScholes.yul":1638:1680   */
+        /* "BlackScholes.yul":1672:1714   */
       tag_33
-        /* "BlackScholes.yul":1670:1679   */
+        /* "BlackScholes.yul":1704:1713   */
       dup6
-        /* "BlackScholes.yul":1667:1668   */
+        /* "BlackScholes.yul":1701:1702   */
       0x00
-        /* "BlackScholes.yul":1664:1665   */
+        /* "BlackScholes.yul":1698:1699   */
       0x02
-        /* "BlackScholes.yul":1655:1662   */
+        /* "BlackScholes.yul":1689:1696   */
       dup5
-        /* "BlackScholes.yul":1646:1653   */
+        /* "BlackScholes.yul":1680:1687   */
       dup7
-        /* "BlackScholes.yul":1638:1680   */
+        /* "BlackScholes.yul":1672:1714   */
       tag_20
       jump	// in
     tag_33:
-        /* "BlackScholes.yul":1730:1733   */
+        /* "BlackScholes.yul":1764:1767   */
       0x80
-        /* "BlackScholes.yul":1724:1734   */
+        /* "BlackScholes.yul":1758:1768   */
       mload
-        /* "BlackScholes.yul":1767:1770   */
+        /* "BlackScholes.yul":1801:1804   */
       0xa0
-        /* "BlackScholes.yul":1761:1771   */
+        /* "BlackScholes.yul":1795:1805   */
       mload
-        /* "BlackScholes.yul":1812:1874   */
+        /* "BlackScholes.yul":1846:1908   */
       tag_34
-        /* "BlackScholes.yul":1864:1873   */
+        /* "BlackScholes.yul":1898:1907   */
       dup10
-        /* "BlackScholes.yul":1860:1862   */
+        /* "BlackScholes.yul":1894:1896   */
       dup3
-        /* "BlackScholes.yul":1856:1858   */
+        /* "BlackScholes.yul":1890:1892   */
       dup5
-        /* "BlackScholes.yul":1838:1854   */
+        /* "BlackScholes.yul":1872:1888   */
       dup7
-        /* "BlackScholes.yul":1820:1836   */
+        /* "BlackScholes.yul":1854:1870   */
       dup9
-        /* "BlackScholes.yul":1812:1874   */
+        /* "BlackScholes.yul":1846:1908   */
       tag_12
       jump	// in
     tag_34:
-        /* "BlackScholes.yul":1908:1911   */
+        /* "BlackScholes.yul":1942:1945   */
       0x0100
-        /* "BlackScholes.yul":1902:1912   */
+        /* "BlackScholes.yul":1936:1946   */
       mload
-        /* "BlackScholes.yul":1945:1948   */
+        /* "BlackScholes.yul":1979:1982   */
       0x0120
-        /* "BlackScholes.yul":1939:1949   */
+        /* "BlackScholes.yul":1973:1983   */
       mload
-        /* "BlackScholes.yul":1992:2036   */
+        /* "BlackScholes.yul":2026:2070   */
       tag_35
-        /* "BlackScholes.yul":2026:2035   */
+        /* "BlackScholes.yul":2060:2069   */
       dup14
-        /* "BlackScholes.yul":2022:2024   */
+        /* "BlackScholes.yul":2056:2058   */
       dup3
-        /* "BlackScholes.yul":2018:2020   */
+        /* "BlackScholes.yul":2052:2054   */
       dup5
-        /* "BlackScholes.yul":2009:2016   */
+        /* "BlackScholes.yul":2043:2050   */
       dup7
-        /* "BlackScholes.yul":2000:2007   */
+        /* "BlackScholes.yul":2034:2041   */
       dup9
-        /* "BlackScholes.yul":1992:2036   */
+        /* "BlackScholes.yul":2026:2070   */
       tag_14
       jump	// in
     tag_35:
-        /* "BlackScholes.yul":2066:2074   */
+        /* "BlackScholes.yul":2100:2108   */
       dup2
-        /* "BlackScholes.yul":2061:2064   */
+        /* "BlackScholes.yul":2095:2098   */
       0x0180
-        /* "BlackScholes.yul":2054:2075   */
+        /* "BlackScholes.yul":2088:2109   */
       mstore
-        /* "BlackScholes.yul":2104:2112   */
+        /* "BlackScholes.yul":2138:2146   */
       dup1
-        /* "BlackScholes.yul":2099:2102   */
+        /* "BlackScholes.yul":2133:2136   */
       0x01a0
-        /* "BlackScholes.yul":2092:2113   */
+        /* "BlackScholes.yul":2126:2147   */
       mstore
-        /* "BlackScholes.yul":1391:2127   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":1373:2127   */
-      jump	// out
-        /* "BlackScholes.yul":2141:2630   */
-    tag_3:
-        /* "BlackScholes.yul":2200:2203   */
-      0x0140
-        /* "BlackScholes.yul":2194:2204   */
-      mload
-        /* "BlackScholes.yul":2240:2243   */
-      0x0160
-        /* "BlackScholes.yul":2234:2244   */
-      mload
-        /* "BlackScholes.yul":2278:2279   */
+        /* "BlackScholes.yul":2199:2201   */
+      dup14
+        /* "BlackScholes.yul":2196:2197   */
       0x00
-        /* "BlackScholes.yul":2272:2280   */
-      mload
-        /* "BlackScholes.yul":2313:2315   */
-      0x20
-        /* "BlackScholes.yul":2307:2316   */
-      mload
-        /* "BlackScholes.yul":2349:2351   */
-      0x40
-        /* "BlackScholes.yul":2343:2352   */
-      mload
-        /* "BlackScholes.yul":2385:2387   */
-      0x60
-        /* "BlackScholes.yul":2379:2388   */
-      mload
-        /* "BlackScholes.yul":2425:2459   */
-      tag_37
-        /* "BlackScholes.yul":2449:2458   */
-      dup7
-        /* "BlackScholes.yul":2445:2447   */
-      dup3
-        /* "BlackScholes.yul":2441:2443   */
-      dup5
-        /* "BlackScholes.yul":2437:2439   */
-      dup7
-        /* "BlackScholes.yul":2433:2435   */
-      dup9
-        /* "BlackScholes.yul":2425:2459   */
-      tag_20
-      jump	// in
-    tag_37:
-        /* "BlackScholes.yul":2502:2540   */
-      tag_38
-        /* "BlackScholes.yul":2534:2539   */
-      dup8
-        /* "BlackScholes.yul":2523:2532   */
-      dup10
-        /* "BlackScholes.yul":2516:2521   */
-      dup4
-        /* "BlackScholes.yul":2509:2514   */
-      dup6
-        /* "BlackScholes.yul":2502:2540   */
-      tag_21
-      jump	// in
-    tag_38:
-        /* "BlackScholes.yul":2569:2577   */
-      dup2
-        /* "BlackScholes.yul":2564:2567   */
-      0x01c0
-        /* "BlackScholes.yul":2557:2578   */
-      mstore
-        /* "BlackScholes.yul":2607:2615   */
-      dup1
-        /* "BlackScholes.yul":2602:2605   */
-      0x01e0
-        /* "BlackScholes.yul":2595:2616   */
-      mstore
-        /* "BlackScholes.yul":2159:2630   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":2141:2630   */
-      jump	// out
-        /* "BlackScholes.yul":2643:3163   */
-    tag_4:
-        /* "BlackScholes.yul":2706:2709   */
-      0x0140
-        /* "BlackScholes.yul":2700:2710   */
-      mload
-        /* "BlackScholes.yul":2746:2749   */
-      0x0160
-        /* "BlackScholes.yul":2740:2750   */
-      mload
-        /* "BlackScholes.yul":2784:2787   */
-      0xc0
-        /* "BlackScholes.yul":2778:2788   */
-      mload
-        /* "BlackScholes.yul":2821:2824   */
-      0xe0
-        /* "BlackScholes.yul":2815:2825   */
-      mload
-        /* "BlackScholes.yul":2858:2861   */
-      0x0100
-        /* "BlackScholes.yul":2852:2862   */
-      mload
-        /* "BlackScholes.yul":2895:2898   */
-      0x0120
-        /* "BlackScholes.yul":2889:2899   */
-      mload
-        /* "BlackScholes.yul":2942:2976   */
-      tag_40
-        /* "BlackScholes.yul":2970:2975   */
-      dup6
-        /* "BlackScholes.yul":2959:2968   */
-      dup8
-        /* "BlackScholes.yul":2955:2957   */
-      dup4
-        /* "BlackScholes.yul":2951:2953   */
-      dup6
-        /* "BlackScholes.yul":2942:2976   */
-      tag_23
-      jump	// in
-    tag_40:
-        /* "BlackScholes.yul":3023:3069   */
-      tag_41
-        /* "BlackScholes.yul":3059:3068   */
-      dup9
-        /* "BlackScholes.yul":3049:3057   */
-      dup3
-        /* "BlackScholes.yul":3039:3047   */
-      dup5
-        /* "BlackScholes.yul":3035:3037   */
-      dup9
-        /* "BlackScholes.yul":3031:3033   */
-      dup11
-        /* "BlackScholes.yul":3023:3069   */
-      tag_14
-      jump	// in
-    tag_41:
-        /* "BlackScholes.yul":3098:3108   */
-      dup2
-        /* "BlackScholes.yul":3093:3096   */
-      0x0180
-        /* "BlackScholes.yul":3086:3109   */
-      mstore
-        /* "BlackScholes.yul":3138:3148   */
-      dup1
-        /* "BlackScholes.yul":3133:3136   */
-      0x01a0
-        /* "BlackScholes.yul":3126:3149   */
-      mstore
-        /* "BlackScholes.yul":2665:3163   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":2643:3163   */
-      jump	// out
-        /* "BlackScholes.yul":3176:4099   */
-    tag_5:
-        /* "BlackScholes.yul":3235:3238   */
-      0x0140
-        /* "BlackScholes.yul":3229:3239   */
-      mload
-        /* "BlackScholes.yul":3275:3278   */
-      0x0160
-        /* "BlackScholes.yul":3269:3279   */
-      mload
-        /* "BlackScholes.yul":3297:3305   */
-      tag_43
-      tag_2
-      jump	// in
-    tag_43:
-        /* "BlackScholes.yul":3344:3347   */
-      0x0180
-        /* "BlackScholes.yul":3338:3348   */
-      mload
-        /* "BlackScholes.yul":3387:3390   */
-      0x01a0
-        /* "BlackScholes.yul":3381:3391   */
-      mload
-        /* "BlackScholes.yul":3408:3416   */
-      tag_44
-      tag_3
-      jump	// in
-    tag_44:
-        /* "BlackScholes.yul":3455:3458   */
-      0x01c0
-        /* "BlackScholes.yul":3449:3459   */
-      mload
-        /* "BlackScholes.yul":3498:3501   */
-      0x01e0
-        /* "BlackScholes.yul":3492:3502   */
-      mload
-        /* "BlackScholes.yul":3563:3620   */
-      tag_45
-        /* "BlackScholes.yul":3610:3619   */
-      dup7
-        /* "BlackScholes.yul":3600:3608   */
-      dup5
-        /* "BlackScholes.yul":3590:3598   */
-      dup7
-        /* "BlackScholes.yul":3580:3588   */
-      dup5
-        /* "BlackScholes.yul":3571:3579   */
-      dup7
-        /* "BlackScholes.yul":3563:3620   */
-      tag_12
-      jump	// in
-    tag_45:
-        /* "BlackScholes.yul":3654:3666   */
-      tag_46
-      tag_4
-      jump	// in
-    tag_46:
-        /* "BlackScholes.yul":3707:3710   */
-      0x0180
-        /* "BlackScholes.yul":3701:3711   */
-      mload
-        /* "BlackScholes.yul":3752:3755   */
-      0x01a0
-        /* "BlackScholes.yul":3746:3756   */
-      mload
-        /* "BlackScholes.yul":3800:3880   */
-      tag_47
-        /* "BlackScholes.yul":3870:3879   */
-      dup11
-        /* "BlackScholes.yul":3858:3868   */
-      dup3
-        /* "BlackScholes.yul":3846:3856   */
-      dup5
-        /* "BlackScholes.yul":3827:3844   */
-      dup7
-        /* "BlackScholes.yul":3808:3825   */
-      dup9
-        /* "BlackScholes.yul":3800:3880   */
-      tag_20
-      jump	// in
-    tag_47:
-        /* "BlackScholes.yul":3909:3917   */
-      dup2
-        /* "BlackScholes.yul":3904:3907   */
-      0x01c0
-        /* "BlackScholes.yul":3897:3918   */
-      mstore
-        /* "BlackScholes.yul":3947:3955   */
-      dup1
-        /* "BlackScholes.yul":3942:3945   */
-      0x01e0
-        /* "BlackScholes.yul":3935:3956   */
-      mstore
-        /* "BlackScholes.yul":3194:4099   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":3176:4099   */
-      jump	// out
-        /* "BlackScholes.yul":4112:4683   */
-    tag_6:
-        /* "BlackScholes.yul":4172:4175   */
-      0x0140
-        /* "BlackScholes.yul":4166:4176   */
-      mload
-        /* "BlackScholes.yul":4216:4219   */
-      0x01c0
-        /* "BlackScholes.yul":4210:4220   */
-      mload
-        /* "BlackScholes.yul":4259:4262   */
-      0x01e0
-        /* "BlackScholes.yul":4253:4263   */
-      mload
-        /* "BlackScholes.yul":4304:4307   */
-      0x0180
-        /* "BlackScholes.yul":4298:4308   */
-      mload
-        /* "BlackScholes.yul":4349:4352   */
-      0x01a0
-        /* "BlackScholes.yul":4343:4353   */
-      mload
-        /* "BlackScholes.yul":4398:4460   */
-      tag_49
-        /* "BlackScholes.yul":4450:4459   */
-      dup6
-        /* "BlackScholes.yul":4438:4448   */
-      dup3
-        /* "BlackScholes.yul":4426:4436   */
-      dup5
-        /* "BlackScholes.yul":4416:4424   */
-      dup7
-        /* "BlackScholes.yul":4406:4414   */
-      dup9
-        /* "BlackScholes.yul":4398:4460   */
-      tag_19
-      jump	// in
-    tag_49:
-        /* "BlackScholes.yul":4489:4498   */
-      dup2
-        /* "BlackScholes.yul":4484:4487   */
-      0x0180
-        /* "BlackScholes.yul":4477:4499   */
-      mstore
-        /* "BlackScholes.yul":4528:4537   */
-      dup1
-        /* "BlackScholes.yul":4523:4526   */
-      0x01a0
-        /* "BlackScholes.yul":4516:4538   */
-      mstore
-        /* "BlackScholes.yul":4131:4683   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":4112:4683   */
-      jump	// out
-        /* "BlackScholes.yul":4766:5384   */
-    tag_7:
-        /* "BlackScholes.yul":4790:4792   */
-      0x00
-        /* "BlackScholes.yul":4794:4796   */
-      dup1
-        /* "BlackScholes.yul":4838:4841   */
-      0x0140
-        /* "BlackScholes.yul":4832:4842   */
-      mload
-        /* "BlackScholes.yul":4878:4881   */
-      0x0160
-        /* "BlackScholes.yul":4872:4882   */
-      mload
-        /* "BlackScholes.yul":4909:4975   */
-      0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd79b5
-        /* "BlackScholes.yul":5021:5087   */
-      0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb
-        /* "BlackScholes.yul":5129:5170   */
-      tag_51
-        /* "BlackScholes.yul":5160:5169   */
-      dup5
-        /* "BlackScholes.yul":5156:5158   */
-      dup10
-        /* "BlackScholes.yul":5152:5154   */
-      dup10
-        /* "BlackScholes.yul":5140:5150   */
-      dup5
-        /* "BlackScholes.yul":5137:5138   */
-      dup7
-        /* "BlackScholes.yul":5129:5170   */
-      tag_14
-      jump	// in
-    tag_51:
-        /* "BlackScholes.yul":5205:5242   */
-      tag_52
-        /* "BlackScholes.yul":5236:5241   */
-      dup6
-        /* "BlackScholes.yul":5225:5234   */
-      dup8
-        /* "BlackScholes.yul":5219:5223   */
-      dup4
-        /* "BlackScholes.yul":5213:5217   */
-      dup6
-        /* "BlackScholes.yul":5205:5242   */
-      tag_16
-      jump	// in
-    tag_52:
-        /* "BlackScholes.yul":5277:5313   */
-      tag_53
-        /* "BlackScholes.yul":5303:5312   */
-      dup9
-        /* "BlackScholes.yul":5300:5301   */
-      0x00
-        /* "BlackScholes.yul":5297:5298   */
+        /* "BlackScholes.yul":2189:2202   */
+      sstore
+        /* "BlackScholes.yul":2229:2231   */
+      dup13
+        /* "BlackScholes.yul":2226:2227   */
       0x01
-        /* "BlackScholes.yul":5291:5295   */
-      dup5
-        /* "BlackScholes.yul":5285:5289   */
-      dup7
-        /* "BlackScholes.yul":5277:5313   */
-      tag_12
-      jump	// in
-    tag_53:
-        /* "BlackScholes.yul":5340:5370   */
-      tag_54
-        /* "BlackScholes.yul":5360:5369   */
-      dup11
-        /* "BlackScholes.yul":5354:5358   */
-      dup3
-        /* "BlackScholes.yul":5348:5352   */
-      dup5
-        /* "BlackScholes.yul":5340:5370   */
-      tag_15
-      jump	// in
-    tag_54:
-        /* "BlackScholes.yul":5330:5370   */
-      swap12
-      pop
-      swap12
-      pop
-        /* "BlackScholes.yul":4797:5384   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":4766:5384   */
-      swap3
-      pop
-      swap3
-      swap1
-      pop
-      jump	// out
-        /* "BlackScholes.yul":5397:6116   */
-    tag_8:
-        /* "BlackScholes.yul":5458:5461   */
-      0x0140
-        /* "BlackScholes.yul":5452:5462   */
-      mload
-        /* "BlackScholes.yul":5518:5521   */
-      0x01c0
-        /* "BlackScholes.yul":5512:5522   */
-      mload
-        /* "BlackScholes.yul":5561:5564   */
-      0x01e0
-        /* "BlackScholes.yul":5555:5565   */
-      mload
-        /* "BlackScholes.yul":5608:5631   */
-      tag_56
-        /* "BlackScholes.yul":5622:5630   */
-      dup2
-        /* "BlackScholes.yul":5612:5620   */
-      dup4
-        /* "BlackScholes.yul":5608:5631   */
-      tag_7
-      jump	// in
-    tag_56:
-        /* "BlackScholes.yul":5681:5682   */
-      0x00
-        /* "BlackScholes.yul":5675:5683   */
-      mload
-        /* "BlackScholes.yul":5716:5718   */
-      0x20
-        /* "BlackScholes.yul":5710:5719   */
-      mload
-        /* "BlackScholes.yul":5766:5812   */
-      tag_57
-        /* "BlackScholes.yul":5802:5811   */
-      dup8
-        /* "BlackScholes.yul":5792:5800   */
-      dup5
-        /* "BlackScholes.yul":5782:5790   */
-      dup7
-        /* "BlackScholes.yul":5778:5780   */
-      dup5
-        /* "BlackScholes.yul":5774:5776   */
-      dup7
-        /* "BlackScholes.yul":5766:5812   */
-      tag_14
-      jump	// in
-    tag_57:
-        /* "BlackScholes.yul":5842:5852   */
-      dup2
-        /* "BlackScholes.yul":5837:5840   */
-      0x01c0
-        /* "BlackScholes.yul":5830:5853   */
-      mstore
-        /* "BlackScholes.yul":5882:5892   */
-      dup1
-        /* "BlackScholes.yul":5877:5880   */
-      0x01e0
-        /* "BlackScholes.yul":5870:5893   */
-      mstore
-        /* "BlackScholes.yul":5417:6116   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":5397:6116   */
-      jump	// out
-        /* "BlackScholes.yul":6129:6997   */
-    tag_9:
-        /* "BlackScholes.yul":6198:6201   */
-      0x0140
-        /* "BlackScholes.yul":6192:6202   */
-      mload
-        /* "BlackScholes.yul":6238:6241   */
-      0x0160
-        /* "BlackScholes.yul":6232:6242   */
-      mload
-        /* "BlackScholes.yul":6276:6279   */
-      0x80
-        /* "BlackScholes.yul":6270:6280   */
-      mload
-        /* "BlackScholes.yul":6313:6316   */
-      0xa0
-        /* "BlackScholes.yul":6307:6317   */
-      mload
-        /* "BlackScholes.yul":6354:6369   */
-      tag_59
-        /* "BlackScholes.yul":6366:6368   */
-      dup2
-        /* "BlackScholes.yul":6362:6364   */
-      dup4
-        /* "BlackScholes.yul":6354:6369   */
-      tag_13
-      jump	// in
-    tag_59:
-        /* "BlackScholes.yul":6402:6405   */
-      0x0100
-        /* "BlackScholes.yul":6396:6406   */
-      mload
-        /* "BlackScholes.yul":6439:6442   */
-      0x0120
-        /* "BlackScholes.yul":6433:6443   */
-      mload
-        /* "BlackScholes.yul":6480:6520   */
-      tag_60
-        /* "BlackScholes.yul":6510:6519   */
-      dup9
-        /* "BlackScholes.yul":6506:6508   */
-      dup3
-        /* "BlackScholes.yul":6502:6504   */
-      dup5
-        /* "BlackScholes.yul":6495:6500   */
-      dup7
-        /* "BlackScholes.yul":6488:6493   */
-      dup9
-        /* "BlackScholes.yul":6480:6520   */
-      tag_14
-      jump	// in
-    tag_60:
-        /* "BlackScholes.yul":6565:6604   */
-      tag_61
-        /* "BlackScholes.yul":6598:6603   */
-      dup10
-        /* "BlackScholes.yul":6587:6596   */
+        /* "BlackScholes.yul":2219:2232   */
+      sstore
+        /* "BlackScholes.yul":2259:2266   */
       dup12
-        /* "BlackScholes.yul":6580:6585   */
-      dup4
-        /* "BlackScholes.yul":6573:6578   */
-      dup6
-        /* "BlackScholes.yul":6565:6604   */
-      tag_16
-      jump	// in
-    tag_61:
-        /* "BlackScholes.yul":6637:6639   */
-      0x40
-        /* "BlackScholes.yul":6631:6640   */
-      mload
-        /* "BlackScholes.yul":6673:6675   */
-      0x60
-        /* "BlackScholes.yul":6667:6676   */
-      mload
-        /* "BlackScholes.yul":6725:6773   */
-      tag_62
-        /* "BlackScholes.yul":6763:6772   */
-      dup15
-        /* "BlackScholes.yul":6752:6761   */
-      dup5
-        /* "BlackScholes.yul":6741:6750   */
-      dup7
-        /* "BlackScholes.yul":6737:6739   */
-      dup5
-        /* "BlackScholes.yul":6733:6735   */
-      dup7
-        /* "BlackScholes.yul":6725:6773   */
-      tag_14
-      jump	// in
-    tag_62:
-        /* "BlackScholes.yul":6803:6814   */
-      dup2
-        /* "BlackScholes.yul":6798:6801   */
-      0x0180
-        /* "BlackScholes.yul":6791:6815   */
-      mstore
-        /* "BlackScholes.yul":6844:6855   */
-      dup1
-        /* "BlackScholes.yul":6839:6842   */
-      0x01a0
-        /* "BlackScholes.yul":6832:6856   */
-      mstore
-        /* "BlackScholes.yul":6157:6997   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":6129:6997   */
-      jump	// out
-        /* "BlackScholes.yul":7010:7766   */
-    tag_10:
-        /* "BlackScholes.yul":7071:7074   */
-      0x0140
-        /* "BlackScholes.yul":7065:7075   */
-      mload
-        /* "BlackScholes.yul":7111:7114   */
-      0x0160
-        /* "BlackScholes.yul":7105:7115   */
-      mload
-        /* "BlackScholes.yul":7156:7159   */
-      0x0180
-        /* "BlackScholes.yul":7150:7160   */
-      mload
-        /* "BlackScholes.yul":7200:7203   */
-      0x01a0
-        /* "BlackScholes.yul":7194:7204   */
-      mload
-        /* "BlackScholes.yul":7238:7256   */
-      tag_64
-      tag_9
-      jump	// in
-    tag_64:
-        /* "BlackScholes.yul":7298:7301   */
-      0x0180
-        /* "BlackScholes.yul":7292:7302   */
-      mload
-        /* "BlackScholes.yul":7344:7347   */
-      0x01a0
-        /* "BlackScholes.yul":7338:7348   */
-      mload
-        /* "BlackScholes.yul":7392:7417   */
-      tag_65
-        /* "BlackScholes.yul":7407:7416   */
-      dup4
-        /* "BlackScholes.yul":7396:7405   */
-      dup6
-        /* "BlackScholes.yul":7392:7417   */
-      tag_7
-      jump	// in
-    tag_65:
-        /* "BlackScholes.yul":7464:7528   */
-      tag_66
-        /* "BlackScholes.yul":7518:7527   */
+        /* "BlackScholes.yul":2256:2257   */
+      0x02
+        /* "BlackScholes.yul":2249:2267   */
+      sstore
+        /* "BlackScholes.yul":2294:2301   */
+      dup11
+        /* "BlackScholes.yul":2291:2292   */
+      0x03
+        /* "BlackScholes.yul":2284:2302   */
+      sstore
+        /* "BlackScholes.yul":2329:2345   */
+      dup10
+        /* "BlackScholes.yul":2326:2327   */
+      0x04
+        /* "BlackScholes.yul":2319:2346   */
+      sstore
+        /* "BlackScholes.yul":2373:2389   */
       dup9
-        /* "BlackScholes.yul":7505:7516   */
-      dup5
-        /* "BlackScholes.yul":7492:7503   */
-      dup7
-        /* "BlackScholes.yul":7482:7490   */
-      dup5
-        /* "BlackScholes.yul":7472:7480   */
-      dup7
-        /* "BlackScholes.yul":7464:7528   */
-      tag_14
-      jump	// in
-    tag_66:
-        /* "BlackScholes.yul":7574:7584   */
-      dup2
-        /* "BlackScholes.yul":7569:7572   */
-      0x0180
-        /* "BlackScholes.yul":7562:7585   */
-      mstore
-        /* "BlackScholes.yul":7614:7624   */
-      dup1
-        /* "BlackScholes.yul":7609:7612   */
-      0x01a0
-        /* "BlackScholes.yul":7602:7625   */
-      mstore
-        /* "BlackScholes.yul":7030:7766   */
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-      pop
-        /* "BlackScholes.yul":7010:7766   */
-      jump	// out
-        /* "BlackScholes.yul":7779:8479   */
-    tag_11:
-        /* "BlackScholes.yul":7803:7805   */
-      0x00
-        /* "BlackScholes.yul":7807:7809   */
-      dup1
-        /* "BlackScholes.yul":7851:7854   */
-      0x0140
-        /* "BlackScholes.yul":7845:7855   */
-      mload
-        /* "BlackScholes.yul":7889:7897   */
-      tag_68
-      tag_5
-      jump	// in
-    tag_68:
-        /* "BlackScholes.yul":7914:7923   */
-      tag_69
-      tag_6
-      jump	// in
-    tag_69:
-        /* "BlackScholes.yul":7940:7950   */
-      tag_70
-      tag_8
-      jump	// in
-    tag_70:
-        /* "BlackScholes.yul":7967:7977   */
-      tag_71
-      tag_10
-      jump	// in
-    tag_71:
-        /* "BlackScholes.yul":8019:8022   */
-      0x0180
-        /* "BlackScholes.yul":8013:8023   */
-      mload
-        /* "BlackScholes.yul":8064:8067   */
-      0x01a0
-        /* "BlackScholes.yul":8058:8068   */
-      mload
-        /* "BlackScholes.yul":8109:8112   */
-      0x01c0
-        /* "BlackScholes.yul":8103:8113   */
-      mload
-        /* "BlackScholes.yul":8154:8157   */
-      0x01e0
-        /* "BlackScholes.yul":8148:8158   */
-      mload
-        /* "BlackScholes.yul":8399:8465   */
-      tag_72
-        /* "BlackScholes.yul":8455:8464   */
+        /* "BlackScholes.yul":2370:2371   */
+      0x05
+        /* "BlackScholes.yul":2363:2390   */
+      sstore
+        /* "BlackScholes.yul":2417:2424   */
       dup6
-        /* "BlackScholes.yul":8443:8453   */
+        /* "BlackScholes.yul":2414:2415   */
+      0x06
+        /* "BlackScholes.yul":2407:2425   */
+      sstore
+        /* "BlackScholes.yul":2452:2459   */
       dup5
-        /* "BlackScholes.yul":8431:8441   */
-      dup7
-        /* "BlackScholes.yul":8419:8429   */
-      dup5
-        /* "BlackScholes.yul":8407:8417   */
-      dup7
-        /* "BlackScholes.yul":8399:8465   */
-      tag_19
-      jump	// in
-    tag_72:
-        /* "BlackScholes.yul":8389:8465   */
-      swap7
-      pop
-      swap7
-      pop
-        /* "BlackScholes.yul":7810:8479   */
-      pop
-      pop
-      pop
+        /* "BlackScholes.yul":2449:2450   */
+      0x07
+        /* "BlackScholes.yul":2442:2460   */
+      sstore
+        /* "BlackScholes.yul":2487:2495   */
+      dup2
+        /* "BlackScholes.yul":2484:2485   */
+      0x08
+        /* "BlackScholes.yul":2477:2496   */
+      sstore
+        /* "BlackScholes.yul":2523:2531   */
+      dup1
+        /* "BlackScholes.yul":2520:2521   */
+      0x09
+        /* "BlackScholes.yul":2513:2532   */
+      sstore
+        /* "BlackScholes.yul":1425:2570   */
       pop
       pop
-        /* "BlackScholes.yul":7779:8479   */
-      swap1
-      swap2
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+        /* "BlackScholes.yul":1407:2570   */
       jump	// out
-        /* "BlackScholes.yul":8553:8699   */
+        /* "BlackScholes.yul":9051:9197   */
     tag_12:
-        /* "BlackScholes.yul":8600:8602   */
+        /* "BlackScholes.yul":9098:9100   */
       0x00
-        /* "BlackScholes.yul":8604:8606   */
-      dup1
-        /* "BlackScholes.yul":8675:8684   */
-      dup7
-        /* "BlackScholes.yul":8671:8673   */
-      dup7
-        /* "BlackScholes.yul":8667:8669   */
-      dup7
-        /* "BlackScholes.yul":8663:8665   */
-      dup7
-        /* "BlackScholes.yul":8659:8661   */
-      dup7
-        /* "BlackScholes.yul":8635:8685   */
-      verbatimbytecode_d0
-        /* "BlackScholes.yul":8625:8685   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":8553:8699   */
-      swap6
-      pop
-      swap6
-      swap4
-      pop
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":8735:8843   */
-    tag_13:
-        /* "BlackScholes.yul":8763:8765   */
-      0x00
-        /* "BlackScholes.yul":8767:8769   */
-      dup1
-        /* "BlackScholes.yul":8826:8828   */
-      dup4
-        /* "BlackScholes.yul":8822:8824   */
-      dup4
-        /* "BlackScholes.yul":8798:8829   */
-      verbatimbytecode_d1
-        /* "BlackScholes.yul":8788:8829   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":8735:8843   */
-      swap3
-      pop
-      swap3
-      swap1
-      pop
-      jump	// out
-        /* "BlackScholes.yul":8882:9028   */
-    tag_14:
-        /* "BlackScholes.yul":8929:8931   */
-      0x00
-        /* "BlackScholes.yul":8933:8935   */
-      dup1
-        /* "BlackScholes.yul":9004:9013   */
-      dup7
-        /* "BlackScholes.yul":9000:9002   */
-      dup7
-        /* "BlackScholes.yul":8996:8998   */
-      dup7
-        /* "BlackScholes.yul":8992:8994   */
-      dup7
-        /* "BlackScholes.yul":8988:8990   */
-      dup7
-        /* "BlackScholes.yul":8964:9014   */
-      verbatimbytecode_d2
-        /* "BlackScholes.yul":8954:9014   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":8882:9028   */
-      swap6
-      pop
-      swap6
-      swap4
-      pop
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":9067:9197   */
-    tag_15:
-        /* "BlackScholes.yul":9106:9108   */
-      0x00
-        /* "BlackScholes.yul":9110:9112   */
+        /* "BlackScholes.yul":9102:9104   */
       dup1
         /* "BlackScholes.yul":9173:9182   */
-      dup5
+      dup7
         /* "BlackScholes.yul":9169:9171   */
-      dup5
+      dup7
         /* "BlackScholes.yul":9165:9167   */
+      dup7
+        /* "BlackScholes.yul":9161:9163   */
+      dup7
+        /* "BlackScholes.yul":9157:9159   */
+      dup7
+        /* "BlackScholes.yul":9133:9183   */
+      verbatimbytecode_d0
+        /* "BlackScholes.yul":9123:9183   */
+      swap2
+      pop
+      swap2
+      pop
+        /* "BlackScholes.yul":9051:9197   */
+      swap6
+      pop
+      swap6
+      swap4
+      pop
+      pop
+      pop
+      pop
+      jump	// out
+        /* "BlackScholes.yul":9380:9526   */
+    tag_14:
+        /* "BlackScholes.yul":9427:9429   */
+      0x00
+        /* "BlackScholes.yul":9431:9433   */
+      dup1
+        /* "BlackScholes.yul":9502:9511   */
+      dup7
+        /* "BlackScholes.yul":9498:9500   */
+      dup7
+        /* "BlackScholes.yul":9494:9496   */
+      dup7
+        /* "BlackScholes.yul":9490:9492   */
+      dup7
+        /* "BlackScholes.yul":9486:9488   */
+      dup7
+        /* "BlackScholes.yul":9462:9512   */
+      verbatimbytecode_d2
+        /* "BlackScholes.yul":9452:9512   */
+      swap2
+      pop
+      swap2
+      pop
+        /* "BlackScholes.yul":9380:9526   */
+      swap6
+      pop
+      swap6
+      swap4
+      pop
+      pop
+      pop
+      pop
+      jump	// out
+        /* "BlackScholes.yul":9565:9695   */
+    tag_15:
+        /* "BlackScholes.yul":9604:9606   */
+      0x00
+        /* "BlackScholes.yul":9608:9610   */
+      dup1
+        /* "BlackScholes.yul":9671:9680   */
       dup5
-        /* "BlackScholes.yul":9141:9183   */
+        /* "BlackScholes.yul":9667:9669   */
+      dup5
+        /* "BlackScholes.yul":9663:9665   */
+      dup5
+        /* "BlackScholes.yul":9639:9681   */
       verbatimbytecode_d3
-        /* "BlackScholes.yul":9131:9183   */
+        /* "BlackScholes.yul":9629:9681   */
       swap2
       pop
       swap2
       pop
-        /* "BlackScholes.yul":9067:9197   */
+        /* "BlackScholes.yul":9565:9695   */
       swap4
       pop
       swap4
@@ -1332,163 +598,51 @@ sub_0: assembly {
       pop
       pop
       jump	// out
-        /* "BlackScholes.yul":9241:9385   */
-    tag_16:
-        /* "BlackScholes.yul":9287:9289   */
-      0x00
-        /* "BlackScholes.yul":9291:9293   */
-      dup1
-        /* "BlackScholes.yul":9365:9370   */
-      dup6
-        /* "BlackScholes.yul":9354:9363   */
-      dup6
-        /* "BlackScholes.yul":9350:9352   */
-      dup6
-        /* "BlackScholes.yul":9346:9348   */
-      dup6
-        /* "BlackScholes.yul":9322:9371   */
-      verbatimbytecode_d4
-        /* "BlackScholes.yul":9312:9371   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":9241:9385   */
-      swap5
-      pop
-      swap5
-      swap3
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":9430:9575   */
-    tag_17:
-        /* "BlackScholes.yul":9477:9479   */
-      0x00
-        /* "BlackScholes.yul":9481:9483   */
-      dup1
-        /* "BlackScholes.yul":9555:9560   */
-      dup6
-        /* "BlackScholes.yul":9544:9553   */
-      dup6
-        /* "BlackScholes.yul":9540:9542   */
-      dup6
-        /* "BlackScholes.yul":9536:9538   */
-      dup6
-        /* "BlackScholes.yul":9512:9561   */
-      verbatimbytecode_d5
-        /* "BlackScholes.yul":9502:9561   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":9430:9575   */
-      swap5
-      pop
-      swap5
-      swap3
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":9836:10008   */
-    tag_19:
-        /* "BlackScholes.yul":9883:9885   */
-      0x00
-        /* "BlackScholes.yul":9887:9889   */
-      dup1
-        /* "BlackScholes.yul":9918:9933   */
-      tag_81
-        /* "BlackScholes.yul":9930:9932   */
-      dup7
-        /* "BlackScholes.yul":9926:9928   */
-      dup7
-        /* "BlackScholes.yul":9918:9933   */
-      tag_13
-      jump	// in
-    tag_81:
-        /* "BlackScholes.yul":9908:9933   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":9960:9994   */
-      tag_82
-        /* "BlackScholes.yul":9984:9993   */
-      dup8
-        /* "BlackScholes.yul":9980:9982   */
-      dup3
-        /* "BlackScholes.yul":9976:9978   */
-      dup5
-        /* "BlackScholes.yul":9972:9974   */
-      dup8
-        /* "BlackScholes.yul":9968:9970   */
-      dup8
-        /* "BlackScholes.yul":9960:9994   */
-      tag_12
-      jump	// in
-    tag_82:
-        /* "BlackScholes.yul":9950:9994   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":9836:10008   */
-      swap6
-      pop
-      swap6
-      swap4
-      pop
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":10047:10230   */
+        /* "BlackScholes.yul":10545:10728   */
     tag_20:
-        /* "BlackScholes.yul":10094:10096   */
+        /* "BlackScholes.yul":10592:10594   */
       0x00
-        /* "BlackScholes.yul":10098:10100   */
+        /* "BlackScholes.yul":10596:10598   */
       dup1
-        /* "BlackScholes.yul":10129:10155   */
+        /* "BlackScholes.yul":10627:10653   */
       tag_84
-        /* "BlackScholes.yul":10145:10154   */
+        /* "BlackScholes.yul":10643:10652   */
       dup8
-        /* "BlackScholes.yul":10141:10143   */
+        /* "BlackScholes.yul":10639:10641   */
       dup8
-        /* "BlackScholes.yul":10137:10139   */
+        /* "BlackScholes.yul":10635:10637   */
       dup8
-        /* "BlackScholes.yul":10129:10155   */
+        /* "BlackScholes.yul":10627:10653   */
       tag_15
       jump	// in
     tag_84:
-        /* "BlackScholes.yul":10119:10155   */
+        /* "BlackScholes.yul":10617:10653   */
       swap2
       pop
       swap2
       pop
-        /* "BlackScholes.yul":10182:10216   */
+        /* "BlackScholes.yul":10680:10714   */
       tag_85
-        /* "BlackScholes.yul":10206:10215   */
+        /* "BlackScholes.yul":10704:10713   */
       dup8
-        /* "BlackScholes.yul":10202:10204   */
+        /* "BlackScholes.yul":10700:10702   */
       dup3
-        /* "BlackScholes.yul":10198:10200   */
+        /* "BlackScholes.yul":10696:10698   */
       dup5
-        /* "BlackScholes.yul":10194:10196   */
+        /* "BlackScholes.yul":10692:10694   */
       dup8
-        /* "BlackScholes.yul":10190:10192   */
+        /* "BlackScholes.yul":10688:10690   */
       dup8
-        /* "BlackScholes.yul":10182:10216   */
+        /* "BlackScholes.yul":10680:10714   */
       tag_14
       jump	// in
     tag_85:
-        /* "BlackScholes.yul":10172:10216   */
+        /* "BlackScholes.yul":10670:10714   */
       swap2
       pop
       swap2
       pop
-        /* "BlackScholes.yul":10047:10230   */
+        /* "BlackScholes.yul":10545:10728   */
       swap6
       pop
       swap6
@@ -1498,214 +652,34 @@ sub_0: assembly {
       pop
       pop
       jump	// out
-        /* "BlackScholes.yul":10295:10637   */
-    tag_21:
-        /* "BlackScholes.yul":10340:10342   */
-      0x00
-        /* "BlackScholes.yul":10344:10346   */
-      dup1
-        /* "BlackScholes.yul":10379:10389   */
-      0x019d25ddbd
-        /* "BlackScholes.yul":10420:10486   */
-      0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6
-        /* "BlackScholes.yul":10520:10554   */
-      tag_87
-        /* "BlackScholes.yul":10548:10553   */
-      dup9
-        /* "BlackScholes.yul":10537:10546   */
-      dup9
-        /* "BlackScholes.yul":10533:10535   */
-      dup9
-        /* "BlackScholes.yul":10529:10531   */
-      dup9
-        /* "BlackScholes.yul":10520:10554   */
-      tag_17
-      jump	// in
-    tag_87:
-        /* "BlackScholes.yul":10510:10554   */
-      swap4
-      pop
-      swap4
-      pop
-        /* "BlackScholes.yul":10581:10623   */
-      tag_88
-        /* "BlackScholes.yul":10613:10622   */
-      dup8
-        /* "BlackScholes.yul":10609:10611   */
-      dup5
-        /* "BlackScholes.yul":10605:10607   */
-      dup7
-        /* "BlackScholes.yul":10597:10603   */
-      dup5
-        /* "BlackScholes.yul":10589:10595   */
-      dup7
-        /* "BlackScholes.yul":10581:10623   */
-      tag_14
-      jump	// in
-    tag_88:
-        /* "BlackScholes.yul":10571:10623   */
-      swap4
-      pop
-      swap4
-      pop
-        /* "BlackScholes.yul":10347:10637   */
-      pop
-      pop
-        /* "BlackScholes.yul":10295:10637   */
-      swap5
-      pop
-      swap5
-      swap3
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":10707:10959   */
-    tag_22:
-        /* "BlackScholes.yul":10757:10759   */
-      0x00
-        /* "BlackScholes.yul":10761:10763   */
-      dup1
-        /* "BlackScholes.yul":10792:10824   */
-      tag_90
-        /* "BlackScholes.yul":10818:10823   */
-      dup9
-        /* "BlackScholes.yul":10807:10816   */
-      dup9
-        /* "BlackScholes.yul":10803:10805   */
-      dup7
-        /* "BlackScholes.yul":10799:10801   */
-      dup7
-        /* "BlackScholes.yul":10792:10824   */
-      tag_21
-      jump	// in
-    tag_90:
-        /* "BlackScholes.yul":10782:10824   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":10851:10885   */
-      tag_91
-        /* "BlackScholes.yul":10875:10884   */
-      dup8
-        /* "BlackScholes.yul":10871:10873   */
-      dup3
-        /* "BlackScholes.yul":10867:10869   */
-      dup5
-        /* "BlackScholes.yul":10863:10865   */
-      dup10
-        /* "BlackScholes.yul":10859:10861   */
-      dup10
-        /* "BlackScholes.yul":10851:10885   */
-      tag_14
-      jump	// in
-    tag_91:
-        /* "BlackScholes.yul":10841:10885   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":10912:10945   */
-      tag_92
-        /* "BlackScholes.yul":10939:10944   */
-      dup9
-        /* "BlackScholes.yul":10928:10937   */
-      dup9
-        /* "BlackScholes.yul":10924:10926   */
-      dup4
-        /* "BlackScholes.yul":10920:10922   */
-      dup6
-        /* "BlackScholes.yul":10912:10945   */
-      tag_16
-      jump	// in
-    tag_92:
-        /* "BlackScholes.yul":10902:10945   */
-      swap2
-      pop
-      swap2
-      pop
-        /* "BlackScholes.yul":10707:10959   */
-      swap7
-      pop
-      swap7
-      swap5
-      pop
-      pop
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":11010:11255   */
-    tag_23:
-        /* "BlackScholes.yul":11057:11059   */
-      0x00
-        /* "BlackScholes.yul":11061:11063   */
-      dup1
-        /* "BlackScholes.yul":11099:11165   */
-      0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-        /* "BlackScholes.yul":11198:11241   */
-      tag_94
-        /* "BlackScholes.yul":11235:11240   */
-      dup8
-        /* "BlackScholes.yul":11224:11233   */
-      dup8
-        /* "BlackScholes.yul":11213:11222   */
-      dup4
-        /* "BlackScholes.yul":11210:11211   */
-      0x05
-        /* "BlackScholes.yul":11206:11208   */
-      dup10
-        /* "BlackScholes.yul":11202:11204   */
-      dup10
-        /* "BlackScholes.yul":11198:11241   */
-      tag_22
-      jump	// in
-    tag_94:
-        /* "BlackScholes.yul":11188:11241   */
-      swap3
-      pop
-      swap3
-      pop
-        /* "BlackScholes.yul":11064:11255   */
-      pop
-        /* "BlackScholes.yul":11010:11255   */
-      swap5
-      pop
-      swap5
-      swap3
-      pop
-      pop
-      pop
-      jump	// out
-        /* "BlackScholes.yul":11301:11423   */
+        /* "BlackScholes.yul":11799:11921   */
     tag_24:
-        /* "BlackScholes.yul":11340:11342   */
+        /* "BlackScholes.yul":11838:11840   */
       0x00
-        /* "BlackScholes.yul":11344:11346   */
+        /* "BlackScholes.yul":11842:11844   */
       dup1
-        /* "BlackScholes.yul":11375:11409   */
+        /* "BlackScholes.yul":11873:11907   */
       tag_96
-        /* "BlackScholes.yul":11399:11408   */
+        /* "BlackScholes.yul":11897:11906   */
       dup6
-        /* "BlackScholes.yul":11395:11397   */
+        /* "BlackScholes.yul":11893:11895   */
       dup6
-        /* "BlackScholes.yul":11391:11393   */
+        /* "BlackScholes.yul":11889:11891   */
       dup6
-        /* "BlackScholes.yul":11387:11389   */
+        /* "BlackScholes.yul":11885:11887   */
       dup8
-        /* "BlackScholes.yul":11383:11385   */
+        /* "BlackScholes.yul":11881:11883   */
       dup8
-        /* "BlackScholes.yul":11375:11409   */
+        /* "BlackScholes.yul":11873:11907   */
       tag_14
       jump	// in
     tag_96:
-        /* "BlackScholes.yul":11365:11409   */
+        /* "BlackScholes.yul":11863:11907   */
       swap2
       pop
       swap2
       pop
-        /* "BlackScholes.yul":11301:11423   */
+        /* "BlackScholes.yul":11799:11921   */
       swap4
       pop
       swap4
