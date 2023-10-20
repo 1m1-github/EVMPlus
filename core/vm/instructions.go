@@ -17,6 +17,8 @@
 package vm
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -942,7 +944,7 @@ func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	b.Add(a, b)
+	b.Add(a, b, *big.NewInt(10))
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
 
 	scope.Stack.push(&bc)
@@ -969,7 +971,7 @@ func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
 	b := UInt256IntTupleToDecimal(&bc, &bq)
-	b.Multiply(a, b)
+	b.Multiply(a, b, *big.NewInt(10))
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
 
 	scope.Stack.push(&bc)

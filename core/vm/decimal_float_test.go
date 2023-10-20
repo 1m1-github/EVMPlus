@@ -225,7 +225,7 @@ func TestDecAdd(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Add(&tt.a, &tt.b)
+		out.Add(&tt.a, &tt.b, *big.NewInt(10))
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
 		if !out.eq(&tt.c) {
@@ -268,7 +268,7 @@ func TestDecMultiply(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Multiply(&tt.a, &tt.b)
+		out.Multiply(&tt.a, &tt.b, *big.NewInt(10))
 
 		if !out.eq(&tt.c) {
 			t.Fatal(tt.a, tt.b, out, tt.c)
@@ -331,8 +331,8 @@ func TestDecNormalize(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.normalize(&tt.a)
-		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
+		out.normalize(&tt.a, *big.NewInt(10), true)
+		fmt.Println("normalize", tt.a.String(), out.String(), tt.b.String())
 
 		if !out.eq(&tt.b) {
 			t.Fatal(tt.a, out, tt.b)
@@ -399,3 +399,106 @@ func TestDecSin(t *testing.T) {
 		}
 	}
 }
+
+// func TestDecBS(t *testing.T) {
+// 	tests := []struct {
+// 		S Decimal
+// 		K Decimal
+// 		r Decimal
+// 		s Decimal
+// 		T Decimal
+// 		precision big.Int
+// 		y Decimal
+// 	}{
+// 		{
+// 			*createDecimal(big.NewInt(11), big.NewInt(-1)),
+// 			*copyDecimal(ONE),
+// 			*copyDecimal(ZERO),
+// 			*createDecimal(big.NewInt(1), big.NewInt(-1)),
+// 			*copyDecimal(ONE),
+// 			*big.NewInt(10),
+// 			*copyDecimal(ZERO),
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		var out Decimal
+// 		out.callprice(&tt.S,&tt.K,&tt.r,&tt.s,&tt.T,tt.precision)
+// 		fmt.Println("callprice", out.String())
+// 		// if !out.eq(&tt.b) {
+// 		// 	t.Fatal(tt.a, out, tt.b)
+// 		// }
+// 	}
+// }
+// var LN_2 = createDecimal(big.NewInt(6931471805), big.NewInt(-10))
+// func (out *Decimal) callprice(S,K,r,s,T *Decimal, precision big.Int) {
+// 	var dp,dm Decimal
+// 	dp.d_plus(S,K,r,s,T,precision)
+// 	fmt.Println("d_plus", dp.String())
+// 	dm.d_minus(S,K,r,s,T,precision)
+// 	fmt.Println("d_minus", dm.String())
+// 	dp.CDF(&dp, precision)
+// 	fmt.Println("dp.CDF", dp.String())
+// 	dm.CDF(&dm, precision)
+// 	fmt.Println("dm.CDF", dm.String())
+
+// 	out.Multiply(&dp, S)
+
+// 	var a Decimal
+// 	a.Negate(r)
+// 	a.Multiply(&a, T)
+// 	a.Exp(&a, precision)
+// 	a.Multiply(&a, K)
+// 	a.Multiply(&a, &dm)
+// 	a.Negate(&a)
+// 	fmt.Println("right side", a.String())
+
+// 	out.Add(out, &a)
+// }
+// func (out *Decimal) CDF(x *Decimal, precision big.Int) {
+// 	C := createDecimal(big.NewInt(-165451), big.NewInt(-5))
+// 	out.Multiply(C, x)
+// 	out.Exp(out, precision)
+// 	out.Add(out, ONE)
+// 	out.Inverse(out, precision)
+// }
+// func (out *Decimal) d_minus(S,K,r,s,T *Decimal, precision big.Int) {
+// 	out.d_plus(S,K,r,s,T,precision)
+
+// 	var a Decimal
+// 	a.sqrt(T, precision)
+// 	a.Multiply(&a, s)
+// 	a.Negate(&a)
+	
+// 	out.Add(out, &a)
+// }
+// func (out *Decimal) d_plus(S,K,r,s,T *Decimal, precision big.Int) {
+// 	out.Inverse(K, precision)
+// 	out.Multiply(S, out)
+// 	out.ln(out, precision)
+
+// 	var a Decimal
+// 	a.Multiply(s, s)
+// 	a.Multiply(&a, HALF)
+// 	a.Add(r, &a)
+// 	a.Multiply(&a, T)
+
+// 	out.Add(out, &a)
+
+// 	a.sqrt(T, precision)
+// 	a.Multiply(&a, s)
+// 	a.Inverse(&a, precision)
+	
+// 	out.Multiply(out, &a)
+// }
+// func (out *Decimal) sqrt(a *Decimal, precision big.Int) {
+// 	out.pow(a, HALF, precision)
+// }
+// func (out *Decimal) ln(a *Decimal, precision big.Int) {
+// 	out.Log2(a, precision)
+// 	out.Multiply(out, LN_2)
+// }
+// func (out *Decimal) pow(a, b *Decimal, precision big.Int) {
+// 	out.ln(a, precision)
+// 	out.Multiply(out, b)
+// 	out.Exp(out, precision)
+// }

@@ -75,35 +75,46 @@ var MINUS_ONE = createDecimal(MINUS_ONE_BIG, ZERO_BIG)
 // OPCODE functions
 
 // a + b
-func (out *Decimal) Add(a, b *Decimal) *Decimal {
+func (out *Decimal) Add(_a, _b *Decimal, precision big.Int) *Decimal {
+
+	a := copyDecimal(_a)
+	b := copyDecimal(_b)
+
 	ca := add_helper(a, b)
 	cb := add_helper(b, a)
 
 	out.c.Add(&ca, &cb)
 	out.q.Set(min(&a.q, &b.q))
 
-	out.normalize(out)
+	out.normalize(out, precision, false)
 
 	return out
 }
 
 // -a
-func (out *Decimal) Negate(a *Decimal) *Decimal {
+func (out *Decimal) Negate(_a *Decimal) *Decimal {
+	a := copyDecimal(_a)
+
 	out.c.Neg(&a.c)
 	out.q.Set(&a.q)
 	return out
 }
 
 // a * b
-func (out *Decimal) Multiply(a, b *Decimal) *Decimal {
+func (out *Decimal) Multiply(_a, _b *Decimal, precision big.Int) *Decimal {
+	a := copyDecimal(_a)
+	b := copyDecimal(_b)
+
 	out.c.Mul(&a.c, &b.c)
 	out.q.Add(&a.q, &b.q)
-	out.normalize(out)
+	out.normalize(out, precision, false)
 	return out
 }
 
 // 1 / a
-func (out *Decimal) Inverse(a *Decimal, precision big.Int) *Decimal {
+func (out *Decimal) Inverse(_a *Decimal, precision big.Int) *Decimal {
+	a := copyDecimal(_a)
+
 	var precision_m_aq big.Int
 	precision_m_aq.Sub(&precision, &a.q)
 	if precision_m_aq.Cmp(ZERO_BIG) == -1 {
@@ -114,14 +125,15 @@ func (out *Decimal) Inverse(a *Decimal, precision big.Int) *Decimal {
 	out.c.Div(&precision_m_aq, &a.c)
 	out.q.Neg(&precision)
 
-	out.normalize(out)
+	out.normalize(out, precision, false)
 
 	return out
 }
 
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-func (out *Decimal) Exp(a *Decimal, steps big.Int) *Decimal {
+func (out *Decimal) Exp(_a *Decimal, precision big.Int) *Decimal {
+	a := copyDecimal(_a)
 
 	// out = 1
 	out.c.Set(ONE_BIG)
@@ -136,13 +148,13 @@ func (out *Decimal) Exp(a *Decimal, steps big.Int) *Decimal {
 	factorial := copyDecimal(ONE)
 	factorial_next := copyDecimal(ZERO)
 
-	for i := big.NewInt(1); i.Cmp(&steps) == -1; i.Add(i, ONE_BIG) { // step 0 skipped as out set to 1
-		a_power.Multiply(a_power, a)                    // a^i
-		factorial_next.Add(factorial_next, ONE)         // i++
-		factorial.Multiply(factorial, factorial_next)   // i!
-		factorial_inv.Inverse(factorial, steps)         // 1/i!
-		factorial_inv.Multiply(&factorial_inv, a_power) // store a^i/i! in factorial_inv as not needed anymore
-		out.Add(out, &factorial_inv)                    // out += a^i/i!
+	for i := big.NewInt(1); i.Cmp(&precision) == -1; i.Add(i, ONE_BIG) { // step 0 skipped as out set to 1
+		a_power.Multiply(a_power, a, precision)                    // a^i
+		factorial_next.Add(factorial_next, ONE, precision)         // i++
+		factorial.Multiply(factorial, factorial_next, precision)   // i!
+		factorial_inv.Inverse(factorial, precision)         // 1/i!
+		factorial_inv.Multiply(&factorial_inv, a_power, precision) // store a^i/i! in factorial_inv as not needed anymore
+		out.Add(out, &factorial_inv, precision)                    // out += a^i/i!
 	}
 
 	return out
@@ -151,13 +163,15 @@ func (out *Decimal) Exp(a *Decimal, steps big.Int) *Decimal {
 
 // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
 // 0 < a
-func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
+func (out *Decimal) Log2(_a *Decimal, precision big.Int) *Decimal {
+	a := copyDecimal(_a)
+
 	if a.c.Sign() != 1 {
 		panic("Log2 needs 0 < a")
 	}
 
 	var a_norm Decimal
-	a_norm.normalize(a)
+	a_norm.normalize(a, precision, false)
 
 	// out = 0
 	out.c.Set(ZERO_BIG)
@@ -169,22 +183,22 @@ func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
 
 	// double a until 1 <= a
 	for {
-		if !a_norm.lessThan(ONE) {
+		if !a_norm.lessThan(ONE, precision) {
 			break
 		}
 
 		a_norm.double()         // a *= 2
-		out.Add(out, MINUS_ONE) // out--
+		out.Add(out, MINUS_ONE, precision) // out--
 	}
 
 	// half a until a < 2
 	for {
-		if a_norm.lessThan(TWO) {
+		if a_norm.lessThan(TWO, precision) {
 			break
 		}
 
-		a_norm.halve()    // a /= 2
-		out.Add(out, ONE) // out++
+		a_norm.halve(precision)    // a /= 2
+		out.Add(out, ONE, precision) // out++
 	}
 
 	// from here: 1 <= a < 2 <=> 0 < out < 1
@@ -193,18 +207,18 @@ func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
 	steps_counter := big.NewInt(0) // for now, precision is naiive
 	v := copyDecimal(HALF)
 	for {
-		if steps.Cmp(steps_counter) == 0 {
+		if precision.Cmp(steps_counter) == 0 {
 			break
 		}
 
-		a_norm.Multiply(&a_norm, &a_norm) // THIS IS SLOW
+		a_norm.Multiply(&a_norm, &a_norm, precision) // THIS IS SLOW
 
-		if !a_norm.lessThan(TWO) {
-			a_norm.halve() // a /= 2
-			out.Add(out, v)
+		if !a_norm.lessThan(TWO, precision) {
+			a_norm.halve(precision) // a /= 2
+			out.Add(out, v, precision)
 		}
 
-		v.halve()
+		v.halve(precision)
 
 		steps_counter.Add(steps_counter, ONE_BIG)
 	}
@@ -213,38 +227,40 @@ func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
 }
 
 // sin(a)
-func (out *Decimal) Sin(a *Decimal, steps big.Int) *Decimal {
+func (out *Decimal) Sin(_a *Decimal, precision big.Int) *Decimal {
+	a := copyDecimal(_a)
+
 	// out = a
 	out.c.Set(&a.c)
 	out.q.Set(&a.q)
 
-	if a.isZero() || steps.Cmp(ONE_BIG) == 0 {
+	if a.isZero() || precision.Cmp(ONE_BIG) == 0 {
 		return out
 	}
 
 	var a_squared, factorial_inv Decimal
-	a_squared.Multiply(a, a)
+	a_squared.Multiply(a, a, precision)
 	a_power := copyDecimal(ONE)
 	factorial := copyDecimal(ONE)
 	factorial_next := copyDecimal(ONE)
 	negate := true
 
-	for i := big.NewInt(1); i.Cmp(&steps) == -1; i.Add(i, ONE_BIG) { // step 0 skipped as out set to a
-		a_power.Multiply(a_power, &a_squared) // a^(2i+1)
+	for i := big.NewInt(1); i.Cmp(&precision) == -1; i.Add(i, ONE_BIG) { // step 0 skipped as out set to a
+		a_power.Multiply(a_power, &a_squared, precision) // a^(2i+1)
 
-		factorial_next.Add(factorial_next, ONE)       // i++
-		factorial.Multiply(factorial, factorial_next) // i!*2i
-		factorial_next.Add(factorial_next, ONE)       // i++
-		factorial.Multiply(factorial, factorial_next) // (2i+1)!
+		factorial_next.Add(factorial_next, ONE, precision)       // i++
+		factorial.Multiply(factorial, factorial_next, precision) // i!*2i
+		factorial_next.Add(factorial_next, ONE, precision)       // i++
+		factorial.Multiply(factorial, factorial_next, precision) // (2i+1)!
 
-		factorial_inv.Inverse(factorial, steps)         // 1/(2i+1)!
-		factorial_inv.Multiply(&factorial_inv, a_power) // store a^(2i+1)/(2i+1)! in factorial_inv as not needed anymore
+		factorial_inv.Inverse(factorial, precision)         // 1/(2i+1)!
+		factorial_inv.Multiply(&factorial_inv, a_power, precision) // store a^(2i+1)/(2i+1)! in factorial_inv as not needed anymore
 		if negate {
 			factorial_inv.Negate(&factorial_inv) // (-1)^i*a^(2i+1)/(2i+1)!
 		}
 		negate = !negate
 
-		out.Add(out, &factorial_inv) // out += (-1)^i*a^(2i+1)/(2i+1)!
+		out.Add(out, &factorial_inv, precision) // out += (-1)^i*a^(2i+1)/(2i+1)!
 	}
 
 	return out
@@ -278,9 +294,9 @@ func (a *Decimal) isNegative() bool {
 }
 
 // a < b
-func (a *Decimal) lessThan(b *Decimal) bool {
+func (a *Decimal) lessThan(b *Decimal, precision big.Int) bool {
 	var diff Decimal
-	diff.Add(a, diff.Negate(b))
+	diff.Add(a, diff.Negate(b), precision)
 	return diff.c.Sign() == -1
 }
 
@@ -290,8 +306,8 @@ func (out *Decimal) double() {
 }
 
 // a /= 2
-func (out *Decimal) halve() {
-	out.Multiply(out, HALF)
+func (out *Decimal) halve(precision big.Int) {
+	out.Multiply(out, HALF, precision)
 }
 
 // c = (-1)^d1.s * d1.c * 10^max(d1.q - d2.q, 0)
@@ -335,7 +351,9 @@ func find_num_trailing_zeros_signed(a *big.Int) (p, ten_power *big.Int) {
 }
 
 // remove trailing zeros in coefficient
-func (out *Decimal) normalize(a *Decimal) *Decimal {
+func (out *Decimal) normalize(_a *Decimal, precision big.Int, rounded bool) *Decimal {
+	a := copyDecimal(_a)
+
 	p, ten_power := find_num_trailing_zeros_signed(&a.c)
 	out.c.Div(&a.c, ten_power)
 
@@ -346,5 +364,37 @@ func (out *Decimal) normalize(a *Decimal) *Decimal {
 		out.q.Set(ZERO_BIG)
 	}
 
+	if rounded {
+		return out
+	}
+
+	out.round(out, precision, true)
+	return out
+}
+
+func (out *Decimal) round(_a *Decimal, precision big.Int, normal bool) *Decimal {
+	a := copyDecimal(_a)
+
+	var shift big.Int
+	shift.Add(&precision, &a.q)
+
+	if shift.Cmp(ZERO_BIG) == 1 || shift.Cmp(&a.q) == -1 {
+		if normal {
+			out.c.Set(&a.c)
+			out.q.Set(&a.q)
+			return out
+		}
+		out.normalize(a, precision, true)
+		return out
+	}
+
+	shift.Neg(&shift)
+	out.c.Exp(TEN_BIG, &shift, ZERO_BIG)
+	out.c.Div(&a.c, &out.c)
+	out.q.Add(&a.q, &shift)
+	if normal {
+		return out
+	}
+	out.normalize(out, precision, true)
 	return out
 }
