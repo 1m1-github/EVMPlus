@@ -308,7 +308,7 @@ func (a *Decimal) isNegative() bool {
 	return a.c.Sign() == -1
 }
 
-func (d2 *Decimal) eq(d1 *Decimal, precision int256) bool {
+func (d2 *Decimal) eq(d1 *Decimal, precision *int256) bool {
 	d1_zero := d1.isZero()
 	d2_zero := d2.isZero()
 	if d1_zero || d2_zero {
@@ -321,7 +321,7 @@ func (d2 *Decimal) eq(d1 *Decimal, precision int256) bool {
 }
 
 // a < b
-func (a *Decimal) lessThan(b *Decimal, precision int256) bool {
+func (a *Decimal) lessThan(b *Decimal, precision *int256) bool {
 	var diff Decimal
 	diff.Add(a, diff.Negate(b), precision)
 	return diff.c.Sign() == -1
@@ -333,7 +333,7 @@ func (out *Decimal) double() {
 }
 
 // a /= 2
-func (out *Decimal) halve(precision int256) {
+func (out *Decimal) halve(precision *int256) {
 	out.Multiply(out, HALF, precision)
 }
 
@@ -378,7 +378,7 @@ func find_num_trailing_zeros_signed(a *int256) (p, ten_power *int256) {
 }
 
 // remove trailing zeros in coefficient
-func (out *Decimal) normalize(a *Decimal, precision int256, rounded bool) *Decimal {
+func (out *Decimal) normalize(a *Decimal, precision *int256, rounded bool) *Decimal {
 	// ok even if out == a
 
 	p, ten_power := find_num_trailing_zeros_signed(&a.c)
@@ -399,11 +399,11 @@ func (out *Decimal) normalize(a *Decimal, precision int256, rounded bool) *Decim
 	return out
 }
 
-func (out *Decimal) round(a *Decimal, precision int256, normal bool) *Decimal {
+func (out *Decimal) round(a *Decimal, precision *int256, normal bool) *Decimal {
 	// ok if out == a
 
 	var shift, ten_power int256
-	shift.Add(&precision, &a.q)
+	shift.Add(precision, &a.q)
 
 	if shift.Cmp(ZERO_INT256) == 1 || shift.Cmp(&a.q) == -1 {
 		if normal {
