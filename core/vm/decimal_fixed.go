@@ -112,7 +112,7 @@ func (out *Decimal) Inverse(a *Decimal, precision *int256) *Decimal {
 
 	var precision_m_aq int256
 	precision_m_aq.Sub(precision, &a.q)
-	if precision_m_aq.Cmp(ZERO_INT256) == -1 {
+	if SignedCmp(&precision_m_aq, ZERO_INT256) == -1 {
 		panic("precision_m_aq NEGATIVE")
 	}
 
@@ -283,9 +283,35 @@ func (out *Decimal) Sin(_a *Decimal, precision, steps *int256) *Decimal {
 
 // Helpers
 
+//	-1 if a <  b
+//	 0 if a == b
+//	 1 if b <  a
+func SignedCmp(a, b *int256) (int) {
+	c := a.Cmp(b)
+	
+	if c == 0 { // a == b
+		return 0
+	}
+
+	if c == -1 { // a < b
+		if a.Sign() == b.Sign() {
+			return -1 // a < b
+		} else {
+			return 1 // b < a
+		}
+	}
+
+	// c == 1 <=> b < a
+	if a.Sign() == b.Sign() {
+		return 1 // b < a
+	} else {
+		return -1 // a < b
+	}
+}
+
 // min(a, b)
 func min(a, b *int256) (c *int256) {
-	if a.Cmp(b) == -1 {
+	if SignedCmp(a, b) == -1 {
 		return a
 	} else {
 		return b
@@ -300,7 +326,7 @@ func (a *Decimal) isZero() bool {
 // a should be normalized
 // a == 1 ?
 func (a *Decimal) isOne() bool {
-	return a.c.Cmp(ONE_INT256) == 0 && a.q.IsZero()
+	return a.c.Cmp(ONE_INT256) == 0 && a.q.IsZero() // Cmp ok vs SignedCmp when comparing to zero
 }
 
 // a < 0 ?
@@ -317,7 +343,7 @@ func (d2 *Decimal) eq(d1 *Decimal, precision *int256) bool {
 
 	d1.normalize(d1, precision, false)
 	d2.normalize(d2, precision, false)
-	return d1.c.Cmp(&d2.c) == 0 && d1.q.Cmp(&d2.q) == 0
+	return d1.c.Cmp(&d2.c) == 0 && d1.q.Cmp(&d2.q) == 0 // Cmp ok vs SignedCmp when comparing to zero
 }
 
 // a < b
@@ -361,11 +387,11 @@ func find_num_trailing_zeros_signed(a *int256) (p, ten_power *int256) {
 
 	p = uint256.NewInt(0)
 	ten_power = uint256.NewInt(10)
-	if b.Cmp(ZERO_INT256) != 0 { // if b != 0
+	if b.Cmp(ZERO_INT256) != 0 { // if b != 0  // Cmp ok vs SignedCmp when comparing to zero
 		for {
 			var m int256
 			m.Mod(&b, ten_power)
-			if m.Cmp(ZERO_INT256) != 0 { // if b % 10^(p+1) != 0
+			if m.Cmp(ZERO_INT256) != 0 { // if b % 10^(p+1) != 0  // Cmp ok vs SignedCmp when comparing to zero
 				break
 			}
 			p.Add(p, ONE_INT256)
@@ -385,7 +411,7 @@ func (out *Decimal) normalize(a *Decimal, precision *int256, rounded bool) *Deci
 	out.c.Div(&a.c, ten_power) // does not change polarity [in case out == a]
 
 	a_neg := a.isNegative()
-	if out.c.Cmp(ZERO_INT256) != 0 || a_neg {
+	if out.c.Cmp(ZERO_INT256) != 0 || a_neg {  // Cmp ok vs SignedCmp when comparing to zero
 		out.q.Add(&a.q, p)
 	} else {
 		out.q.Set(ZERO_INT256)
@@ -405,7 +431,7 @@ func (out *Decimal) round(a *Decimal, precision *int256, normal bool) *Decimal {
 	var shift, ten_power int256
 	shift.Add(precision, &a.q)
 
-	if shift.Cmp(ZERO_INT256) == 1 || shift.Cmp(&a.q) == -1 {
+	if SignedCmp(&shift, ZERO_INT256) == 1 || SignedCmp(&shift, &a.q) == -1 {
 		if normal {
 			out.c.Set(&a.c)
 			out.q.Set(&a.q)

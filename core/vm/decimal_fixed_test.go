@@ -151,6 +151,15 @@ func benchmarkOpDec(b *testing.B, intArgs []*uint256.Int, op executionFunc) {
 	b.StopTimer()
 }
 
+func TestSignedCmp(t *testing.T) {
+	// b := uint256.NewInt(15)
+	// a := uint256.NewInt(23)
+	a := new(uint256.Int).Neg(uint256.NewInt(14))
+	b := new(uint256.Int).Neg(uint256.NewInt(15))
+	c := SignedCmp(a, b)
+	fmt.Println(c)
+}
+
 func TestDecAdd(t *testing.T) {
 	tests := []struct {
 		a Decimal
