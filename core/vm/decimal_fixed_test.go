@@ -164,10 +164,10 @@ func TestDecAdd(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Add(&tt.a, &tt.b, *uint256.NewInt(10))
+		out.Add(&tt.a, &tt.b, PRECISION)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
-		if !out.eq(&tt.c) {
+		if !out.eq(&tt.c, PRECISION) {
 			t.Fatal(tt.a, tt.b, out, tt.c)
 		}
 	}
@@ -188,7 +188,7 @@ func TestDecNegate(t *testing.T) {
 		// fmt.Println("b", showDecimal(&tt.b))
 		// fmt.Println("out", showDecimal(&out))
 
-		if !out.eq(&tt.b) {
+		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, tt.b, out)
 		}
 	}
@@ -207,9 +207,9 @@ func TestDecMultiply(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Multiply(&tt.a, &tt.b, *uint256.NewInt(10))
+		out.Multiply(&tt.a, &tt.b, PRECISION)
 
-		if !out.eq(&tt.c) {
+		if !out.eq(&tt.c, PRECISION) {
 			t.Fatal(tt.a, tt.b, out, tt.c)
 		}
 	}
@@ -228,10 +228,10 @@ func TestDecInv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Inverse(&tt.a, *uint256.NewInt(5))
+		out.Inverse(&tt.a, PRECISION)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
-		if !out.eq(&tt.b) {
+		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
@@ -270,10 +270,10 @@ func TestDecNormalize(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.normalize(&tt.a, *uint256.NewInt(10), true)
+		out.normalize(&tt.a, PRECISION, true)
 		fmt.Println("normalize", tt.a.String(), out.String(), tt.b.String())
 
-		if !out.eq(&tt.b) {
+		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
@@ -282,7 +282,7 @@ func TestDecNormalize(t *testing.T) {
 func TestDecExp(t *testing.T) {
 	tests := []struct {
 		a         Decimal
-		precision uint256.Int
+		steps uint256.Int
 		b         Decimal
 	}{
 		{*copyDecimal(ONE), *uint256.NewInt(10), *createDecimal(uint256.NewInt(27182815251), new(uint256.Int).Neg(TEN_INT256))},
@@ -291,10 +291,10 @@ func TestDecExp(t *testing.T) {
 	for _, tt := range tests {
 
 		var out Decimal
-		out.Exp(&tt.a, tt.precision)
+		out.Exp(&tt.a, PRECISION, &tt.steps)
 		fmt.Println(out.String())
 
-		if !out.eq(&tt.b) {
+		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
@@ -303,7 +303,7 @@ func TestDecExp(t *testing.T) {
 func TestDecLog2(t *testing.T) {
 	tests := []struct {
 		a         Decimal
-		precision uint256.Int
+		steps uint256.Int
 		b         Decimal
 	}{
 		{*copyDecimal(HALF), *uint256.NewInt(1), *copyDecimal(MINUS_ONE)},
@@ -313,9 +313,9 @@ func TestDecLog2(t *testing.T) {
 	for _, tt := range tests {
 		var out Decimal
 		// var out, out2 Decimal
-		out.Log2(&tt.a, tt.precision)
+		out.Log2(&tt.a, PRECISION, &tt.steps)
 		// fmt.Println(out.String())
-		if !out.eq(&tt.b) {
+		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
@@ -324,16 +324,16 @@ func TestDecLog2(t *testing.T) {
 func TestDecSin(t *testing.T) {
 	tests := []struct {
 		a         Decimal
-		precision uint256.Int
+		steps uint256.Int
 		b         Decimal
 	}{
 		{*copyDecimal(ONE), *uint256.NewInt(10), *createDecimal(uint256.NewInt(8414709849), new(uint256.Int).Neg(TEN_INT256))},
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Sin(&tt.a, tt.precision)
+		out.Sin(&tt.a, PRECISION, &tt.steps)
 		fmt.Println(out.String())
-		if !out.eq(&tt.b) {
+		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
