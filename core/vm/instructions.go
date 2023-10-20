@@ -17,6 +17,8 @@
 package vm
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -1010,6 +1012,104 @@ func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 
 	scope.Stack.push(bc)
 	scope.Stack.push(bq)
+
+	return nil, nil
+}
+
+
+// decimal float OPS
+
+// ac * 10^ aq + bc * 10^ bq
+func opDecAddFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	b := UInt256IntTupleToDecimal(&bc, &bq)
+	b.Add(a, b, *big.NewInt(10))
+	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
+
+	scope.Stack.push(&bc)
+	scope.Stack.push(&bq)
+
+	return nil, nil
+}
+
+func opDecNegFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq := scope.Stack.pop(), scope.Stack.pop()
+
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	a.Negate(a)
+	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
+
+	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
+
+	return nil, nil
+}
+
+func opDecMulFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	b := UInt256IntTupleToDecimal(&bc, &bq)
+	b.Multiply(a, b, *big.NewInt(10))
+	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
+
+	scope.Stack.push(&bc)
+	scope.Stack.push(&bq)
+
+	return nil, nil
+}
+
+func opDecInvFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	a.Inverse(a, *UInt256IntToBigInt(&precision))
+	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
+
+	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
+
+	return nil, nil
+}
+
+func opDecExpFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	var out Decimal
+	out.Exp(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
+	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
+
+	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
+
+	return nil, nil
+}
+
+func opDecLog2Float(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	a.Log2(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
+	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
+
+	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
+
+	return nil, nil
+}
+
+func opDecSinFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	a := UInt256IntTupleToDecimal(&ac, &aq)
+	a.Sin(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
+	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
+
+	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
 
 	return nil, nil
 }

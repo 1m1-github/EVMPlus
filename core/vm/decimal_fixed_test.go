@@ -26,7 +26,7 @@ import (
 
 var PRECISION = TEN_INT256
 
-func (d *Decimal) String() string {
+func (d *Decimal256) String() string {
 	return fmt.Sprintf("%v*10^%v", d.c.String(), d.q.String())
 }
 
@@ -162,17 +162,17 @@ func TestSignedCmp(t *testing.T) {
 
 func TestDecAdd(t *testing.T) {
 	tests := []struct {
-		a Decimal
-		b Decimal
-		c Decimal
+		a Decimal256
+		b Decimal256
+		c Decimal256
 	}{
-		{*createDecimal(uint256.NewInt(5), ZERO_INT256), *createDecimal(uint256.NewInt(121), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(171), MINUS_ONE_INT256)},
-		{*createDecimal(uint256.NewInt(5), ZERO_INT256), *createDecimal(uint256.NewInt(121), ZERO_INT256), *createDecimal(uint256.NewInt(126), ZERO_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(8), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(6), MINUS_ONE_INT256)},
-		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(uint256.NewInt(15)), MINUS_ONE_INT256)},
+		{*createDecimal256(uint256.NewInt(5), ZERO_INT256), *createDecimal256(uint256.NewInt(121), MINUS_ONE_INT256), *createDecimal256(uint256.NewInt(171), MINUS_ONE_INT256)},
+		{*createDecimal256(uint256.NewInt(5), ZERO_INT256), *createDecimal256(uint256.NewInt(121), ZERO_INT256), *createDecimal256(uint256.NewInt(126), ZERO_INT256)},
+		{*createDecimal256(new(uint256.Int).Neg(TWO_INT256), MINUS_ONE_INT256), *createDecimal256(uint256.NewInt(8), MINUS_ONE_INT256), *createDecimal256(uint256.NewInt(6), MINUS_ONE_INT256)},
+		{*createDecimal256(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal256(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal256(new(uint256.Int).Neg(uint256.NewInt(15)), MINUS_ONE_INT256)},
 	}
 	for _, tt := range tests {
-		var out Decimal
+		var out Decimal256
 		out.Add(&tt.a, &tt.b, PRECISION)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
@@ -184,14 +184,14 @@ func TestDecAdd(t *testing.T) {
 
 func TestDecNegate(t *testing.T) {
 	tests := []struct {
-		a Decimal
-		b Decimal
+		a Decimal256
+		b Decimal256
 	}{
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256)},
-		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256)},
+		{*createDecimal256(uint256.NewInt(2), ZERO_INT256), *createDecimal256(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256)},
+		{*createDecimal256(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal256(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256)},
 	}
 	for _, tt := range tests {
-		var out Decimal
+		var out Decimal256
 		out.Negate(&tt.a)
 		// fmt.Println("a", showDecimal(&tt.a))
 		// fmt.Println("b", showDecimal(&tt.b))
@@ -205,17 +205,17 @@ func TestDecNegate(t *testing.T) {
 
 func TestDecMultiply(t *testing.T) {
 	tests := []struct {
-		a Decimal
-		b Decimal
-		c Decimal
+		a Decimal256
+		b Decimal256
+		c Decimal256
 	}{
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(4), ZERO_INT256)},
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(MINUS_ONE_INT256, ZERO_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
+		{*createDecimal256(uint256.NewInt(2), ZERO_INT256), *createDecimal256(uint256.NewInt(2), ZERO_INT256), *createDecimal256(uint256.NewInt(4), ZERO_INT256)},
+		{*createDecimal256(uint256.NewInt(2), ZERO_INT256), *createDecimal256(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal256(uint256.NewInt(1), ZERO_INT256)},
+		{*createDecimal256(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal256(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal256(MINUS_ONE_INT256, ZERO_INT256)},
+		{*createDecimal256(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal256(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256), *createDecimal256(uint256.NewInt(1), ZERO_INT256)},
 	}
 	for _, tt := range tests {
-		var out Decimal
+		var out Decimal256
 		out.Multiply(&tt.a, &tt.b, PRECISION)
 
 		if !out.eq(&tt.c, PRECISION) {
@@ -226,17 +226,17 @@ func TestDecMultiply(t *testing.T) {
 
 func TestDecInv(t *testing.T) {
 	tests := []struct {
-		a Decimal
-		b Decimal
+		a Decimal256
+		b Decimal256
 	}{
-		{*copyDecimal(ONE), *copyDecimal(ONE)},
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(uint256.NewInt(20)), MINUS_ONE_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256)},
-		{*createDecimal(uint256.NewInt(2), ONE_INT256), *createDecimal(uint256.NewInt(5), new(uint256.Int).Neg(TWO_INT256))},
-		{*createDecimal(uint256.NewInt(2), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(5), ZERO_INT256)},
+		{*copyDecimal256(ONE_DECIMAL256), *copyDecimal256(ONE_DECIMAL256)},
+		{*createDecimal256(uint256.NewInt(2), ZERO_INT256), *createDecimal256(uint256.NewInt(5), MINUS_ONE_INT256)},
+		{*createDecimal256(new(uint256.Int).Neg(uint256.NewInt(20)), MINUS_ONE_INT256), *createDecimal256(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256)},
+		{*createDecimal256(uint256.NewInt(2), ONE_INT256), *createDecimal256(uint256.NewInt(5), new(uint256.Int).Neg(TWO_INT256))},
+		{*createDecimal256(uint256.NewInt(2), MINUS_ONE_INT256), *createDecimal256(uint256.NewInt(5), ZERO_INT256)},
 	}
 	for _, tt := range tests {
-		var out Decimal
+		var out Decimal256
 		out.Inverse(&tt.a, PRECISION)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
@@ -268,17 +268,17 @@ func TestDecNormalize(t *testing.T) {
 	MINUS_5 := new(uint256.Int).Neg(FIVE_INT256)
 
 	tests := []struct {
-		a Decimal
-		b Decimal
+		a Decimal256
+		b Decimal256
 	}{
-		{*copyDecimal(ONE), *copyDecimal(ONE)},
-		{*createDecimal(uint256.NewInt(100), new(uint256.Int).Neg(TWO_INT256)), *copyDecimal(ONE)},
-		{*createDecimal(LARGE_TEN, NEG_75), *copyDecimal(ONE)},
-		{*createDecimal(TEN_TEN, NEG_55), *createDecimal(ONE_INT256, NEG_45)},
-		{*createDecimal(&MINUS_FIVE_48, MINUS_49), *createDecimal(MINUS_5, MINUS_ONE_INT256)},
+		{*copyDecimal256(ONE_DECIMAL256), *copyDecimal256(ONE_DECIMAL256)},
+		{*createDecimal256(uint256.NewInt(100), new(uint256.Int).Neg(TWO_INT256)), *copyDecimal256(ONE_DECIMAL256)},
+		{*createDecimal256(LARGE_TEN, NEG_75), *copyDecimal256(ONE_DECIMAL256)},
+		{*createDecimal256(TEN_TEN, NEG_55), *createDecimal256(ONE_INT256, NEG_45)},
+		{*createDecimal256(&MINUS_FIVE_48, MINUS_49), *createDecimal256(MINUS_5, MINUS_ONE_INT256)},
 	}
 	for _, tt := range tests {
-		var out Decimal
+		var out Decimal256
 		out.normalize(&tt.a, PRECISION, true)
 		fmt.Println("normalize", tt.a.String(), out.String(), tt.b.String())
 
@@ -290,16 +290,16 @@ func TestDecNormalize(t *testing.T) {
 
 func TestDecExp(t *testing.T) {
 	tests := []struct {
-		a         Decimal
+		a     Decimal256
 		steps uint256.Int
-		b         Decimal
+		b     Decimal256
 	}{
-		{*copyDecimal(ONE), *uint256.NewInt(10), *createDecimal(uint256.NewInt(27182815251), new(uint256.Int).Neg(TEN_INT256))},
-		{*createDecimal(MINUS_ONE_INT256, uint256.NewInt(0)), *uint256.NewInt(10), *createDecimal(uint256.NewInt(3678791887), new(uint256.Int).Neg(TEN_INT256))},
+		{*copyDecimal256(ONE_DECIMAL256), *uint256.NewInt(10), *createDecimal256(uint256.NewInt(27182815251), new(uint256.Int).Neg(TEN_INT256))},
+		{*createDecimal256(MINUS_ONE_INT256, uint256.NewInt(0)), *uint256.NewInt(10), *createDecimal256(uint256.NewInt(3678791887), new(uint256.Int).Neg(TEN_INT256))},
 	}
 	for _, tt := range tests {
 
-		var out Decimal
+		var out Decimal256
 		out.Exp(&tt.a, PRECISION, &tt.steps)
 		fmt.Println(out.String())
 
@@ -311,16 +311,16 @@ func TestDecExp(t *testing.T) {
 
 func TestDecLog2(t *testing.T) {
 	tests := []struct {
-		a         Decimal
+		a     Decimal256
 		steps uint256.Int
-		b         Decimal
+		b     Decimal256
 	}{
-		{*copyDecimal(HALF), *uint256.NewInt(1), *copyDecimal(MINUS_ONE)},
-		{*createDecimal(uint256.NewInt(15), MINUS_ONE_INT256), *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
-		{*createDecimal(uint256.NewInt(100000), new(uint256.Int).Neg(FIVE_INT256)), *uint256.NewInt(5), *copyDecimal(ZERO)},
+		{*copyDecimal256(HALF_DECIMAL256), *uint256.NewInt(1), *copyDecimal256(MINUS_ONE_DECIMAL256)},
+		{*createDecimal256(uint256.NewInt(15), MINUS_ONE_INT256), *uint256.NewInt(10), *createDecimal256(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
+		{*createDecimal256(uint256.NewInt(100000), new(uint256.Int).Neg(FIVE_INT256)), *uint256.NewInt(5), *copyDecimal256(ZERO_DECIMAL256)},
 	}
 	for _, tt := range tests {
-		var out Decimal
+		var out Decimal256
 		// var out, out2 Decimal
 		out.Log2(&tt.a, PRECISION, &tt.steps)
 		// fmt.Println(out.String())
@@ -332,14 +332,14 @@ func TestDecLog2(t *testing.T) {
 
 func TestDecSin(t *testing.T) {
 	tests := []struct {
-		a         Decimal
+		a     Decimal256
 		steps uint256.Int
-		b         Decimal
+		b     Decimal256
 	}{
-		{*copyDecimal(ONE), *uint256.NewInt(10), *createDecimal(uint256.NewInt(8414709849), new(uint256.Int).Neg(TEN_INT256))},
+		{*copyDecimal256(ONE_DECIMAL256), *uint256.NewInt(10), *createDecimal256(uint256.NewInt(8414709849), new(uint256.Int).Neg(TEN_INT256))},
 	}
 	for _, tt := range tests {
-		var out Decimal
+		var out Decimal256
 		out.Sin(&tt.a, PRECISION, &tt.steps)
 		fmt.Println(out.String())
 		if !out.eq(&tt.b, PRECISION) {
