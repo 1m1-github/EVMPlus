@@ -2,6 +2,7 @@ solc --strict-assembly BlackScholes.yul >> BlackScholes.txt
 
 go test
 go test -run regexp
+go test -bench regexp
 
 make geth
 ./build/bin/geth --http --http.corsdomain="https://remix.ethereum.org" --http.api web3,eth,debug,net --vmdebug --datadir /Users/1m1/Downloads/chaindata --dev console
