@@ -1,8 +1,8 @@
 ## EVM+
 
-Add arbitrary precision, complex decimal float math to the EVM.
+Add decimal math to the EVM.
 
-### decimal float
+### Decimal256
 
 A decimal defined as $c * 10^q$
 
@@ -12,13 +12,13 @@ with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpret
 
 Add OPCODES: DECADD, DECNEG , DECMUL, DECINV, DECEXP, DECLOG2, DECSIN
 
-DECADD  a + b  OpCode = 0xd0  (ac, aq, bc, bq) -> (cc, cq)  
+DECADD  a + b  OpCode = 0xd0  (ac, aq, bc, bq, precision) -> (cc, cq)  
 DECNEG  -a  OpCode = 0xd1  (ac, aq) -> (bc, bq)  
-DECMUL  a * b  OpCode = 0xd2  (ac, aq, bc, bq) -> (cc, cq)  
+DECMUL  a * b  OpCode = 0xd2  (ac, aq, bc, bq, precision) -> (cc, cq)  
 DECINV  1/a  OpCode = 0xd3  (ac, aq, precision) -> (bc, bq)  // precision = # digits  
-DECEXP  exp(a)  OpCode = 0xd4  (ac, aq, precision) -> (bc, bq)  // precision = # num Taylor steps  
-DECLOG2 log2(a)  OpCode = 0xd5  (ac, aq, precision) -> (bc, bq)  // precision = # digits  
-DECSIN  sin(a)  OpCode = 0xd6  (ac, aq, precision) -> (bc, bq)  // precision = # num Taylor steps  
+DECEXP  exp(a)  OpCode = 0xd4  (ac, aq, precision, steps) -> (bc, bq)  // precision = # num Taylor steps  
+DECLOG2 log2(a)  OpCode = 0xd5  (ac, aq, precision, steps) -> (bc, bq)  // precision = # digits  
+DECSIN  sin(a)  OpCode = 0xd6  (ac, aq, precision, steps) -> (bc, bq)  // precision = # num Taylor steps  
 
 ### derived functions
 
@@ -32,12 +32,8 @@ TAN(a) = SIN(a) / COS(a)
 ### implementation
 
 1. define DECADD, DECNEG , DECMUL, DECINV
-2. EXP, SIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
-3. LOG2 using a binary algorithm (not LN since LOG2 is much faster; Taylor expansion of LN does not converge everywhere)
-
-use big.Int from math/big, a arbitrary precision standard golang lib.
-
-c, q are provided on stack. some OPCODES need a target precision defined by the user (DEC_EXP, DEC_LOG2, DEC_SIN). these could be provided as immediates or stack elements. for now, we will use the stack, though immediates would be more memory efficient. in fact, all inputs could be provided as immediates making all of this more memory efficient. TODO if users care about saving stack slots.
+2. DECEXP, DECSIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
+3. DECLOG2 using a binary algorithm - TODO try continued fractions for LN; LN would be more natural to pair with EXP, but LN Taylor only converges in small interval, would need transformation; might still be better
 
 ### use cases
 
@@ -72,7 +68,9 @@ DECSIN 100+100*precision
 
 the above values fluctuate in benchmark testing; it would make sense to have more tests to determine conservative gas costs
 
-### binary vs decimal float
+THE ABOVE ARE APPROXIMATIONS. EXACT VALUES CAN BE DERIVED THEORETICALLY. TODO
+
+### binary vs decimal
 
 most apps created by humans work with decimal values.
 e.g. 0.1 is a very commonly used number, but cannot be represented in binary finitely.
