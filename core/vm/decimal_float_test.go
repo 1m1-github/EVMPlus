@@ -54,8 +54,8 @@ func BenchmarkOpDecMulFloat(b *testing.B) {
 
 func BenchmarkOpDecInvFloat(b *testing.B) {
 	// opDecInv benchmark does not depend on precision
-	precision := uint256.NewInt(50)
-	intArgs := []*uint256.Int{precision, uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	intArgs := []*uint256.Int{PRECISION, MINUS_ONE_INT256, uint256.NewInt(1)}
+	// intArgs := []*uint256.Int{precision, uint256.NewInt(987349875), uint256.NewInt(987349875)}
 	benchmarkOpDec(b, intArgs, opDecInvFloat)
 }
 

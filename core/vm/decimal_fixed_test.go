@@ -24,10 +24,22 @@ import (
 	"github.com/holiman/uint256"
 )
 
-var PRECISION = TEN_INT256
+var PRECISION = uint256.NewInt(20)
 
 func (d *Decimal256) String() string {
-	return fmt.Sprintf("%v*10^%v", d.c.String(), d.q.String())
+	c := new(uint256.Int).Set(&d.c)
+	q := new(uint256.Int).Set(&d.q)
+	cs := ""
+	if c.Sign() == -1 {
+		cs = "-"
+		c.Neg(c)
+	}
+	qs := ""
+	if q.Sign() == -1 {
+		qs = "-"
+		q.Neg(q)
+	}
+	return fmt.Sprintf("%v%v*10^%v%v", cs, c.Dec(), qs, q.Dec())
 }
 
 func BenchmarkOpAdd(b *testing.B) {
@@ -52,7 +64,7 @@ func BenchmarkOpDecMul(b *testing.B) {
 
 func BenchmarkOpDecInv(b *testing.B) {
 	// opDecInv benchmark does not depend on precision
-	intArgs := []*uint256.Int{PRECISION, uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	intArgs := []*uint256.Int{PRECISION, MINUS_ONE_INT256, uint256.NewInt(1)}
 	benchmarkOpDec(b, intArgs, opDecInv)
 }
 
@@ -280,7 +292,7 @@ func TestDecNormalize(t *testing.T) {
 	for _, tt := range tests {
 		var out Decimal256
 		out.normalize(&tt.a, PRECISION, true)
-		fmt.Println("normalize", tt.a.String(), out.String(), tt.b.String())
+		// fmt.Println("normalize", tt.a.String(), out.String(), tt.b.String())
 
 		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
