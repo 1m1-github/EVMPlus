@@ -11,9 +11,9 @@ object "BlackScholes" {
             // Dispatcher
             switch selector()
             case 0xc4df80c7 /* "callprice(int256,int256,int256,int256,int256,int256,int256,int256,int256,int256,int256)" */ {
-                // calldatacopy(0, 4, 96)
-                // let ac := mload(0)
-                // let aq := mload(32)
+                calldatacopy(0, 4, 64)
+                let ac := mload(0)
+                let aq := mload(32)
                 // let precision := mload(64)
                 // let cc := dec_exp(ac, aq, precision)
                 // // let cc, cq := dec_exp(ac, aq, precision)
@@ -22,11 +22,16 @@ object "BlackScholes" {
                 // // sstore(1, cq)
                 // sstore(2, ac)
 
-                let a1 := 1
-                // let b := d(a1)
-                a1 := d(a1)
+                let cc, cq := dec_sqr(ac, aq)
+                // let cc := add(ac, aq)
+                // let cq := mul(ac, aq)
 
-                sstore(0, a1)
+                // let a1 := 1
+                // let b := d(a1)
+                // a1 := d(a1)
+
+                sstore(0, cc)
+                sstore(1, cq)
                 // sstore(1, b)
 
                 return(0, 32)

@@ -1,3 +1,5 @@
+// solc --strict-assembly BlackScholes.yul >> BlackScholes.txt
+
 object "BlackScholes" {
     code {
         datacopy(0, dataoffset("runtime"), datasize("runtime"))
@@ -13,10 +15,33 @@ object "BlackScholes" {
             case 0xc4df80c7 /* "callprice(int256,int256,int256,int256,int256,int256,int256,int256,int256,int256,int256)" */ {
                 // Sc, Sq, Kc, Kq, rc, rq, sc, sq, Tc, Tq, precision
                 // 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320
-                calldatacopy(0, 4, 352)
+                
+                // calldatacopy(0, 4, 352)
+                // hardcoded to test - TODO as input
+                let Sc := 1
+                mstore(0, Sc)
+                let Sq := 0
+                mstore(32, Sq)
+                let Kc := 1
+                mstore(64, Kc)
+                let Kq := 0
+                mstore(96, Kq)
+                let rc := 0
+                mstore(128, rc)
+                let rq := 1
+                mstore(160, rq)
+                let sc := 1
+                mstore(192, sc)
+                let sq := 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                mstore(224, sq)
+                let Tc := 1
+                mstore(256, Tc)
+                let Tq := 0
+                mstore(288, Tq)
+                let precision := 5
+                mstore(320, precision)
 
                 let ac, aq := callprice()
-                
                 sstore(0, ac)
                 sstore(1, aq)
             }
@@ -107,7 +132,7 @@ object "BlackScholes" {
                 let b1_c, b1_q := dec_mul(C, MINUS_FIVE, ac, aq)
                 let b2_c, b2_q := dec_exp(b1_c, b1_q, precision)
                 let b3_c, b3_q := dec_add(b2_c, b2_q, 1, 0)
-                bc, bq := dec_div(1, 0, b3_c, b3_q, precision)
+                bc, bq := dec_inv(b3_c, b3_q, precision)
             }
             function cdf_dp_S() {
                 let d_plus_c := mload(416)

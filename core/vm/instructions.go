@@ -945,8 +945,8 @@ func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	b.Add(a, b)
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
 
-	scope.Stack.push(&bq)
 	scope.Stack.push(&bc)
+	scope.Stack.push(&bq)
 
 	return nil, nil
 }
@@ -958,8 +958,8 @@ func opDecNeg(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	a.Negate(a)
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
-	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
 
 	return nil, nil
 }
@@ -972,8 +972,8 @@ func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	b.Multiply(a, b)
 	b.SetUInt256IntTupleFromDecimal(&bc, &bq)
 
-	scope.Stack.push(&bq)
 	scope.Stack.push(&bc)
+	scope.Stack.push(&bq)
 
 	return nil, nil
 }
@@ -985,8 +985,8 @@ func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	a.Inverse(a, *UInt256IntToBigInt(&precision))
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
-	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
 
 	return nil, nil
 }
@@ -999,8 +999,8 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	out.Exp(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
 	out.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
-	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
 
 	return nil, nil
 }
@@ -1012,8 +1012,8 @@ func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 	a.Log2(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
-	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
 
 	return nil, nil
 }
@@ -1025,8 +1025,8 @@ func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	a.Sin(a, *UInt256IntToBigInt(&steps)) // TODO handle steps overflow
 	a.SetUInt256IntTupleFromDecimal(&ac, &aq)
 
-	scope.Stack.push(&aq)
 	scope.Stack.push(&ac)
+	scope.Stack.push(&aq)
 
 	return nil, nil
 }

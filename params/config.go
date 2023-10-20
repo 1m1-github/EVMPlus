@@ -318,7 +318,7 @@ type ChainConfig struct {
 	CancunTime   *uint64 `json:"cancunTime,omitempty"`   // Cancun switch time (nil = no fork, 0 = already on cancun)
 	PragueTime   *uint64 `json:"pragueTime,omitempty"`   // Prague switch time (nil = no fork, 0 = already on prague)
 	VerkleTime   *uint64 `json:"verkleTime,omitempty"`   // Verkle switch time (nil = no fork, 0 = already on verkle)
-	EVMPlusTime   *uint64 `json:"evmPlisTime,omitempty"`   // EVMPlus switch time (nil = no fork, 0 = already on ?)
+	EVMPlusTime   *uint64 `json:"evmPlusTime,omitempty"`   // EVMPlus switch time (nil = no fork, 0 = already on ?)
 	
 	// TerminalTotalDifficulty is the amount of total difficulty reached by
 	// the network that triggers the consensus upgrade.

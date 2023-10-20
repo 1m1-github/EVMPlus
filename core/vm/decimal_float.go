@@ -82,6 +82,8 @@ func (out *Decimal) Add(a, b *Decimal) *Decimal {
 	out.c.Add(&ca, &cb)
 	out.q.Set(min(&a.q, &b.q))
 
+	out.normalize(out)
+
 	return out
 }
 
@@ -96,25 +98,23 @@ func (out *Decimal) Negate(a *Decimal) *Decimal {
 func (out *Decimal) Multiply(a, b *Decimal) *Decimal {
 	out.c.Mul(&a.c, &b.c)
 	out.q.Add(&a.q, &b.q)
-	// normalize?
+	out.normalize(out)
 	return out
 }
 
 // 1 / a
 func (out *Decimal) Inverse(a *Decimal, precision big.Int) *Decimal {
-	precision.Add(&precision, &a.q) // more than max decimal precision on 256 bits
-
-	var aq_m_precision big.Int
-	aq_m_precision.Sub(&precision, &a.q)
-	if aq_m_precision.Cmp(ZERO_BIG) == -1 {
-		panic("ae_m_precision NEGATIVE")
+	var precision_m_aq big.Int
+	precision_m_aq.Sub(&precision, &a.q)
+	if precision_m_aq.Cmp(ZERO_BIG) == -1 {
+		panic("precision_m_aq NEGATIVE")
 	}
 
-	aq_m_precision.Exp(TEN_BIG, &aq_m_precision, ZERO_BIG) // aq_m_precision not needed after
-	out.c.Div(&aq_m_precision, &a.c)
+	precision_m_aq.Exp(TEN_BIG, &precision_m_aq, ZERO_BIG) // aq_m_precision not needed after
+	out.c.Div(&precision_m_aq, &a.c)
 	out.q.Neg(&precision)
 
-	// normalize?
+	out.normalize(out)
 
 	return out
 }
@@ -187,7 +187,7 @@ func (out *Decimal) Log2(a *Decimal, steps big.Int) *Decimal {
 		out.Add(out, ONE) // out++
 	}
 
-	// from here: 1 < a < 2 <=> 0 < out < 1
+	// from here: 1 <= a < 2 <=> 0 < out < 1
 
 	// compare a^2 to 2 to reveal out bit-by-bit
 	steps_counter := big.NewInt(0) // for now, precision is naiive
