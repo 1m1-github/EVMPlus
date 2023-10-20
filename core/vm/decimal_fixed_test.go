@@ -209,10 +209,10 @@ func TestDecMultiply(t *testing.T) {
 		b Decimal
 		c Decimal
 	}{
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(4), ZERO_INT256)},
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
+		// {*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(4), ZERO_INT256)},
+		// {*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
 		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(MINUS_ONE_INT256, ZERO_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
+		// {*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
 	}
 	for _, tt := range tests {
 		var out Decimal

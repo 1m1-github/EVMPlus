@@ -117,7 +117,7 @@ func (out *Decimal) Inverse(a *Decimal, precision *int256) *Decimal {
 	}
 
 	precision_m_aq.Exp(TEN_INT256, &precision_m_aq) // save space: precision_m_aq not needed after
-	out.c.Div(&precision_m_aq, &a.c)
+	signedDiv(&precision_m_aq, &a.c, &out.c)
 	out.q.Neg(precision)
 
 	out.normalize(out, precision, false)
@@ -293,6 +293,16 @@ func SignedCmp(a, b *int256) (int) {
 		return 0
 	}
 
+	as := a.Sign()
+	bs := b.Sign()
+
+	if as == 0 {
+		return -bs
+	}
+	if bs == 0 {
+		return as
+	}
+
 	if c == -1 { // a < b
 		if a.Sign() == b.Sign() {
 			return -1 // a < b
@@ -363,6 +373,37 @@ func (out *Decimal) halve(precision *int256) {
 	out.Multiply(out, HALF, precision)
 }
 
+func signedDiv(numerator, denominator, out *uint256.Int) (*uint256.Int) {
+	sn := numerator.Sign()
+	sd := denominator.Sign()
+	if sn == 0 && sd == 0 {
+		out = nil
+		return nil
+	}
+	if sn == 0 { 
+		out = uint256.NewInt(0)
+		return out
+	}
+
+	n := *numerator
+	if sn == -1 {
+		n.Neg(numerator)
+	}
+
+	d := *denominator
+	if sd == -1 {
+		d.Neg(denominator)
+	}
+
+	out.Div(&n, &d)
+
+	if (sn == -1) != (sd == -1) {
+		out.Neg(out)
+	}
+
+	return out
+}
+
 // c = (-1)^d1.s * d1.c * 10^max(d1.q - d2.q, 0)
 func add_helper(d1, d2 *Decimal) (c int256) {
 	var exponent_diff int256
@@ -398,7 +439,7 @@ func find_num_trailing_zeros_signed(a *int256) (p, ten_power *int256) {
 			ten_power.Mul(ten_power, TEN_INT256) // 10^(p+1)
 		}
 	}
-	ten_power.Div(ten_power, TEN_INT256)
+	ten_power.Div(ten_power, TEN_INT256) // all positive
 
 	return p, ten_power
 }
@@ -408,7 +449,7 @@ func (out *Decimal) normalize(a *Decimal, precision *int256, rounded bool) *Deci
 	// ok even if out == a
 
 	p, ten_power := find_num_trailing_zeros_signed(&a.c)
-	out.c.Div(&a.c, ten_power) // does not change polarity [in case out == a]
+	signedDiv(&a.c, ten_power, &out.c) // does not change polarity [in case out == a]
 
 	a_neg := a.isNegative()
 	if out.c.Cmp(ZERO_INT256) != 0 || a_neg {  // Cmp ok vs SignedCmp when comparing to zero
@@ -443,7 +484,7 @@ func (out *Decimal) round(a *Decimal, precision *int256, normal bool) *Decimal {
 
 	shift.Neg(&shift)
 	ten_power.Exp(TEN_INT256, &shift)
-	out.c.Div(&a.c, &ten_power)
+	signedDiv(&a.c, &ten_power, &out.c)
 	out.q.Add(&a.q, &shift)
 	if normal {
 		return out
