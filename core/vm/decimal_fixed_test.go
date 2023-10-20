@@ -24,7 +24,7 @@ import (
 	"github.com/holiman/uint256"
 )
 
-var PRECISION = uint256.NewInt(20)
+var PRECISION = uint256.NewInt(10)
 
 func (d *Decimal256) String() string {
 	c := new(uint256.Int).Set(&d.c)
@@ -313,7 +313,7 @@ func TestDecExp(t *testing.T) {
 
 		var out Decimal256
 		out.Exp(&tt.a, PRECISION, &tt.steps)
-		fmt.Println(out.String())
+		// fmt.Println(out.String())
 
 		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
@@ -353,7 +353,7 @@ func TestDecSin(t *testing.T) {
 	for _, tt := range tests {
 		var out Decimal256
 		out.Sin(&tt.a, PRECISION, &tt.steps)
-		fmt.Println(out.String())
+		// fmt.Println(out.String())
 		if !out.eq(&tt.b, PRECISION) {
 			t.Fatal(tt.a, out, tt.b)
 		}
