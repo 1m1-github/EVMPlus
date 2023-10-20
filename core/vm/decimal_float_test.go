@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
-
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
 
@@ -34,126 +32,103 @@ func (d *Decimal) String() string {
 	return fmt.Sprintf("%v*10^%v", d.c.String(), d.q.String())
 }
 
-func BenchmarkOpAdd(b *testing.B) {
+func BenchmarkOpAddFloat(b *testing.B) {
 	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
 	benchmarkOpDec(b, intArgs, opAdd)
 }
 
-func BenchmarkOpDecAdd(b *testing.B) {
+func BenchmarkOpDecAddFloat(b *testing.B) {
 	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
-	benchmarkOpDec(b, intArgs, opDecAdd)
+	benchmarkOpDec(b, intArgs, opDecAddFloat)
 }
 
-func BenchmarkOpDecNeg(b *testing.B) {
+func BenchmarkOpDecNegFloat(b *testing.B) {
 	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875)}
-	benchmarkOpDec(b, intArgs, opDecNeg)
+	benchmarkOpDec(b, intArgs, opDecNegFloat)
 }
 
-func BenchmarkOpDecMul(b *testing.B) {
+func BenchmarkOpDecMulFloat(b *testing.B) {
 	intArgs := []*uint256.Int{uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875), uint256.NewInt(987349875)}
-	benchmarkOpDec(b, intArgs, opDecMul)
+	benchmarkOpDec(b, intArgs, opDecMulFloat)
 }
 
-func BenchmarkOpDecInv(b *testing.B) {
+func BenchmarkOpDecInvFloat(b *testing.B) {
 	// opDecInv benchmark does not depend on precision
-	precision := uint256.NewInt(50)
-	intArgs := []*uint256.Int{precision, uint256.NewInt(987349875), uint256.NewInt(987349875)}
-	benchmarkOpDec(b, intArgs, opDecInv)
+	intArgs := []*uint256.Int{PRECISION, MINUS_ONE_INT256, uint256.NewInt(1)}
+	// intArgs := []*uint256.Int{precision, uint256.NewInt(987349875), uint256.NewInt(987349875)}
+	benchmarkOpDec(b, intArgs, opDecInvFloat)
 }
 
-func BenchmarkOpDecExp0(b *testing.B) {
+func BenchmarkOpDecExp0Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(0);
+	precision := uint256.NewInt(0)
 	intArgs := []*uint256.Int{precision, uint256.NewInt(0), uint256.NewInt(1)}
 	fmt.Println("BenchmarkOpDecExp precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecExp)
+	benchmarkOpDec(b, intArgs, opDecExpFloat)
 }
 
-func BenchmarkOpDecExp1(b *testing.B) {
+func BenchmarkOpDecExp1Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(1);
+	precision := uint256.NewInt(1)
 	intArgs := []*uint256.Int{precision, uint256.NewInt(0), uint256.NewInt(1)}
 	fmt.Println("BenchmarkOpDecExp precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecExp)
+	benchmarkOpDec(b, intArgs, opDecExpFloat)
 }
 
-func BenchmarkOpDecExp10(b *testing.B) {
+func BenchmarkOpDecExp10Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(10);
+	precision := uint256.NewInt(10)
 	intArgs := []*uint256.Int{precision, uint256.NewInt(0), uint256.NewInt(1)}
 	fmt.Println("BenchmarkOpDecExp precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecExp)
+	benchmarkOpDec(b, intArgs, opDecExpFloat)
 }
 
-func BenchmarkOpDecLog20(b *testing.B) {
+func BenchmarkOpDecLog20Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(0);
+	precision := uint256.NewInt(0)
 	intArgs := []*uint256.Int{precision, new(uint256.Int).Neg(uint256.NewInt(1)), uint256.NewInt(15)}
 	fmt.Println("BenchmarkOpDecLog2 precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecLog2)
+	benchmarkOpDec(b, intArgs, opDecLog2Float)
 }
 
-func BenchmarkOpDecLog21(b *testing.B) {
+func BenchmarkOpDecLog21Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(1);
+	precision := uint256.NewInt(1)
 	intArgs := []*uint256.Int{precision, new(uint256.Int).Neg(uint256.NewInt(1)), uint256.NewInt(15)}
 	fmt.Println("BenchmarkOpDecLog2 precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecLog2)
+	benchmarkOpDec(b, intArgs, opDecLog2Float)
 }
 
-func BenchmarkOpDecLog210(b *testing.B) {
+func BenchmarkOpDecLog210Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(10);
+	precision := uint256.NewInt(10)
 	intArgs := []*uint256.Int{precision, new(uint256.Int).Neg(uint256.NewInt(1)), uint256.NewInt(15)}
 	fmt.Println("BenchmarkOpDecLog2 precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecLog2)
+	benchmarkOpDec(b, intArgs, opDecLog2Float)
 }
 
-func BenchmarkOpDecSin0(b *testing.B) {
+func BenchmarkOpDecSin0Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(0);
+	precision := uint256.NewInt(0)
 	intArgs := []*uint256.Int{precision, uint256.NewInt(0), uint256.NewInt(1)}
 	fmt.Println("BenchmarkOpDecSin precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecSin)
+	benchmarkOpDec(b, intArgs, opDecSinFloat)
 }
 
-func BenchmarkOpDecSin1(b *testing.B) {
+func BenchmarkOpDecSin1Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(1);
+	precision := uint256.NewInt(1)
 	intArgs := []*uint256.Int{precision, uint256.NewInt(0), uint256.NewInt(1)}
 	fmt.Println("BenchmarkOpDecSin precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecSin)
+	benchmarkOpDec(b, intArgs, opDecSinFloat)
 }
 
-func BenchmarkOpDecSin10(b *testing.B) {
+func BenchmarkOpDecSin10Float(b *testing.B) {
 	// opDecExp benchmark depends on precision
-	precision := uint256.NewInt(10);
+	precision := uint256.NewInt(10)
 	intArgs := []*uint256.Int{precision, uint256.NewInt(0), uint256.NewInt(1)}
 	fmt.Println("BenchmarkOpDecSin precision=", precision)
-	benchmarkOpDec(b, intArgs, opDecSin)
-}
-
-func benchmarkOpDec(b *testing.B, intArgs []*uint256.Int, op executionFunc) {
-	var (
-		env            = NewEVM(BlockContext{}, TxContext{}, nil, params.TestChainConfig, Config{})
-		stack          = newstack()
-		scope          = &ScopeContext{nil, stack, nil}
-		evmInterpreter = NewEVMInterpreter(env)
-	)
-
-	env.interpreter = evmInterpreter
-
-	pc := uint64(0)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		for _, arg := range intArgs {
-			stack.push(arg)
-		}
-		op(&pc, evmInterpreter, scope)
-		stack.pop()
-		stack.pop()
-	}
-	b.StopTimer()
+	benchmarkOpDec(b, intArgs, opDecSinFloat)
 }
 
 func TestDecUInt256IntToBigInt(t *testing.T) {
@@ -212,7 +187,7 @@ func TestDecBigIntToUInt256Int(t *testing.T) {
 	}
 }
 
-func TestDecAdd(t *testing.T) {
+func TestDecAddFloat(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -234,7 +209,7 @@ func TestDecAdd(t *testing.T) {
 	}
 }
 
-func TestDecNegate(t *testing.T) {
+func TestDecNegateFloat(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -255,7 +230,7 @@ func TestDecNegate(t *testing.T) {
 	}
 }
 
-func TestDecMultiply(t *testing.T) {
+func TestDecMultiplyFloat(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -276,7 +251,7 @@ func TestDecMultiply(t *testing.T) {
 	}
 }
 
-func TestDecInv(t *testing.T) {
+func TestDecInvFloat(t *testing.T) {
 	tests := []struct {
 		a Decimal
 		b Decimal
@@ -298,7 +273,7 @@ func TestDecInv(t *testing.T) {
 	}
 }
 
-func TestDecNormalize(t *testing.T) {
+func TestDecNormalizeFloat(t *testing.T) {
 
 	LARGE_TEN := big.NewInt(10)
 	LARGE_TEN.Exp(LARGE_TEN, big.NewInt(75), ZERO_BIG)
@@ -340,11 +315,11 @@ func TestDecNormalize(t *testing.T) {
 	}
 }
 
-func TestDecExp(t *testing.T) {
+func TestDecExpFloat(t *testing.T) {
 	tests := []struct {
-		a Decimal
+		a         Decimal
 		precision big.Int
-		b Decimal
+		b         Decimal
 	}{
 		{*copyDecimal(ONE), *big.NewInt(10), *createDecimal(big.NewInt(27182815251), big.NewInt(-10))},
 		{*createDecimal(big.NewInt(-1), big.NewInt(0)), *big.NewInt(10), *createDecimal(big.NewInt(3678791887), big.NewInt(-10))},
@@ -361,13 +336,13 @@ func TestDecExp(t *testing.T) {
 	}
 }
 
-func TestDecLog2(t *testing.T) {
+func TestDecLog2Float(t *testing.T) {
 	tests := []struct {
-		a Decimal
+		a         Decimal
 		precision big.Int
-		b Decimal
+		b         Decimal
 	}{
-		{*copyDecimal(HALF),  *big.NewInt(1), *copyDecimal(MINUS_ONE)},
+		{*copyDecimal(HALF), *big.NewInt(1), *copyDecimal(MINUS_ONE)},
 		{*createDecimal(big.NewInt(15), big.NewInt(-1)), *big.NewInt(10), *createDecimal(big.NewInt(5849609375), big.NewInt(-10))},
 		{*createDecimal(big.NewInt(100000), big.NewInt(-5)), *big.NewInt(5), *copyDecimal(ZERO)},
 	}
@@ -382,11 +357,11 @@ func TestDecLog2(t *testing.T) {
 	}
 }
 
-func TestDecSin(t *testing.T) {
+func TestDecSinFloat(t *testing.T) {
 	tests := []struct {
-		a Decimal
+		a         Decimal
 		precision big.Int
-		b Decimal
+		b         Decimal
 	}{
 		{*copyDecimal(ONE), *big.NewInt(10), *createDecimal(big.NewInt(8414709849), big.NewInt(-10))},
 	}
@@ -468,7 +443,7 @@ func TestDecSin(t *testing.T) {
 // 	a.sqrt(T, precision)
 // 	a.Multiply(&a, s)
 // 	a.Negate(&a)
-	
+
 // 	out.Add(out, &a)
 // }
 // func (out *Decimal) d_plus(S,K,r,s,T *Decimal, precision big.Int) {
@@ -487,7 +462,7 @@ func TestDecSin(t *testing.T) {
 // 	a.sqrt(T, precision)
 // 	a.Multiply(&a, s)
 // 	a.Inverse(&a, precision)
-	
+
 // 	out.Multiply(out, &a)
 // }
 // func (out *Decimal) sqrt(a *Decimal, precision big.Int) {

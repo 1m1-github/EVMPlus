@@ -940,6 +940,87 @@ func makeSwap(size int64) executionFunc {
 
 // ac * 10^ aq + bc * 10^ bq
 func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, bc, bq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	cc, cq := DecAdd(&ac, &aq, &bc, &bq, &precision)
+
+	scope.Stack.push(cc)
+	scope.Stack.push(cq)
+
+	return nil, nil
+}
+
+func opDecNeg(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq := scope.Stack.pop(), scope.Stack.pop()
+
+	bc, bq := DecNegate(&ac, &aq)
+
+	scope.Stack.push(bc)
+	scope.Stack.push(bq)
+
+	return nil, nil
+}
+
+func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, bc, bq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	cc, cq := DecMultiply(&ac, &aq, &bc, &bq, &precision)
+
+	scope.Stack.push(cc)
+	scope.Stack.push(cq)
+
+	return nil, nil
+}
+
+func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	bc, bq := DecInverse(&ac, &aq, &precision)
+
+	scope.Stack.push(bc)
+	scope.Stack.push(bq)
+
+	return nil, nil
+}
+
+func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, precision, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	bc, bq := DecExp(&ac, &aq, &precision, &steps)
+
+	scope.Stack.push(bc)
+	scope.Stack.push(bq)
+
+	return nil, nil
+}
+
+func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, precision, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	bc, bq := DecLog2(&ac, &aq, &precision, &steps)
+
+	scope.Stack.push(bc)
+	scope.Stack.push(bq)
+
+	return nil, nil
+}
+
+func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+	ac, aq, precision, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
+
+	bc, bq := DecSin(&ac, &aq, &precision, &steps)
+
+	scope.Stack.push(bc)
+	scope.Stack.push(bq)
+
+	return nil, nil
+}
+
+
+// decimal float OPS
+
+// ac * 10^ aq + bc * 10^ bq
+func opDecAddFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
@@ -953,7 +1034,7 @@ func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecNeg(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecNegFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq := scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
@@ -966,7 +1047,7 @@ func opDecNeg(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecMulFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
@@ -980,7 +1061,7 @@ func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecInvFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
@@ -993,7 +1074,7 @@ func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecExpFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
@@ -1007,7 +1088,7 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 	return nil, nil
 }
 
-func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecLog2Float(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
@@ -1020,7 +1101,7 @@ func opDecLog2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 	return nil, nil
 }
 
-func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
+func opDecSinFloat(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
 	a := UInt256IntTupleToDecimal(&ac, &aq)
