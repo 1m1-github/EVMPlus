@@ -44,7 +44,7 @@ var TWO = createDecimal(TWO_INT256, ZERO_INT256)
 // OPCODE functions
 
 // a + b
-func AddDec(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
+func DecAdd(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
 	a := createDecimal(ac, aq)
 	b := createDecimal(ac, aq)
 	a.Add(a, b, precision)
@@ -67,7 +67,7 @@ func (out *Decimal) Add(a, b *Decimal, precision *int256) *Decimal {
 }
 
 // -a
-func NegateDec(ac, aq *int256) (bc, bq *int256) {
+func DecNegate(ac, aq *int256) (bc, bq *int256) {
 	a := createDecimal(ac, aq)
 	a.Negate(a)
 	bc = &a.c
@@ -83,7 +83,7 @@ func (out *Decimal) Negate(a *Decimal) *Decimal {
 }
 
 // a * b
-func MultiplyDec(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
+func DecMultiply(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
 	a := createDecimal(ac, aq)
 	b := createDecimal(ac, aq)
 	a.Multiply(a, b, precision)
@@ -100,7 +100,7 @@ func (out *Decimal) Multiply(a, b *Decimal, precision *int256) *Decimal {
 }
 
 // 1 / a
-func InverseDec(ac, aq, precision *int256) (bc, bq *int256) {
+func DecInverse(ac, aq, precision *int256) (bc, bq *int256) {
 	a := createDecimal(ac, aq)
 	a.Inverse(a, precision)
 	bc = &a.c
@@ -127,7 +127,7 @@ func (out *Decimal) Inverse(a *Decimal, precision *int256) *Decimal {
 
 // e^a
 // total decimal precision is where a^(taylor_steps+1)/(taylor_steps+1)! == 10^(-target_decimal_precision)
-func ExpDec(ac, aq, precision, steps *int256) (bc, bq *int256) {
+func DecExp(ac, aq, precision, steps *int256) (bc, bq *int256) {
 	a := createDecimal(ac, aq)
 	a.Exp(a, precision, steps)
 	bc = &a.c
@@ -164,7 +164,7 @@ func (out *Decimal) Exp(_a *Decimal, precision, steps *int256) *Decimal {
 
 // http://www.claysturner.com/dsp/BinaryLogarithm.pdf
 // 0 < a
-func Log2Dec(ac, aq, precision, steps *int256) (bc, bq *int256) {
+func DecLog2(ac, aq, precision, steps *int256) (bc, bq *int256) {
 	a := createDecimal(ac, aq)
 	a.Log2(a, precision, steps)
 	bc = &a.c
@@ -235,7 +235,7 @@ func (out *Decimal) Log2(a *Decimal, precision, steps *int256) *Decimal {
 }
 
 // sin(a)
-func SinDec(ac, aq, precision, steps *int256) (bc, bq *int256) {
+func DecSin(ac, aq, precision, steps *int256) (bc, bq *int256) {
 	a := createDecimal(ac, aq)
 	a.Sin(a, precision, steps)
 	bc = &a.c
