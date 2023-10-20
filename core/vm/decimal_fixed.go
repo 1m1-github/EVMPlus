@@ -430,13 +430,13 @@ func signedDiv(numerator, denominator, out *uint256.Int) *uint256.Int {
 // c = (-1)^d1.s * d1.c * 10^max(d1.q - d2.q, 0)
 func add_helper_DECIMAL256(d1, d2 *Decimal256) (c int256) {
 	var exponent_diff int256
-	exponent_diff.Sub(&d1.q, &d2.q)
+	exponent_diff.Sub(&d1.q, &d2.q) // GasFastestStep
 	if exponent_diff.Sign() == -1 {
 		exponent_diff = *ZERO_INT256 // shallow copy ok
 	}
 
 	c.Exp(TEN_INT256, &exponent_diff)
-	c.Mul(&d1.c, &c)
+	c.Mul(&d1.c, &c) // GasFastStep
 
 	return c
 }

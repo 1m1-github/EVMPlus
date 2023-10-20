@@ -483,7 +483,7 @@ func gasEVMPlus(evm *EVM, contract *Contract, stack *Stack, mem *Memory, memoryS
 	precision := stack.data[stack.len()-3]
 	
 	var (
-		gas      = precision.Uint64() * gasPerPrecision // TODO check overflow?
+		gas = precision.Uint64() * gasPerPrecision // TODO check overflow?
 	)
 	
 	return gas, nil

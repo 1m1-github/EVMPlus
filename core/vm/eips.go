@@ -308,25 +308,25 @@ func enable6780(jt *JumpTable) {
 func enableEVMPlus(jt *JumpTable) {
 	jt[DECADD] = &operation{
 		execute:     opDecAdd,
-		constantGas: 25*GasFastestStep,
+		constantGas: 17*GasFastestStep,
 		minStack:    minStack(4, 2),
 		maxStack:    maxStack(4, 2), // ?
 	}
 	jt[DECNEG] = &operation{
 		execute:     opDecNeg,
-		constantGas: 10*GasFastestStep,
+		constantGas: 4*GasFastestStep,
 		minStack:    minStack(2, 2),
 		maxStack:    maxStack(2, 2), // ?
 	}
 	jt[DECMUL] = &operation{
 		execute:     opDecMul,
-		constantGas: 20*GasFastestStep,
+		constantGas: 13*GasFastestStep,
 		minStack:    minStack(4, 2),
 		maxStack:    maxStack(4, 2), // ?
 	}
 	jt[DECINV] = &operation{
 		execute:     opDecInv,
-		constantGas: 25*GasFastestStep,
+		constantGas: 30*GasFastestStep,
 		minStack:    minStack(3, 2),
 		maxStack:    maxStack(3, 2), // ?
 	}
