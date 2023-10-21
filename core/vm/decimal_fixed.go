@@ -200,7 +200,7 @@ func (out *Decimal256) Log2(a *Decimal256, precision, steps *int256) *Decimal256
 	// isOne needs a normalized
 	var a_norm Decimal256
 	a_norm.normalize(a, precision, false)
-	
+
 	// after a_norm.normalize, in case out == a
 	// out = 0
 	out.c.Set(ZERO_INT256)
@@ -216,7 +216,7 @@ func (out *Decimal256) Log2(a *Decimal256, precision, steps *int256) *Decimal256
 			break
 		}
 
-		a_norm.double()                               // a *= 2
+		a_norm.double() // a *= 2
 		// fmt.Println("log2 after double", a_norm.String())
 		out.Add(out, MINUS_ONE_DECIMAL256, precision) // out--
 	}
@@ -525,33 +525,84 @@ func (out *Decimal256) ln10(precision, steps *uint256.Int) *Decimal256 {
 	ONE_OVER_FOUR := createDecimal256(uint256.NewInt(25), new(uint256.Int).Neg(TWO_INT256))
 	THREE_OVER_125 := createDecimal256(uint256.NewInt(24), new(uint256.Int).Neg(THREE_INT256))
 	var a, b Decimal256
-	a.Ln(ONE_OVER_FOUR, precision, steps)
-	b.Ln(THREE_OVER_125, precision, steps)
+	a.ln(ONE_OVER_FOUR, precision, steps)
+	b.ln(THREE_OVER_125, precision, steps)
 	a.Multiply(&a, TEN_DECIMAL256, precision)
 	b.Multiply(&b, THREE_DECIMAL256, precision)
 	out.Add(&a, &b, precision)
 	return out
 }
-// ln(1+x)
+
 func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 {
 	x := copyDecimal256(_x)
 
+	// fmt.Println("1", x.String())
+
+	if x.isNegative() {
+		panic("Ln: need 0 < x")
+	}
+
+	// ln(1) = 0
+	if x.isOne() {
+		out.c.Set(ZERO_INT256)
+		out.q.Set(ONE_INT256)
+		return out
+	}
+
+	// adjust x
+	// divide x by 10 until x in [0,2]
+	adjust := uint256.NewInt(0)
+	for {
+		if x.lessThan(TWO_DECIMAL256, precision) {
+			break
+		}
+
+		// x /= 10
+		x.q.Add(&x.q, MINUS_ONE_INT256)
+		adjust.Add(adjust, ONE_INT256)
+	}
+
+	// fmt.Println("2", x.String(), adjust.Dec())
+
+	// ln works with 1+x
+	x.Add(x, MINUS_ONE_DECIMAL256, precision)
+
+	// fmt.Println("3", x.String())
+
+	// main
+	out.ln(x, precision, steps)
+	// fmt.Println("4", x.String(), out.String())
+
+	// readjust back
+	var LN10 Decimal256
+	LN10.ln10(precision, steps)
+	adjustDec := createDecimal256(adjust, ZERO_INT256)
+	LN10.Multiply(adjustDec, &LN10, precision)
+	out.Add(out, &LN10, precision)
+	// fmt.Println("5", out.String())
+
+	return out
+}
+// ln(1+x)
+// _x in [-1,1]
+func (out *Decimal256) ln(x *Decimal256, precision, steps *int256) *Decimal256 {
 	var two_y_plus_x Decimal256
 	two_y_plus_x.Add(x, TWO_DECIMAL256, precision)
-	
+
 	step := uint256.NewInt(1)
-	
+
 	out2 := ln_recur(x, &two_y_plus_x, precision, steps, step)
 	out.c.Set(&out2.c)
 	out.q.Set(&out2.q)
 	out.Inverse(out, precision)
-	
+
 	var two_x Decimal256
 	two_x.Multiply(x, TWO_DECIMAL256, precision)
 	out.Multiply(out, &two_x, precision)
 
 	return out
 }
+
 // out !== x
 func ln_recur(x, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *Decimal256 {
 	var out Decimal256
@@ -561,7 +612,7 @@ func ln_recur(x, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *
 	stepDec.Add(stepDec, MINUS_ONE_DECIMAL256, precision)
 	out.Multiply(stepDec, two_y_plus_x, precision)
 
-	if step.Cmp(max_steps) == 0 {	
+	if step.Cmp(max_steps) == 0 {
 		return &out
 	}
 
