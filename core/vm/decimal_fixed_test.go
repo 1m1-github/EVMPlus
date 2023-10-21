@@ -472,16 +472,36 @@ func TestDecLn(t *testing.T) {
 		steps uint256.Int
 		b     Decimal256
 	}{
-		{*ONE_DECIMAL256, *uint256.NewInt(3), *createDecimal256(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
+		{*ONE_DECIMAL256, *uint256.NewInt(10), *createDecimal256(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
 	}
 	for _, tt := range tests {
 		var out Decimal256
 		// var out, out2 Decimal
-		fmt.Println(out.String())
 		out.Ln(&tt.a, PRECISION, &tt.steps)
 		fmt.Println(out.String())
 		// if !out.eq(&tt.b, PRECISION) {
 		// 	t.Fatal(tt.a, out, tt.b)
 		// }
 	}
+}
+
+func BenchmarkDirectLog2(b *testing.B) {
+	a := createDecimal256(uint256.NewInt(15), MINUS_ONE_INT256)
+	var out Decimal256
+	steps := uint256.NewInt(10)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		out.Log2(a, PRECISION, steps)
+	}
+	b.StopTimer()
+}
+func BenchmarkDirectLn(b *testing.B) {
+	a := createDecimal256(uint256.NewInt(15), MINUS_ONE_INT256)
+	var out Decimal256
+	steps := uint256.NewInt(10)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		out.Ln(a, PRECISION, steps)
+	}
+	b.StopTimer()
 }
