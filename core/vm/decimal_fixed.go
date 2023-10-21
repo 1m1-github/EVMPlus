@@ -517,22 +517,7 @@ func (out *Decimal256) round(a *Decimal256, precision *int256, normal bool) *Dec
 	return out
 }
 
-// LN using CF
-// ln(1+x/y) using continued fractions: https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
-func (out *Decimal256) ln10(precision, steps *uint256.Int) *Decimal256 {
-	THREE_INT256 := uint256.NewInt(3)
-	THREE_DECIMAL256 := createDecimal256(THREE_INT256, ZERO_INT256)
-	ONE_OVER_FOUR := createDecimal256(uint256.NewInt(25), new(uint256.Int).Neg(TWO_INT256))
-	THREE_OVER_125 := createDecimal256(uint256.NewInt(24), new(uint256.Int).Neg(THREE_INT256))
-	var a, b Decimal256
-	a.ln(ONE_OVER_FOUR, precision, steps)
-	b.ln(THREE_OVER_125, precision, steps)
-	a.Multiply(&a, TEN_DECIMAL256, precision)
-	b.Multiply(&b, THREE_DECIMAL256, precision)
-	out.Add(&a, &b, precision)
-	return out
-}
-
+// LN using CF: https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
 func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 {
 	x := copyDecimal256(_x)
 
@@ -562,16 +547,11 @@ func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 
 		adjust.Add(adjust, ONE_INT256)
 	}
 
-	// fmt.Println("2", x.String(), adjust.Dec())
-
 	// ln works with 1+x
 	x.Add(x, MINUS_ONE_DECIMAL256, precision)
 
-	// fmt.Println("3", x.String())
-
 	// main
 	out.ln(x, precision, steps)
-	// fmt.Println("4", x.String(), out.String())
 
 	// readjust back
 	var LN10 Decimal256
@@ -579,7 +559,6 @@ func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 
 	adjustDec := createDecimal256(adjust, ZERO_INT256)
 	LN10.Multiply(adjustDec, &LN10, precision)
 	out.Add(out, &LN10, precision)
-	// fmt.Println("5", out.String())
 
 	return out
 }
@@ -602,7 +581,19 @@ func (out *Decimal256) ln(x *Decimal256, precision, steps *int256) *Decimal256 {
 
 	return out
 }
-
+func (out *Decimal256) ln10(precision, steps *uint256.Int) *Decimal256 {
+	THREE_INT256 := uint256.NewInt(3)
+	THREE_DECIMAL256 := createDecimal256(THREE_INT256, ZERO_INT256)
+	ONE_OVER_FOUR := createDecimal256(uint256.NewInt(25), new(uint256.Int).Neg(TWO_INT256))
+	THREE_OVER_125 := createDecimal256(uint256.NewInt(24), new(uint256.Int).Neg(THREE_INT256))
+	var a, b Decimal256
+	a.ln(ONE_OVER_FOUR, precision, steps)
+	b.ln(THREE_OVER_125, precision, steps)
+	a.Multiply(&a, TEN_DECIMAL256, precision)
+	b.Multiply(&b, THREE_DECIMAL256, precision)
+	out.Add(&a, &b, precision)
+	return out
+}
 // out !== x
 func ln_recur(x, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *Decimal256 {
 	var out Decimal256
