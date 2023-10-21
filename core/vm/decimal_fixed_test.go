@@ -163,6 +163,27 @@ func benchmarkOpDec(b *testing.B, intArgs []*uint256.Int, op executionFunc) {
 	b.StopTimer()
 }
 
+func BenchmarkDirectLog2(b *testing.B) {
+	a := createDecimal256(uint256.NewInt(15), MINUS_ONE_INT256)
+	var out Decimal256
+	steps := uint256.NewInt(10)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		out.Log2(a, PRECISION, steps)
+	}
+	b.StopTimer()
+}
+func BenchmarkDirectLn(b *testing.B) {
+	a := createDecimal256(uint256.NewInt(15), MINUS_ONE_INT256)
+	var out Decimal256
+	steps := uint256.NewInt(10)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		out.Ln(a, PRECISION, steps)
+	}
+	b.StopTimer()
+}
+
 func TestSignedCmp(t *testing.T) {
 	// b := uint256.NewInt(15)
 	// a := uint256.NewInt(23)
@@ -483,25 +504,4 @@ func TestDecLn(t *testing.T) {
 		// 	t.Fatal(tt.a, out, tt.b)
 		// }
 	}
-}
-
-func BenchmarkDirectLog2(b *testing.B) {
-	a := createDecimal256(uint256.NewInt(15), MINUS_ONE_INT256)
-	var out Decimal256
-	steps := uint256.NewInt(10)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		out.Log2(a, PRECISION, steps)
-	}
-	b.StopTimer()
-}
-func BenchmarkDirectLn(b *testing.B) {
-	a := createDecimal256(uint256.NewInt(15), MINUS_ONE_INT256)
-	var out Decimal256
-	steps := uint256.NewInt(10)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		out.Ln(a, PRECISION, steps)
-	}
-	b.StopTimer()
 }
