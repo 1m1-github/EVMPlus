@@ -55,7 +55,7 @@ func (out *Decimal) Add(a, b *Decimal, precision *int256, gas *uint64) *Decimal 
 }
 
 // -a
-func (out *Decimal) Negate(a *Decimal, gas *uint64) *Decimal {
+func (out *Decimal) Neg(a *Decimal, gas *uint64) *Decimal {
 	// ok even if out == a
 	Neg(&a.c, &out.c, gas)
 	Set(&a.q, &out.q, gas)
@@ -64,7 +64,7 @@ func (out *Decimal) Negate(a *Decimal, gas *uint64) *Decimal {
 }
 
 // a * b
-func (out *Decimal) Multiply(a, b *Decimal, precision *int256, gas *uint64) *Decimal {
+func (out *Decimal) Mul(a, b *Decimal, precision *int256, gas *uint64) *Decimal {
 	// ok even if out == a || out == b
 	Mul(&a.c, &b.c, &out.c, gas)
 	Add(&a.q, &b.q, &out.q, gas)
@@ -73,7 +73,7 @@ func (out *Decimal) Multiply(a, b *Decimal, precision *int256, gas *uint64) *Dec
 }
 
 // 1 / a
-func (out *Decimal) Inverse(a *Decimal, precision *int256, gas *uint64) *Decimal {
+func (out *Decimal) Inv(a *Decimal, precision *int256, gas *uint64) *Decimal {
 	// ok even if out == a
 
 	var precision_m_aq int256
@@ -109,11 +109,11 @@ func (out *Decimal) Exp(_a *Decimal, precision, steps *int256, gas *uint64) *Dec
 	factorial_next := copyDecimal(ZERO_DECIMAL, gas)
 
 	for i := New(1, gas); Cmp(steps, i, gas) == -1; Add(i, ONE_INT256, i, gas) { // step 0 skipped as out set to 1
-		a_power.Multiply(a_power, a, precision, gas)                    // a^i
+		a_power.Mul(a_power, a, precision, gas)                         // a^i
 		factorial_next.Add(factorial_next, ONE_DECIMAL, precision, gas) // i++
-		factorial.Multiply(factorial, factorial_next, precision, gas)   // i!
-		factorial_inv.Inverse(factorial, precision, gas)                // 1/i!
-		factorial_inv.Multiply(&factorial_inv, a_power, precision, gas) // store a^i/i! in factorial_inv as not needed anymore
+		factorial.Mul(factorial, factorial_next, precision, gas)        // i!
+		factorial_inv.Inv(factorial, precision, gas)                    // 1/i!
+		factorial_inv.Mul(&factorial_inv, a_power, precision, gas)      // store a^i/i! in factorial_inv as not needed anymore
 		out.Add(out, &factorial_inv, precision, gas)                    // out += a^i/i!
 	}
 
@@ -158,7 +158,7 @@ func (out *Decimal) Ln(_a *Decimal, precision, steps *int256, gas *uint64) *Deci
 	var LN10 Decimal
 	LN10.ln10(precision, steps, gas)
 	adjustDec := createDecimal(adjust, ZERO_INT256, gas)
-	LN10.Multiply(adjustDec, &LN10, precision, gas)
+	LN10.Mul(adjustDec, &LN10, precision, gas)
 	out.Add(out, &LN10, precision, gas)
 
 	return out
@@ -177,24 +177,24 @@ func (out *Decimal) Sin(_a *Decimal, precision, steps *int256, gas *uint64) *Dec
 	}
 
 	var a_squared, factorial_inv Decimal
-	a_squared.Multiply(a, a, precision, gas)
+	a_squared.Mul(a, a, precision, gas)
 	a_power := copyDecimal(ONE_DECIMAL, gas)
 	factorial := copyDecimal(ONE_DECIMAL, gas)
 	factorial_next := copyDecimal(ONE_DECIMAL, gas)
 	negate := true
 
 	for i := New(1, gas); Cmp(steps, i, gas) == -1; Add(i, ONE_INT256, i, gas) { // step 0 skipped as out set to a
-		a_power.Multiply(a_power, &a_squared, precision, gas) // a^(2i+1)
+		a_power.Mul(a_power, &a_squared, precision, gas) // a^(2i+1)
 
 		factorial_next.Add(factorial_next, ONE_DECIMAL, precision, gas) // i++
-		factorial.Multiply(factorial, factorial_next, precision, gas)   // i!*2i
+		factorial.Mul(factorial, factorial_next, precision, gas)        // i!*2i
 		factorial_next.Add(factorial_next, ONE_DECIMAL, precision, gas) // i++
-		factorial.Multiply(factorial, factorial_next, precision, gas)   // (2i+1)!
+		factorial.Mul(factorial, factorial_next, precision, gas)        // (2i+1)!
 
-		factorial_inv.Inverse(factorial, precision, gas)                // 1/(2i+1)!
-		factorial_inv.Multiply(&factorial_inv, a_power, precision, gas) // store a^(2i+1)/(2i+1)! in factorial_inv as not needed anymore
+		factorial_inv.Inv(factorial, precision, gas)               // 1/(2i+1)!
+		factorial_inv.Mul(&factorial_inv, a_power, precision, gas) // store a^(2i+1)/(2i+1)! in factorial_inv as not needed anymore
 		if negate {
-			factorial_inv.Negate(&factorial_inv, gas) // (-1)^i*a^(2i+1)/(2i+1)!
+			factorial_inv.Neg(&factorial_inv, gas) // (-1)^i*a^(2i+1)/(2i+1)!
 		}
 		negate = !negate
 
@@ -216,7 +216,7 @@ func DecAdd(ac, aq, bc, bq, precision *int256, gas *uint64) (cc, cq *int256) {
 }
 func DecNeg(ac, aq *int256, gas *uint64) (bc, bq *int256) {
 	a := createDecimal(ac, aq, gas)
-	a.Negate(a, gas)
+	a.Neg(a, gas)
 	bc = &a.c
 	bq = &a.q
 	return
@@ -224,14 +224,14 @@ func DecNeg(ac, aq *int256, gas *uint64) (bc, bq *int256) {
 func DecMul(ac, aq, bc, bq, precision *int256, gas *uint64) (cc, cq *int256) {
 	a := createDecimal(ac, aq, gas)
 	b := createDecimal(bc, bq, gas)
-	a.Multiply(a, b, precision, gas)
+	a.Mul(a, b, precision, gas)
 	cc = &a.c
 	cq = &a.q
 	return
 }
 func DecInv(ac, aq, precision *int256, gas *uint64) (bc, bq *int256) {
 	a := createDecimal(ac, aq, gas)
-	a.Inverse(a, precision, gas)
+	a.Inv(a, precision, gas)
 	bc = &a.c
 	bq = &a.q
 	return
@@ -337,7 +337,7 @@ func (d2 *Decimal) eq(d1 *Decimal, precision *int256, gas *uint64) bool {
 // a < b
 func (a *Decimal) lessThan(b *Decimal, precision *int256, gas *uint64) bool {
 	var diff Decimal
-	diff.Add(a, diff.Negate(b, gas), precision, gas)
+	diff.Add(a, diff.Neg(b, gas), precision, gas)
 	return Sign(&diff.c, gas) == -1
 }
 
@@ -476,12 +476,12 @@ func (out *Decimal) ln(a *Decimal, precision, steps *int256, gas *uint64) *Decim
 	out2 := ln_recur(a, &two_y_plus_x, precision, steps, step, gas)
 	Set(&out2.c, &out.c, gas)
 	Set(&out2.q, &out.q, gas)
-	out.Inverse(out, precision, gas)
+	out.Inv(out, precision, gas)
 
 	// 2x / out
 	var two_x Decimal
-	two_x.Multiply(a, TWO_DECIMAL, precision, gas)
-	out.Multiply(out, &two_x, precision, gas)
+	two_x.Mul(a, TWO_DECIMAL, precision, gas)
+	out.Mul(out, &two_x, precision, gas)
 
 	return out
 }
@@ -495,8 +495,8 @@ func (out *Decimal) ln10(precision, steps *int256, gas *uint64) *Decimal {
 	var a, b Decimal
 	a.ln(ONE_OVER_FOUR, precision, steps, gas)
 	b.ln(THREE_OVER_125, precision, steps, gas)
-	a.Multiply(&a, TEN_DECIMAL, precision, gas)
-	b.Multiply(&b, THREE_DECIMAL256, precision, gas)
+	a.Mul(&a, TEN_DECIMAL, precision, gas)
+	b.Mul(&b, THREE_DECIMAL256, precision, gas)
 	out.Add(&a, &b, precision, gas)
 	return out
 }
@@ -507,9 +507,9 @@ func ln_recur(a, two_y_plus_x *Decimal, precision, max_steps, step *int256, gas 
 
 	// (2*step-1)*(2+x)
 	stepDec := createDecimal(step, ZERO_INT256, gas)
-	stepDec.Multiply(stepDec, TWO_DECIMAL, precision, gas)
+	stepDec.Mul(stepDec, TWO_DECIMAL, precision, gas)
 	stepDec.Add(stepDec, MINUS_ONE_DECIMAL, precision, gas)
-	out.Multiply(stepDec, two_y_plus_x, precision, gas)
+	out.Mul(stepDec, two_y_plus_x, precision, gas)
 
 	// end recursion?
 	if Cmp(max_steps, step, gas) == 0 {
@@ -520,15 +520,15 @@ func ln_recur(a, two_y_plus_x *Decimal, precision, max_steps, step *int256, gas 
 	Add(step, ONE_INT256, step, gas)
 	r := ln_recur(a, two_y_plus_x, precision, max_steps, step, gas)
 	Sub(step, ONE_INT256, step, gas)
-	r.Inverse(r, precision, gas)
+	r.Inv(r, precision, gas)
 
 	// (step*x)^2
 	stepDec2 := createDecimal(step, ZERO_INT256, gas)
-	stepDec2.Multiply(stepDec2, a, precision, gas)
-	stepDec2.Multiply(stepDec2, stepDec2, precision, gas)
+	stepDec2.Mul(stepDec2, a, precision, gas)
+	stepDec2.Mul(stepDec2, stepDec2, precision, gas)
 
-	r.Multiply(stepDec2, r, precision, gas)
-	r.Negate(r, gas)
+	r.Mul(stepDec2, r, precision, gas)
+	r.Neg(r, gas)
 
 	out.Add(&out, r, precision, gas)
 

@@ -141,7 +141,9 @@ func TestDecAdd(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
+		gas = 0
 		out.Add(&tt.a, &tt.b, PRECISION, &gas)
+		fmt.Println(gas)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
 		if !out.eq(&tt.c, PRECISION, &gas) {
@@ -150,7 +152,7 @@ func TestDecAdd(t *testing.T) {
 	}
 }
 
-func TestDecNegate(t *testing.T) {
+func TestDecNeg(t *testing.T) {
 	var gas uint64
 
 	tests := []struct {
@@ -162,7 +164,9 @@ func TestDecNegate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Negate(&tt.a, &gas)
+		gas = 0
+		out.Neg(&tt.a, &gas)
+		fmt.Println(gas)
 		// fmt.Println("a", showDecimal(&tt.a))
 		// fmt.Println("b", showDecimal(&tt.b))
 		// fmt.Println("out", showDecimal(&out))
@@ -173,7 +177,7 @@ func TestDecNegate(t *testing.T) {
 	}
 }
 
-func TestDecMultiply(t *testing.T) {
+func TestDecMul(t *testing.T) {
 	var gas uint64
 
 	tests := []struct {
@@ -188,8 +192,9 @@ func TestDecMultiply(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Multiply(&tt.a, &tt.b, PRECISION, &gas)
-
+		gas = 0
+		out.Mul(&tt.a, &tt.b, PRECISION, &gas)
+		fmt.Println(gas)
 		if !out.eq(&tt.c, PRECISION, &gas) {
 			t.Fatal(tt.a, tt.b, out, tt.c)
 		}
@@ -211,7 +216,9 @@ func TestDecInv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Inverse(&tt.a, PRECISION, &gas)
+		gas = 0
+		out.Inv(&tt.a, PRECISION, &gas)
+		fmt.Println(gas)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
 		if !out.eq(&tt.b, PRECISION, &gas) {
@@ -256,7 +263,9 @@ func TestDecNormalize(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
+		gas = 0
 		out.normalize(&tt.a, PRECISION, tt.rounded, &gas)
+		fmt.Println(gas)
 		// fmt.Println("normalize", tt.a.String(), out.String(), tt.b.String())
 
 		if !out.eq(&tt.b, PRECISION, &gas) {
@@ -279,7 +288,9 @@ func TestDecExp(t *testing.T) {
 	for _, tt := range tests {
 
 		var out Decimal
+		gas = 0
 		out.Exp(&tt.a, PRECISION, &tt.steps, &gas)
+		fmt.Println(gas)
 		// fmt.Println(out.String())
 
 		if !out.eq(&tt.b, PRECISION, &gas) {
@@ -302,9 +313,10 @@ func TestDecLn(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
-		// var out, out2 Decimal
+		gas = 0
 		out.Ln(&tt.a, PRECISION, &tt.steps, &gas)
-		fmt.Println(out.String())
+		fmt.Println(gas)
+		// fmt.Println(out.String())
 		// if !out.eq(&tt.b, PRECISION) {
 		// 	t.Fatal(tt.a, out, tt.b)
 		// }
@@ -323,7 +335,9 @@ func TestDecSin(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var out Decimal
+		gas = 0
 		out.Sin(&tt.a, PRECISION, &tt.steps, &gas)
+		fmt.Println(gas)
 		// fmt.Println(out.String())
 		if !out.eq(&tt.b, PRECISION, &gas) {
 			t.Fatal(tt.a, out, tt.b)
