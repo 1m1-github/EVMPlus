@@ -517,11 +517,9 @@ func (out *Decimal256) round(a *Decimal256, precision *int256, normal bool) *Dec
 	return out
 }
 
-// LN using CF: https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
+// 0 < _x
 func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 {
 	x := copyDecimal256(_x)
-
-	// fmt.Println("1", x.String())
 
 	if x.isNegative() {
 		panic("Ln: need 0 < x")
@@ -553,7 +551,7 @@ func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 
 	// main
 	out.ln(x, precision, steps)
 
-	// readjust back
+	// readjust back: ln(a*10^n) = ln(a)+n*ln(10)
 	var LN10 Decimal256
 	LN10.ln10(precision, steps)
 	adjustDec := createDecimal256(adjust, ZERO_INT256)
@@ -562,25 +560,29 @@ func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 
 
 	return out
 }
-// ln(1+x)
-// _x in [-1,1]
+// https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
+// using CF (continued fractions) for ln(1+x/y). we set y=1
+// ln(1+x), x in [-1,1]
 func (out *Decimal256) ln(x *Decimal256, precision, steps *int256) *Decimal256 {
 	var two_y_plus_x Decimal256
 	two_y_plus_x.Add(x, TWO_DECIMAL256, precision)
 
 	step := uint256.NewInt(1)
 
+	// recursion of continued fraction
 	out2 := ln_recur(x, &two_y_plus_x, precision, steps, step)
 	out.c.Set(&out2.c)
 	out.q.Set(&out2.q)
 	out.Inverse(out, precision)
 
+	// 2x / out
 	var two_x Decimal256
 	two_x.Multiply(x, TWO_DECIMAL256, precision)
 	out.Multiply(out, &two_x, precision)
 
 	return out
 }
+// ln10 needed for scaling
 func (out *Decimal256) ln10(precision, steps *uint256.Int) *Decimal256 {
 	THREE_INT256 := uint256.NewInt(3)
 	THREE_DECIMAL256 := createDecimal256(THREE_INT256, ZERO_INT256)
@@ -598,20 +600,24 @@ func (out *Decimal256) ln10(precision, steps *uint256.Int) *Decimal256 {
 func ln_recur(x, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *Decimal256 {
 	var out Decimal256
 
+	// (2*step-1)*(2+x)
 	stepDec := createDecimal256(step, ZERO_INT256)
 	stepDec.Multiply(stepDec, TWO_DECIMAL256, precision)
 	stepDec.Add(stepDec, MINUS_ONE_DECIMAL256, precision)
 	out.Multiply(stepDec, two_y_plus_x, precision)
 
+	// end recursion?
 	if step.Cmp(max_steps) == 0 {
 		return &out
 	}
 
+	// recursion
 	step.Add(step, ONE_INT256)
 	r := ln_recur(x, two_y_plus_x, precision, max_steps, step)
 	step.Sub(step, ONE_INT256)
 	r.Inverse(r, precision)
 
+	// (step*x)^2
 	stepDec2 := createDecimal256(step, ZERO_INT256)
 	stepDec2.Multiply(stepDec2, x, precision)
 	stepDec2.Multiply(stepDec2, stepDec2, precision)
