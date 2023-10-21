@@ -490,7 +490,7 @@ func gasEVMPlusEmulate(evm *EVM, contract *Contract, stack *Stack, mem *Memory, 
 	}
 	gas := uint64(0)
 	op(inputs, &gas)
-	for i := nStack; 0 <= i ; i-- {
+	for i := nStack - 1; 0 <= i ; i-- {
 		stack.push(&inputs[i])
 	}
 

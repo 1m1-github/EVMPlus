@@ -40,7 +40,7 @@ func Sign(a *int256, gas *uint64) int {
 
 func Cmp(a, b *int256, gas *uint64) int {
 	*gas += GasFastStep
-	return a.Cmp(b)
+	return b.Cmp(a)
 }
 
 func Exp(a, b, out *int256, gas *uint64) *int256 {
