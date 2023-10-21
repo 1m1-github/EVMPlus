@@ -58,6 +58,7 @@ var HALF_DECIMAL256 = createDecimal256(FIVE_INT256, MINUS_ONE_INT256)
 var ZERO_DECIMAL256 = createDecimal256(ZERO_INT256, ONE_INT256)
 var ONE_DECIMAL256 = createDecimal256(ONE_INT256, ZERO_INT256)
 var TWO_DECIMAL256 = createDecimal256(TWO_INT256, ZERO_INT256)
+var TEN_DECIMAL256 = createDecimal256(TEN_INT256, ZERO_INT256)
 
 // OPCODE functions
 
@@ -514,4 +515,69 @@ func (out *Decimal256) round(a *Decimal256, precision *int256, normal bool) *Dec
 	}
 	out.normalize(out, precision, true)
 	return out
+}
+
+// LN using CF
+// ln(1+x/y) using continued fractions: https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
+func (out *Decimal256) ln10(precision, steps *uint256.Int) *Decimal256 {
+	THREE_INT256 := uint256.NewInt(3)
+	THREE_DECIMAL256 := createDecimal256(THREE_INT256, ZERO_INT256)
+	ONE_OVER_FOUR := createDecimal256(uint256.NewInt(25), new(uint256.Int).Neg(TWO_INT256))
+	THREE_OVER_125 := createDecimal256(uint256.NewInt(24), new(uint256.Int).Neg(THREE_INT256))
+	var a, b Decimal256
+	a.Ln(ONE_OVER_FOUR, precision, steps)
+	b.Ln(THREE_OVER_125, precision, steps)
+	a.Multiply(&a, TEN_DECIMAL256, precision)
+	b.Multiply(&b, THREE_DECIMAL256, precision)
+	out.Add(&a, &b, precision)
+	return out
+}
+// ln(1+x)
+func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 {
+	x := copyDecimal256(_x)
+
+	var two_y_plus_x Decimal256
+	two_y_plus_x.Add(x, TWO_DECIMAL256, precision)
+	
+	step := uint256.NewInt(1)
+	
+	out2 := ln_recur(x, &two_y_plus_x, precision, steps, step)
+	out.c.Set(&out2.c)
+	out.q.Set(&out2.q)
+	out.Inverse(out, precision)
+	
+	var two_x Decimal256
+	two_x.Multiply(x, TWO_DECIMAL256, precision)
+	out.Multiply(out, &two_x, precision)
+
+	return out
+}
+// out !== x
+func ln_recur(x, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *Decimal256 {
+	var out Decimal256
+
+	stepDec := createDecimal256(step, ZERO_INT256)
+	stepDec.Multiply(stepDec, TWO_DECIMAL256, precision)
+	stepDec.Add(stepDec, MINUS_ONE_DECIMAL256, precision)
+	out.Multiply(stepDec, two_y_plus_x, precision)
+
+	if step.Cmp(max_steps) == 0 {	
+		return &out
+	}
+
+	step.Add(step, ONE_INT256)
+	r := ln_recur(x, two_y_plus_x, precision, max_steps, step)
+	step.Sub(step, ONE_INT256)
+	r.Inverse(r, precision)
+
+	stepDec2 := createDecimal256(step, ZERO_INT256)
+	stepDec2.Multiply(stepDec2, x, precision)
+	stepDec2.Multiply(stepDec2, stepDec2, precision)
+
+	r.Multiply(stepDec2, r, precision)
+	r.Negate(r)
+
+	out.Add(&out, r, precision)
+
+	return &out
 }
