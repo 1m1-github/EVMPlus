@@ -517,16 +517,16 @@ func (out *Decimal256) round(a *Decimal256, precision *int256, normal bool) *Dec
 	return out
 }
 
-// 0 < _x
-func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 {
-	x := copyDecimal256(_x)
+// 0 < _a
+func (out *Decimal256) Ln(_a *Decimal256, precision, steps *int256) *Decimal256 {
+	a := copyDecimal256(_a)
 
-	if x.isNegative() {
+	if a.isNegative() {
 		panic("Ln: need 0 < x")
 	}
 
 	// ln(1) = 0
-	if x.isOne() {
+	if a.isOne() {
 		out.c.Set(ZERO_INT256)
 		out.q.Set(ONE_INT256)
 		return out
@@ -536,20 +536,20 @@ func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 
 	// divide x by 10 until x in [0,2]
 	adjust := uint256.NewInt(0)
 	for {
-		if x.lessThan(TWO_DECIMAL256, precision) {
+		if a.lessThan(TWO_DECIMAL256, precision) {
 			break
 		}
 
 		// x /= 10
-		x.q.Add(&x.q, MINUS_ONE_INT256)
+		a.q.Add(&a.q, MINUS_ONE_INT256)
 		adjust.Add(adjust, ONE_INT256)
 	}
 
 	// ln works with 1+x
-	x.Add(x, MINUS_ONE_DECIMAL256, precision)
+	a.Add(a, MINUS_ONE_DECIMAL256, precision)
 
 	// main
-	out.ln(x, precision, steps)
+	out.ln(a, precision, steps)
 
 	// readjust back: ln(a*10^n) = ln(a)+n*ln(10)
 	var LN10 Decimal256
@@ -562,22 +562,22 @@ func (out *Decimal256) Ln(_x *Decimal256, precision, steps *int256) *Decimal256 
 }
 // https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
 // using CF (continued fractions) for ln(1+x/y). we set y=1
-// ln(1+x), x in [-1,1]
-func (out *Decimal256) ln(x *Decimal256, precision, steps *int256) *Decimal256 {
+// ln(1+a), a in [-1,1]
+func (out *Decimal256) ln(a *Decimal256, precision, steps *int256) *Decimal256 {
 	var two_y_plus_x Decimal256
-	two_y_plus_x.Add(x, TWO_DECIMAL256, precision)
+	two_y_plus_x.Add(a, TWO_DECIMAL256, precision)
 
 	step := uint256.NewInt(1)
 
 	// recursion of continued fraction
-	out2 := ln_recur(x, &two_y_plus_x, precision, steps, step)
+	out2 := ln_recur(a, &two_y_plus_x, precision, steps, step)
 	out.c.Set(&out2.c)
 	out.q.Set(&out2.q)
 	out.Inverse(out, precision)
 
 	// 2x / out
 	var two_x Decimal256
-	two_x.Multiply(x, TWO_DECIMAL256, precision)
+	two_x.Multiply(a, TWO_DECIMAL256, precision)
 	out.Multiply(out, &two_x, precision)
 
 	return out
@@ -596,8 +596,8 @@ func (out *Decimal256) ln10(precision, steps *uint256.Int) *Decimal256 {
 	out.Add(&a, &b, precision)
 	return out
 }
-// out !== x
-func ln_recur(x, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *Decimal256 {
+// out !== a
+func ln_recur(a, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *Decimal256 {
 	var out Decimal256
 
 	// (2*step-1)*(2+x)
@@ -613,13 +613,13 @@ func ln_recur(x, two_y_plus_x *Decimal256, precision, max_steps, step *int256) *
 
 	// recursion
 	step.Add(step, ONE_INT256)
-	r := ln_recur(x, two_y_plus_x, precision, max_steps, step)
+	r := ln_recur(a, two_y_plus_x, precision, max_steps, step)
 	step.Sub(step, ONE_INT256)
 	r.Inverse(r, precision)
 
 	// (step*x)^2
 	stepDec2 := createDecimal256(step, ZERO_INT256)
-	stepDec2.Multiply(stepDec2, x, precision)
+	stepDec2.Multiply(stepDec2, a, precision)
 	stepDec2.Multiply(stepDec2, stepDec2, precision)
 
 	r.Multiply(stepDec2, r, precision)
