@@ -18,26 +18,9 @@ object "BlackScholes" {
                 // 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352
                 calldatacopy(0, 4, 384)
 
-                // let ac, aq := callprice()
-                // sstore(0, ac)
-                // sstore(1, aq)
-
-                d_plus()
-                d_minus()
-                // // cdf_dm_K()
-                // let d_plus_c := mload(448)
-                // let d_plus_q := mload(480)
-                // let d_minus_c := mload(384)
-                // let d_minus_q := mload(416)
-                // sstore(0, d_plus_c)
-                // sstore(1, d_plus_q)
-                // sstore(2, d_minus_c)
-                // sstore(3, d_minus_q)
-                cdf_dp_S()
-                // let cdf_dp_S_c := mload(448)
-                // let cdf_dp_S_q := mload(480)
-                // sstore(4, cdf_dp_S_c)
-                // sstore(5, cdf_dp_S_q)
+                let ac, aq := callprice()
+                sstore(0, ac)
+                sstore(1, aq)
             }
             default {
                 revert(0, 0)
@@ -148,19 +131,6 @@ object "BlackScholes" {
                 let b2_c, b2_q := dec_exp(b1_c, b1_q, precision, steps)
                 let b3_c, b3_q := dec_add(b2_c, b2_q, 1, 0, precision)
                 bc, bq := dec_inv(b3_c, b3_q, precision)
-
-                //debug
-                sstore(4, ac)
-                sstore(5, aq)
-                sstore(6, b1_c)
-                sstore(7, b1_q)
-                sstore(8, b2_c)
-                sstore(9, b2_q)
-                sstore(10, b3_c)
-                sstore(11, b3_q)
-                sstore(12, bc)
-                sstore(13, bq)
-                //debug
             }
             function cdf_dp_S() {
                 let precision := mload(320)
@@ -175,13 +145,6 @@ object "BlackScholes" {
 
                 mstore(448, cdf_dp_S_c)
                 mstore(480, cdf_dp_S_q)
-
-                //debug
-                sstore(2, cdf_dp_c)
-                sstore(3, cdf_dp_q)
-                // sstore(4, cdf_dp_S_c)
-                // sstore(5, cdf_dp_S_q)
-                //debug
             }
             function cdf_dm_K_exp_r_T() {
                 let precision := mload(320)
