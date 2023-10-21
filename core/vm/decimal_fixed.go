@@ -2,12 +2,6 @@
 
 package vm
 
-import (
-	"github.com/holiman/uint256"
-)
-
-type int256 = uint256.Int
-
 // Decimal struct and constructors
 
 // c * 10^q
@@ -16,195 +10,195 @@ type Decimal struct {
 	q int256 // exponent, interpreted as int256
 }
 
-func copyDecimal(d *Decimal) *Decimal {
-	return createDecimal(&d.c, &d.q)
+func copyDecimal(d *Decimal, gas *uint64) *Decimal {
+	return createDecimal(&d.c, &d.q, gas)
 }
-func createDecimal(_c, _q *int256) *Decimal {
+func createDecimal(_c, _q *int256, gas *uint64) *Decimal {
 	var c, q int256
-	c.Set(_c)
-	q.Set(_q)
+	Set(_c, &c, gas)
+	Set(_q, &q, gas)
 	return &Decimal{c, q}
 }
 
 // CONSTANTS
+var GLOBAL_GAS uint64
 
-var MINUS_ONE_INT256 = new(uint256.Int).Neg(ONE_INT256)
-var ZERO_INT256 = uint256.NewInt(0)
-var ONE_INT256 = uint256.NewInt(1)
-var TWO_INT256 = uint256.NewInt(2)
-var FIVE_INT256 = uint256.NewInt(5)
-var TEN_INT256 = uint256.NewInt(10)
+var MINUS_ONE_INT256 = new(int256).Neg(ONE_INT256)
+var ZERO_INT256 = New(0, &GLOBAL_GAS)
+var ONE_INT256 = New(1, &GLOBAL_GAS)
+var TWO_INT256 = New(2, &GLOBAL_GAS)
+var FIVE_INT256 = New(5, &GLOBAL_GAS)
+var TEN_INT256 = New(10, &GLOBAL_GAS)
 
-var MINUS_ONE_DECIMAL = createDecimal(MINUS_ONE_INT256, ZERO_INT256)
-var HALF_DECIMAL = createDecimal(FIVE_INT256, MINUS_ONE_INT256)
-var ZERO_DECIMAL = createDecimal(ZERO_INT256, ONE_INT256)
-var ONE_DECIMAL = createDecimal(ONE_INT256, ZERO_INT256)
-var TWO_DECIMAL = createDecimal(TWO_INT256, ZERO_INT256)
-var TEN_DECIMAL = createDecimal(TEN_INT256, ZERO_INT256)
+var MINUS_ONE_DECIMAL = createDecimal(MINUS_ONE_INT256, ZERO_INT256, &GLOBAL_GAS)
+var HALF_DECIMAL = createDecimal(FIVE_INT256, MINUS_ONE_INT256, &GLOBAL_GAS)
+var ZERO_DECIMAL = createDecimal(ZERO_INT256, ONE_INT256, &GLOBAL_GAS)
+var ONE_DECIMAL = createDecimal(ONE_INT256, ZERO_INT256, &GLOBAL_GAS)
+var TWO_DECIMAL = createDecimal(TWO_INT256, ZERO_INT256, &GLOBAL_GAS)
+var TEN_DECIMAL = createDecimal(TEN_INT256, ZERO_INT256, &GLOBAL_GAS)
 
 // OPCODE functions
 
 // a + b
-func (out *Decimal) Add(a, b *Decimal, precision *int256) *Decimal {
+func (out *Decimal) Add(a, b *Decimal, precision *int256, gas *uint64) *Decimal {
 	// ok even if out == a || out == b
 
-	ca := add_helper(a, b)
-	cb := add_helper(b, a)
+	ca := add_helper(a, b, gas)
+	cb := add_helper(b, a, gas)
 
-	out.c.Add(&ca, &cb)
-	out.q.Set(min_DECIMAL256(&a.q, &b.q))
+	Add(&ca, &cb, &out.c, gas)
+	Set(min(&a.q, &b.q, gas), &out.q, gas)
 
-	out.normalize(out, precision, false)
+	out.normalize(out, precision, false, gas)
 
 	return out
 }
 
 // -a
-func (out *Decimal) Negate(a *Decimal) *Decimal {
+func (out *Decimal) Negate(a *Decimal, gas *uint64) *Decimal {
 	// ok even if out == a
-	out.c.Neg(&a.c)
-	out.q.Set(&a.q)
+	Neg(&a.c, &out.c, gas)
+	Set(&a.q, &out.q, gas)
 	// no need to normalize
 	return out
 }
 
 // a * b
-func (out *Decimal) Multiply(a, b *Decimal, precision *int256) *Decimal {
+func (out *Decimal) Multiply(a, b *Decimal, precision *int256, gas *uint64) *Decimal {
 	// ok even if out == a || out == b
-	out.c.Mul(&a.c, &b.c)
-	out.q.Add(&a.q, &b.q)
-	out.normalize(out, precision, false)
+	Mul(&a.c, &b.c, &out.c, gas)
+	Add(&a.q, &b.q, &out.q, gas)
+	out.normalize(out, precision, false, gas)
 	return out
 }
 
 // 1 / a
-func (out *Decimal) Inverse(a *Decimal, precision *int256) *Decimal {
+func (out *Decimal) Inverse(a *Decimal, precision *int256, gas *uint64) *Decimal {
 	// ok even if out == a
 
 	var precision_m_aq int256
-	precision_m_aq.Sub(precision, &a.q)
-	if SignedCmp(&precision_m_aq, ZERO_INT256) == -1 {
+	Sub(precision, &a.q, &precision_m_aq, gas)
+	if SignedCmp(&precision_m_aq, ZERO_INT256, gas) == -1 {
 		panic("precision_m_aq NEGATIVE")
 	}
 
-	precision_m_aq.Exp(TEN_INT256, &precision_m_aq) // save space: precision_m_aq not needed after
-	signedDiv(&precision_m_aq, &a.c, &out.c)
-	out.q.Neg(precision)
+	Exp(TEN_INT256, &precision_m_aq, &precision_m_aq, gas) // save space: precision_m_aq not needed after
+	signedDiv(&precision_m_aq, &a.c, &out.c, gas)
+	Neg(precision, &out.q, gas)
 
-	out.normalize(out, precision, false)
+	out.normalize(out, precision, false, gas)
 
 	return out
 }
 
 // e^a
-func (out *Decimal) Exp(_a *Decimal, precision, steps *int256) *Decimal {
-	a := copyDecimal(_a) // in case out == _a
+func (out *Decimal) Exp(_a *Decimal, precision, steps *int256, gas *uint64) *Decimal {
+	a := copyDecimal(_a, gas) // in case out == _a
 
 	// out = 1
-	out.c.Set(ONE_INT256)
-	out.q.Set(ZERO_INT256)
+	Set(ONE_INT256, &out.c, gas)
+	Set(ZERO_INT256, &out.q, gas)
 
-	if a.isZero() {
+	if a.isZero(gas) {
 		return out
 	}
 
 	var factorial_inv Decimal
-	a_power := copyDecimal(ONE_DECIMAL)
-	factorial := copyDecimal(ONE_DECIMAL)
-	factorial_next := copyDecimal(ZERO_DECIMAL)
+	a_power := copyDecimal(ONE_DECIMAL, gas)
+	factorial := copyDecimal(ONE_DECIMAL, gas)
+	factorial_next := copyDecimal(ZERO_DECIMAL, gas)
 
-	for i := uint256.NewInt(1); i.Cmp(steps) == -1; i.Add(i, ONE_INT256) { // step 0 skipped as out set to 1
-		a_power.Multiply(a_power, a, precision)                    // a^i
-		factorial_next.Add(factorial_next, ONE_DECIMAL, precision) // i++
-		factorial.Multiply(factorial, factorial_next, precision)   // i!
-		factorial_inv.Inverse(factorial, precision)                // 1/i!
-		factorial_inv.Multiply(&factorial_inv, a_power, precision) // store a^i/i! in factorial_inv as not needed anymore
-		out.Add(out, &factorial_inv, precision)                    // out += a^i/i!
+	for i := New(1, gas); Cmp(steps, i, gas) == -1; Add(i, ONE_INT256, i, gas) { // step 0 skipped as out set to 1
+		a_power.Multiply(a_power, a, precision, gas)                    // a^i
+		factorial_next.Add(factorial_next, ONE_DECIMAL, precision, gas) // i++
+		factorial.Multiply(factorial, factorial_next, precision, gas)   // i!
+		factorial_inv.Inverse(factorial, precision, gas)                // 1/i!
+		factorial_inv.Multiply(&factorial_inv, a_power, precision, gas) // store a^i/i! in factorial_inv as not needed anymore
+		out.Add(out, &factorial_inv, precision, gas)                    // out += a^i/i!
 	}
 
 	return out
 }
 
-
 // 0 < _a
-func (out *Decimal) Ln(_a *Decimal, precision, steps *int256) *Decimal {
-	a := copyDecimal(_a)
+func (out *Decimal) Ln(_a *Decimal, precision, steps *int256, gas *uint64) *Decimal {
+	a := copyDecimal(_a, gas)
 
-	if a.isNegative() {
+	if a.isNegative(gas) {
 		panic("Ln: need 0 < x")
 	}
 
 	// ln(1) = 0
-	if a.isOne() {
-		out.c.Set(ZERO_INT256)
-		out.q.Set(ONE_INT256)
+	if a.isOne(gas) {
+		Set(ZERO_INT256, &out.c, gas)
+		Set(ONE_INT256, &out.q, gas)
 		return out
 	}
 
 	// adjust x
 	// divide x by 10 until x in [0,2]
-	adjust := uint256.NewInt(0)
+	adjust := New(0, gas)
 	for {
-		if a.lessThan(TWO_DECIMAL, precision) {
+		if a.lessThan(TWO_DECIMAL, precision, gas) {
 			break
 		}
 
 		// x /= 10
-		a.q.Add(&a.q, MINUS_ONE_INT256)
-		adjust.Add(adjust, ONE_INT256)
+		Add(&a.q, MINUS_ONE_INT256, &a.q, gas)
+		Add(adjust, ONE_INT256, adjust, gas)
 	}
 
 	// ln works with 1+x
-	a.Add(a, MINUS_ONE_DECIMAL, precision)
+	a.Add(a, MINUS_ONE_DECIMAL, precision, gas)
 
 	// main
-	out.ln(a, precision, steps)
+	out.ln(a, precision, steps, gas)
 
 	// readjust back: ln(a*10^n) = ln(a)+n*ln(10)
 	var LN10 Decimal
-	LN10.ln10(precision, steps)
-	adjustDec := createDecimal(adjust, ZERO_INT256)
-	LN10.Multiply(adjustDec, &LN10, precision)
-	out.Add(out, &LN10, precision)
+	LN10.ln10(precision, steps, gas)
+	adjustDec := createDecimal(adjust, ZERO_INT256, gas)
+	LN10.Multiply(adjustDec, &LN10, precision, gas)
+	out.Add(out, &LN10, precision, gas)
 
 	return out
 }
 
 // sin(a)
-func (out *Decimal) Sin(_a *Decimal, precision, steps *int256) *Decimal {
-	a := copyDecimal(_a) // in case out == _a
+func (out *Decimal) Sin(_a *Decimal, precision, steps *int256, gas *uint64) *Decimal {
+	a := copyDecimal(_a, gas) // in case out == _a
 
 	// out = a
-	out.c.Set(&a.c)
-	out.q.Set(&a.q)
+	Set(&a.c, &out.c, gas)
+	Set(&a.q, &out.q, gas)
 
-	if a.isZero() || precision.Cmp(ONE_INT256) == 0 {
+	if a.isZero(gas) || Cmp(ONE_INT256, precision, gas) == 0 {
 		return out
 	}
 
 	var a_squared, factorial_inv Decimal
-	a_squared.Multiply(a, a, precision)
-	a_power := copyDecimal(ONE_DECIMAL)
-	factorial := copyDecimal(ONE_DECIMAL)
-	factorial_next := copyDecimal(ONE_DECIMAL)
+	a_squared.Multiply(a, a, precision, gas)
+	a_power := copyDecimal(ONE_DECIMAL, gas)
+	factorial := copyDecimal(ONE_DECIMAL, gas)
+	factorial_next := copyDecimal(ONE_DECIMAL, gas)
 	negate := true
 
-	for i := uint256.NewInt(1); i.Cmp(steps) == -1; i.Add(i, ONE_INT256) { // step 0 skipped as out set to a
-		a_power.Multiply(a_power, &a_squared, precision) // a^(2i+1)
+	for i := New(1, gas); Cmp(steps, i, gas) == -1; Add(i, ONE_INT256, i, gas) { // step 0 skipped as out set to a
+		a_power.Multiply(a_power, &a_squared, precision, gas) // a^(2i+1)
 
-		factorial_next.Add(factorial_next, ONE_DECIMAL, precision) // i++
-		factorial.Multiply(factorial, factorial_next, precision)   // i!*2i
-		factorial_next.Add(factorial_next, ONE_DECIMAL, precision) // i++
-		factorial.Multiply(factorial, factorial_next, precision)   // (2i+1)!
+		factorial_next.Add(factorial_next, ONE_DECIMAL, precision, gas) // i++
+		factorial.Multiply(factorial, factorial_next, precision, gas)   // i!*2i
+		factorial_next.Add(factorial_next, ONE_DECIMAL, precision, gas) // i++
+		factorial.Multiply(factorial, factorial_next, precision, gas)   // (2i+1)!
 
-		factorial_inv.Inverse(factorial, precision)                // 1/(2i+1)!
-		factorial_inv.Multiply(&factorial_inv, a_power, precision) // store a^(2i+1)/(2i+1)! in factorial_inv as not needed anymore
+		factorial_inv.Inverse(factorial, precision, gas)                // 1/(2i+1)!
+		factorial_inv.Multiply(&factorial_inv, a_power, precision, gas) // store a^(2i+1)/(2i+1)! in factorial_inv as not needed anymore
 		if negate {
-			factorial_inv.Negate(&factorial_inv) // (-1)^i*a^(2i+1)/(2i+1)!
+			factorial_inv.Negate(&factorial_inv, gas) // (-1)^i*a^(2i+1)/(2i+1)!
 		}
 		negate = !negate
 
-		out.Add(out, &factorial_inv, precision) // out += (-1)^i*a^(2i+1)/(2i+1)!
+		out.Add(out, &factorial_inv, precision, gas) // out += (-1)^i*a^(2i+1)/(2i+1)!
 	}
 
 	return out
@@ -212,53 +206,53 @@ func (out *Decimal) Sin(_a *Decimal, precision, steps *int256) *Decimal {
 
 // convenience methods
 
-func DecAdd(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
-	a := createDecimal(ac, aq)
-	b := createDecimal(bc, bq)
-	a.Add(a, b, precision)
+func DecAdd(ac, aq, bc, bq, precision *int256, gas *uint64) (cc, cq *int256) {
+	a := createDecimal(ac, aq, gas)
+	b := createDecimal(bc, bq, gas)
+	a.Add(a, b, precision, gas)
 	cc = &a.c
 	cq = &a.q
 	return
 }
-func DecNegate(ac, aq *int256) (bc, bq *int256) {
-	a := createDecimal(ac, aq)
-	a.Negate(a)
+func DecNeg(ac, aq *int256, gas *uint64) (bc, bq *int256) {
+	a := createDecimal(ac, aq, gas)
+	a.Negate(a, gas)
 	bc = &a.c
 	bq = &a.q
 	return
 }
-func DecMultiply(ac, aq, bc, bq, precision *int256) (cc, cq *int256) {
-	a := createDecimal(ac, aq)
-	b := createDecimal(bc, bq)
-	a.Multiply(a, b, precision)
+func DecMul(ac, aq, bc, bq, precision *int256, gas *uint64) (cc, cq *int256) {
+	a := createDecimal(ac, aq, gas)
+	b := createDecimal(bc, bq, gas)
+	a.Multiply(a, b, precision, gas)
 	cc = &a.c
 	cq = &a.q
 	return
 }
-func DecInverse(ac, aq, precision *int256) (bc, bq *int256) {
-	a := createDecimal(ac, aq)
-	a.Inverse(a, precision)
+func DecInv(ac, aq, precision *int256, gas *uint64) (bc, bq *int256) {
+	a := createDecimal(ac, aq, gas)
+	a.Inverse(a, precision, gas)
 	bc = &a.c
 	bq = &a.q
 	return
 }
-func DecExp(ac, aq, precision, steps *int256) (bc, bq *int256) {
-	a := createDecimal(ac, aq)
-	a.Exp(a, precision, steps)
+func DecExp(ac, aq, precision, steps *int256, gas *uint64) (bc, bq *int256) {
+	a := createDecimal(ac, aq, gas)
+	a.Exp(a, precision, steps, gas)
 	bc = &a.c
 	bq = &a.q
 	return
 }
-func DecLn(ac, aq, precision, steps *int256) (bc, bq *int256) {
-	a := createDecimal(ac, aq)
-	a.Ln(a, precision, steps)
+func DecLn(ac, aq, precision, steps *int256, gas *uint64) (bc, bq *int256) {
+	a := createDecimal(ac, aq, gas)
+	a.Ln(a, precision, steps, gas)
 	bc = &a.c
 	bq = &a.q
 	return
 }
-func DecSin(ac, aq, precision, steps *int256) (bc, bq *int256) {
-	a := createDecimal(ac, aq)
-	a.Sin(a, precision, steps)
+func DecSin(ac, aq, precision, steps *int256, gas *uint64) (bc, bq *int256) {
+	a := createDecimal(ac, aq, gas)
+	a.Sin(a, precision, steps, gas)
 	bc = &a.c
 	bq = &a.q
 	return
@@ -270,7 +264,7 @@ func DecSin(ac, aq, precision, steps *int256) (bc, bq *int256) {
 //
 //	0 if a == b
 //	1 if b <  a
-func SignedCmp(a, b *int256) int {
+func SignedCmp(a, b *int256, gas *uint64) int {
 	c := a.Cmp(b)
 
 	if c == 0 { // a == b
@@ -303,9 +297,9 @@ func SignedCmp(a, b *int256) int {
 	}
 }
 
-// min_DECIMAL256(a, b)
-func min_DECIMAL256(a, b *int256) (c *int256) {
-	if SignedCmp(a, b) == -1 {
+// min(a, b)
+func min(a, b *int256, gas *uint64) (c *int256) {
+	if SignedCmp(a, b, gas) == -1 {
 		return a
 	} else {
 		return b
@@ -313,167 +307,157 @@ func min_DECIMAL256(a, b *int256) (c *int256) {
 }
 
 // a == 0
-func (a *Decimal) isZero() bool {
-	return a.c.IsZero()
+func (a *Decimal) isZero(gas *uint64) bool {
+	return IsZero(&a.c, gas)
 }
 
 // a should be normalized
 // a == 1 ?
-func (a *Decimal) isOne() bool {
-	return a.c.Cmp(ONE_INT256) == 0 && a.q.IsZero() // Cmp ok vs SignedCmp when comparing to zero
+func (a *Decimal) isOne(gas *uint64) bool {
+	return Cmp(ONE_INT256, &a.c, gas) == 0 && IsZero(&a.q, gas) // Cmp ok vs SignedCmp when comparing to zero
 }
 
 // a < 0 ?
-func (a *Decimal) isNegative() bool {
-	return a.c.Sign() == -1
+func (a *Decimal) isNegative(gas *uint64) bool {
+	return Sign(&a.c, gas) == -1
 }
 
-func (d2 *Decimal) eq(d1 *Decimal, precision *int256) bool {
-	d1_zero := d1.isZero()
-	d2_zero := d2.isZero()
+func (d2 *Decimal) eq(d1 *Decimal, precision *int256, gas *uint64) bool {
+	d1_zero := d1.isZero(gas)
+	d2_zero := d2.isZero(gas)
 	if d1_zero || d2_zero {
 		return d1_zero == d2_zero
 	}
 
-	d1.normalize(d1, precision, false)
-	d2.normalize(d2, precision, false)
-	return d1.c.Cmp(&d2.c) == 0 && d1.q.Cmp(&d2.q) == 0 // Cmp ok vs SignedCmp when comparing to zero
+	d1.normalize(d1, precision, false, gas)
+	d2.normalize(d2, precision, false, gas)
+	return Cmp(&d2.c, &d1.c, gas) == 0 && Cmp(&d2.q, &d1.q, gas) == 0 // Cmp ok vs SignedCmp when comparing to zero
 }
 
 // a < b
-func (a *Decimal) lessThan(b *Decimal, precision *int256) bool {
+func (a *Decimal) lessThan(b *Decimal, precision *int256, gas *uint64) bool {
 	var diff Decimal
-	diff.Add(a, diff.Negate(b), precision)
-	return diff.c.Sign() == -1
+	diff.Add(a, diff.Negate(b, gas), precision, gas)
+	return Sign(&diff.c, gas) == -1
 }
 
-// a *= 2
-func (out *Decimal) double() {
-	out.c.Lsh(&out.c, 1)
-}
-
-// a /= 2
-func (out *Decimal) halve(precision *int256) {
-	out.Multiply(out, HALF_DECIMAL, precision)
-}
-
-func signedDiv(numerator, denominator, out *uint256.Int) *uint256.Int {
-	sn := numerator.Sign()
-	sd := denominator.Sign()
+func signedDiv(numerator, denominator, out *int256, gas *uint64) *int256 {
+	sn := Sign(numerator, gas)
+	sd := Sign(denominator, gas)
 	if sn == 0 && sd == 0 {
 		out = nil
 		return nil
 	}
 	if sn == 0 {
-		out = uint256.NewInt(0)
+		out = New(0, gas)
 		return out
 	}
 
 	n := *numerator
 	if sn == -1 {
-		n.Neg(numerator)
+		Neg(numerator, &n, gas)
 	}
 
 	d := *denominator
 	if sd == -1 {
-		d.Neg(denominator)
+		Neg(denominator, &d, gas)
 	}
 
-	out.Div(&n, &d)
+	Div(&n, &d, out, gas)
 
 	if (sn == -1) != (sd == -1) {
-		out.Neg(out)
+		Neg(out, out, gas)
 	}
 
 	return out
 }
 
 // c = (-1)^d1.s * d1.c * 10^max(d1.q - d2.q, 0)
-func add_helper(d1, d2 *Decimal) (c int256) {
+func add_helper(d1, d2 *Decimal, gas *uint64) (c int256) {
 	var exponent_diff int256
-	exponent_diff.Sub(&d1.q, &d2.q) // GasFastestStep
-	if exponent_diff.Sign() == -1 {
+	Sub(&d1.q, &d2.q, &exponent_diff, gas)
+	if Sign(&exponent_diff, gas) == -1 {
 		exponent_diff = *ZERO_INT256 // shallow copy ok
 	}
 
-	c.Exp(TEN_INT256, &exponent_diff)
-	c.Mul(&d1.c, &c) // GasFastStep
+	Exp(TEN_INT256, &exponent_diff, &c, gas)
+	Mul(&d1.c, &c, &c, gas)
 
 	return c
 }
 
 // remove trailing zeros from coefficient
-func find_num_trailing_zeros_signed_DECIMAL256(a *int256) (p, ten_power *int256) {
+func find_num_trailing_zeros_signed_DECIMAL256(a *int256, gas *uint64) (p, ten_power *int256) {
 	var b int256
-	b.Set(a)
-	if b.Sign() == -1 {
-		b.Neg(&b)
+	Set(a, &b, gas)
+	if Sign(&b, gas) == -1 {
+		Neg(&b, &b, gas)
 	}
 
-	p = uint256.NewInt(0)
-	ten_power = uint256.NewInt(10)
-	if b.Cmp(ZERO_INT256) != 0 { // if b != 0  // Cmp ok vs SignedCmp when comparing to zero
+	p = New(0, gas)
+	ten_power = New(10, gas)
+	if Cmp(ZERO_INT256, &b, gas) != 0 { // if b != 0  // Cmp ok vs SignedCmp when comparing to zero
 		for {
 			var m int256
-			m.Mod(&b, ten_power)
-			if m.Cmp(ZERO_INT256) != 0 { // if b % 10^(p+1) != 0  // Cmp ok vs SignedCmp when comparing to zero
+			Mod(&b, ten_power, &m, gas)
+			if Cmp(ZERO_INT256, &m, gas) != 0 { // if b % 10^(p+1) != 0  // Cmp ok vs SignedCmp when comparing to zero
 				break
 			}
-			p.Add(p, ONE_INT256)
-			ten_power.Mul(ten_power, TEN_INT256) // 10^(p+1)
+			Add(p, ONE_INT256, p, gas)
+			Mul(ten_power, TEN_INT256, ten_power, gas) // 10^(p+1)
 		}
 	}
-	ten_power.Div(ten_power, TEN_INT256) // all positive
+	Div(ten_power, TEN_INT256, ten_power, gas) // all positive
 
 	return p, ten_power
 }
 
 // remove trailing zeros in coefficient
-func (out *Decimal) normalize(a *Decimal, precision *int256, rounded bool) *Decimal {
+func (out *Decimal) normalize(a *Decimal, precision *int256, rounded bool, gas *uint64) *Decimal {
 	// ok even if out == a
 
-	p, ten_power := find_num_trailing_zeros_signed_DECIMAL256(&a.c)
-	signedDiv(&a.c, ten_power, &out.c) // does not change polarity [in case out == a]
+	p, ten_power := find_num_trailing_zeros_signed_DECIMAL256(&a.c, gas)
+	signedDiv(&a.c, ten_power, &out.c, gas) // does not change polarity [in case out == a]
 
-	a_neg := a.isNegative()
-	if out.c.Cmp(ZERO_INT256) != 0 || a_neg { // Cmp ok vs SignedCmp when comparing to zero
-		out.q.Add(&a.q, p)
+	a_neg := a.isNegative(gas)
+	if Cmp(ZERO_INT256, &out.c, gas) != 0 || a_neg { // Cmp ok vs SignedCmp when comparing to zero
+		Add(&a.q, p, &out.q, gas)
 	} else {
-		out.q.Set(ZERO_INT256)
+		Set(ZERO_INT256, &out.q, gas)
 	}
 
 	if rounded {
 		return out
 	}
 
-	out.round(out, precision, true)
+	out.round(out, precision, true, gas)
 	return out
 }
 
-func (out *Decimal) round(a *Decimal, precision *int256, normal bool) *Decimal {
+func (out *Decimal) round(a *Decimal, precision *int256, normal bool, gas *uint64) *Decimal {
 	// ok if out == a
 
 	var shift, ten_power int256
-	shift.Add(precision, &a.q)
+	Add(precision, &a.q, &shift, gas)
 
-	if SignedCmp(&shift, ZERO_INT256) == 1 || SignedCmp(&shift, &a.q) == -1 {
+	if SignedCmp(&shift, ZERO_INT256, gas) == 1 || SignedCmp(&shift, &a.q, gas) == -1 {
 		if normal {
-			out.c.Set(&a.c)
-			out.q.Set(&a.q)
+			Set(&a.c, &out.c, gas)
+			Set(&a.q, &out.q, gas)
 			return out
 		}
-		out.normalize(a, precision, true)
+		out.normalize(a, precision, true, gas)
 		return out
 	}
 
-	shift.Neg(&shift)
-	ten_power.Exp(TEN_INT256, &shift)
-	signedDiv(&a.c, &ten_power, &out.c)
-	out.q.Add(&a.q, &shift)
+	Neg(&shift, &shift, gas)
+	Exp(TEN_INT256, &shift, &ten_power, gas)
+	signedDiv(&a.c, &ten_power, &out.c, gas)
+	Add(&a.q, &shift, &out.q, gas)
 	if normal {
 		return out
 	}
-	out.normalize(out, precision, true)
+	out.normalize(out, precision, true, gas)
 	return out
 }
 
@@ -482,71 +466,71 @@ func (out *Decimal) round(a *Decimal, precision *int256, normal bool) *Decimal {
 // https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
 // using CF (continued fractions) for ln(1+x/y). we set y=1
 // ln(1+a), a in [-1,1]
-func (out *Decimal) ln(a *Decimal, precision, steps *int256) *Decimal {
+func (out *Decimal) ln(a *Decimal, precision, steps *int256, gas *uint64) *Decimal {
 	var two_y_plus_x Decimal
-	two_y_plus_x.Add(a, TWO_DECIMAL, precision)
+	two_y_plus_x.Add(a, TWO_DECIMAL, precision, gas)
 
-	step := uint256.NewInt(1)
+	step := New(1, gas)
 
 	// recursion of continued fraction
-	out2 := ln_recur(a, &two_y_plus_x, precision, steps, step)
-	out.c.Set(&out2.c)
-	out.q.Set(&out2.q)
-	out.Inverse(out, precision)
+	out2 := ln_recur(a, &two_y_plus_x, precision, steps, step, gas)
+	Set(&out2.c, &out.c, gas)
+	Set(&out2.q, &out.q, gas)
+	out.Inverse(out, precision, gas)
 
 	// 2x / out
 	var two_x Decimal
-	two_x.Multiply(a, TWO_DECIMAL, precision)
-	out.Multiply(out, &two_x, precision)
+	two_x.Multiply(a, TWO_DECIMAL, precision, gas)
+	out.Multiply(out, &two_x, precision, gas)
 
 	return out
 }
 
 // ln10 needed for scaling
-func (out *Decimal) ln10(precision, steps *uint256.Int) *Decimal {
-	THREE_INT256 := uint256.NewInt(3)
-	THREE_DECIMAL256 := createDecimal(THREE_INT256, ZERO_INT256)
-	ONE_OVER_FOUR := createDecimal(uint256.NewInt(25), new(uint256.Int).Neg(TWO_INT256))
-	THREE_OVER_125 := createDecimal(uint256.NewInt(24), new(uint256.Int).Neg(THREE_INT256))
+func (out *Decimal) ln10(precision, steps *int256, gas *uint64) *Decimal {
+	THREE_INT256 := New(3, gas)
+	THREE_DECIMAL256 := createDecimal(THREE_INT256, ZERO_INT256, gas)
+	ONE_OVER_FOUR := createDecimal(New(25, gas), new(int256).Neg(TWO_INT256), gas)
+	THREE_OVER_125 := createDecimal(New(24, gas), new(int256).Neg(THREE_INT256), gas)
 	var a, b Decimal
-	a.ln(ONE_OVER_FOUR, precision, steps)
-	b.ln(THREE_OVER_125, precision, steps)
-	a.Multiply(&a, TEN_DECIMAL, precision)
-	b.Multiply(&b, THREE_DECIMAL256, precision)
-	out.Add(&a, &b, precision)
+	a.ln(ONE_OVER_FOUR, precision, steps, gas)
+	b.ln(THREE_OVER_125, precision, steps, gas)
+	a.Multiply(&a, TEN_DECIMAL, precision, gas)
+	b.Multiply(&b, THREE_DECIMAL256, precision, gas)
+	out.Add(&a, &b, precision, gas)
 	return out
 }
 
 // out !== a
-func ln_recur(a, two_y_plus_x *Decimal, precision, max_steps, step *int256) *Decimal {
+func ln_recur(a, two_y_plus_x *Decimal, precision, max_steps, step *int256, gas *uint64) *Decimal {
 	var out Decimal
 
 	// (2*step-1)*(2+x)
-	stepDec := createDecimal(step, ZERO_INT256)
-	stepDec.Multiply(stepDec, TWO_DECIMAL, precision)
-	stepDec.Add(stepDec, MINUS_ONE_DECIMAL, precision)
-	out.Multiply(stepDec, two_y_plus_x, precision)
+	stepDec := createDecimal(step, ZERO_INT256, gas)
+	stepDec.Multiply(stepDec, TWO_DECIMAL, precision, gas)
+	stepDec.Add(stepDec, MINUS_ONE_DECIMAL, precision, gas)
+	out.Multiply(stepDec, two_y_plus_x, precision, gas)
 
 	// end recursion?
-	if step.Cmp(max_steps) == 0 {
+	if Cmp(max_steps, step, gas) == 0 {
 		return &out
 	}
 
 	// recursion
-	step.Add(step, ONE_INT256)
-	r := ln_recur(a, two_y_plus_x, precision, max_steps, step)
-	step.Sub(step, ONE_INT256)
-	r.Inverse(r, precision)
+	Add(step, ONE_INT256, step, gas)
+	r := ln_recur(a, two_y_plus_x, precision, max_steps, step, gas)
+	Sub(step, ONE_INT256, step, gas)
+	r.Inverse(r, precision, gas)
 
 	// (step*x)^2
-	stepDec2 := createDecimal(step, ZERO_INT256)
-	stepDec2.Multiply(stepDec2, a, precision)
-	stepDec2.Multiply(stepDec2, stepDec2, precision)
+	stepDec2 := createDecimal(step, ZERO_INT256, gas)
+	stepDec2.Multiply(stepDec2, a, precision, gas)
+	stepDec2.Multiply(stepDec2, stepDec2, precision, gas)
 
-	r.Multiply(stepDec2, r, precision)
-	r.Negate(r)
+	r.Multiply(stepDec2, r, precision, gas)
+	r.Negate(r, gas)
 
-	out.Add(&out, r, precision)
+	out.Add(&out, r, precision, gas)
 
 	return &out
 }
