@@ -7,6 +7,7 @@ go test -bench regexp
 go test -run ^$ -bench regexp
 
 make geth
+./build/bin/geth --http --http.api web3,eth,net --datadir /~/chaindata
 ./build/bin/geth --http --http.corsdomain="https://remix.ethereum.org" --http.api web3,eth,debug,net --vmdebug --datadir /Users/1m1/Downloads/chaindata --dev console
 echo $((16#A))
 

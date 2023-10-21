@@ -1,6 +1,6 @@
 {
     "config": {
-        "chainId": 42,
+        "chainId": 196790,
         "homesteadBlock": 0,
         "eip150Block": 0,
         "eip155Block": 0,
@@ -10,20 +10,18 @@
         "petersburgBlock": 0,
         "istanbulBlock": 0,
         "berlinBlock": 0,
-        "londonBlock": 0
+        "londonBlock": 0,
+        "shanghaiBlock": 0
     },
     "alloc": {
-        "0x0000000000000000000000000000000000000001": {
-            "balance": "111111111"
-        },
-        "0x0000000000000000000000000000000000000002": {
-            "balance": "222222222"
+        "0x827C952A572CB99eF4AF7b9ec837c7438DA174e9": {
+            "balance": "999999999999999"
         }
     },
     "coinbase": "0x0000000000000000000000000000000000000000",
     "difficulty": "0x20000",
     "extraData": "",
-    "gasLimit": "0x2fefd8",
+    "gasLimit": "0x5fdfb0",
     "nonce": "0x0000000000000023",
     "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
