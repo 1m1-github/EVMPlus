@@ -16,7 +16,12 @@ make geth
 
 tmux new -s geth
 
-./build/bin/geth init --datadir /~/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --http --http.api web3,eth,net --datadir /~/chaindata --networkid 196790 --nat extip:35.209.100.125
+./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
+./build/bin/geth --http --http.api web3,eth,net --datadir ~/chaindata --networkid 196790 --nat extip:35.209.100.125
 
 // remember to open HTTP port, any other?
+
+
+./build/bin/geth init --datadir ~/Downloads/chaindata ./tests/EVMPlus/genesis.json
+./build/bin/geth --http --http.api web3,eth,net --datadir ~/Downloads/chaindata --networkid 196790 --dev --nat extip:35.209.100.125
+./build/bin/geth --http --http.api web3,eth,debug,personal,net --vmdebug --datadir ~/Downloads/chaindata --dev --nodiscover console

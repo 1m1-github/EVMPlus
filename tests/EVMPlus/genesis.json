@@ -10,8 +10,7 @@
         "petersburgBlock": 0,
         "istanbulBlock": 0,
         "berlinBlock": 0,
-        "londonBlock": 0,
-        "shanghaiBlock": 0
+        "londonBlock": 0
     },
     "alloc": {
         "0x827C952A572CB99eF4AF7b9ec837c7438DA174e9": {
