@@ -12,7 +12,8 @@ object "BlackScholes" {
 
             // Dispatcher
             switch selector()
-            case 0xc4df80c7 /* <- is wrong for -> "callprice(int256,int256,int256,int256,int256,int256,int256,int256,int256,int256,int256,int256)" */ {
+            // callprice(int256,int256,int256,int256,int256,int256,int256,int256,int256,int256,int256,int256)
+            case 0x95ba71af {
                 // Sc, Sq, Kc, Kq, rc, rq, sc, sq, Tc, Tq, precision, steps
                 // 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352
                 calldatacopy(0, 4, 384)
@@ -20,13 +21,6 @@ object "BlackScholes" {
                 let ac, aq := callprice()
                 sstore(0, ac)
                 sstore(1, aq)
-
-                // r_s2_T()
-                // d_plus()
-                // d_minus()
-                // cdf_dp_S()
-                // // cdf_dm_K()
-
             }
             default {
                 revert(0, 0)
@@ -61,19 +55,6 @@ object "BlackScholes" {
 
                 mstore(384, r_s2_T_c)
                 mstore(416, r_s2_T_q)
-
-                //debug
-                // sstore(0, sc)
-                // sstore(1, sq)
-                // sstore(2, s_sqr_c)
-                // sstore(3, s_sqr_q)
-                // sstore(4, sigma_sqr_half_c)
-                // sstore(5, sigma_sqr_half_q)
-                // sstore(6, r_p_s_c)
-                // sstore(7, r_p_s_q)
-                // sstore(8, r_s2_T_c)
-                // sstore(9, r_s2_T_q)
-                //debug
             }
 
             function ln_S_K() {
@@ -86,6 +67,7 @@ object "BlackScholes" {
                 let Kq := mload(96)
                 let S_K_c, S_K_q := dec_div(Sc, Sq, Kc, Kq, precision)
                 let ln_S_K_c, ln_S_K_q := dec_ln(S_K_c, S_K_q, precision, steps)
+
                 mstore(448, ln_S_K_c)
                 mstore(480, ln_S_K_q)
             }
@@ -99,6 +81,7 @@ object "BlackScholes" {
                 let Tq := mload(288)
                 let sqrt_T_c, sqrt_T_q := dec_sqrt(Tc, Tq, precision, steps)
                 let s_sqrt_T_c, s_sqrt_T_q := dec_mul(sc, sq, sqrt_T_c, sqrt_T_q, precision)
+
                 mstore(384, s_sqrt_T_c)
                 mstore(416, s_sqrt_T_q)
             }
@@ -119,19 +102,9 @@ object "BlackScholes" {
                 let s_sqrt_T_q := mload(416)
 
                 let d_plus_c, d_plus_q := dec_div(ln_S_K_p_r_s2_T_c, ln_S_K_p_r_s2_T_q, s_sqrt_T_c, s_sqrt_T_q, precision)
+                
                 mstore(448, d_plus_c)
                 mstore(480, d_plus_q)
-
-                //debug
-                // sstore(0, r_s2_T_c)
-                // sstore(1, r_s2_T_q)
-                // sstore(2, ln_S_K_c)
-                // sstore(3, ln_S_K_q)
-                // sstore(4, s_sqrt_T_c)
-                // sstore(5, s_sqrt_T_q)
-                // sstore(6, d_plus_c)
-                // sstore(7, d_plus_q)
-                //debug
             }
             function d_minus() {
                 let precision := mload(320)
@@ -141,13 +114,9 @@ object "BlackScholes" {
                 let s_sqrt_T_c := mload(384)
                 let s_sqrt_T_q := mload(416)
                 let d_minus_c, d_minus_q := dec_sub(d_plus_c, d_plus_q, s_sqrt_T_c, s_sqrt_T_q, precision)
+                
                 mstore(384, d_minus_c)
                 mstore(416, d_minus_q)
-
-                //debug
-                // sstore(10, d_minus_c)
-                // sstore(11, d_minus_q)
-                //debug
             }
             // approximation
             // 1/(1+dec_exp(-1.65451*a))
@@ -176,13 +145,6 @@ object "BlackScholes" {
 
                 mstore(448, cdf_dp_S_c)
                 mstore(480, cdf_dp_S_q)
-
-                //debug
-                // sstore(8, cdf_dp_c)
-                // sstore(9, cdf_dp_q)
-                // sstore(6, cdf_dp_S_c)
-                // sstore(7, cdf_dp_S_q)
-                //debug
             }
             function cdf_dm_K_exp_r_T() {
                 let precision := mload(320)
@@ -218,11 +180,6 @@ object "BlackScholes" {
                 
                 mstore(384, cdf_dm_K_c)
                 mstore(416, cdf_dm_K_q)
-
-                //debug
-                // sstore(6, cdf_dm_c)
-                // sstore(7, cdf_dm_q)
-                //debug
             }
             function callprice() -> ac, aq {
                 let precision := mload(320)
@@ -236,13 +193,6 @@ object "BlackScholes" {
                 let cdf_dm_K_q := mload(416)
                 let cdf_dp_S_c := mload(448)
                 let cdf_dp_S_q := mload(480)
-
-                //debug
-                // sstore(2, cdf_dm_K_c)
-                // sstore(3, cdf_dm_K_q)
-                // sstore(4, cdf_dp_S_c)
-                // sstore(5, cdf_dp_S_q)
-                //debug
 
                 ac, aq := dec_sub(cdf_dp_S_c, cdf_dp_S_q, cdf_dm_K_c, cdf_dm_K_q, precision)
             }
@@ -274,8 +224,8 @@ object "BlackScholes" {
                 bc, bq := verbatim_4i_2o(hex"d4", ac, aq, precision, steps)
             }
 
-            // dec_log2(a) = b
-            function dec_log2(ac, aq, precision, steps) -> bc, bq {
+            // dec_ln(a) = b
+            function dec_ln(ac, aq, precision, steps) -> bc, bq {
                 bc, bq := verbatim_4i_2o(hex"d5", ac, aq, precision, steps)
             }
 
@@ -296,14 +246,6 @@ object "BlackScholes" {
             function dec_div(ac, aq, bc, bq, precision) -> cc, cq {
                 cc, cq := dec_inv(bc, bq, precision)
                 cc, cq := dec_mul(ac, aq, cc, cq, precision)
-            }
-
-            // dec_ln(a) = dec_ln(2) * dec_log2(a)
-            function dec_ln(ac, aq, precision, steps) -> bc, bq {
-                let LN_2_C := 6931471805
-                let LN_2_Q := 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6 // -10
-                bc, bq := dec_log2(ac, aq, precision, steps)
-                bc, bq := dec_mul(LN_2_C, LN_2_Q, bc, bq, precision)
             }
             
             // a^b = dec_exp(b * dec_ln(a))
