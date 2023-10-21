@@ -116,101 +116,112 @@ func benchmarkOpDec(b *testing.B, intArgs []*uint256.Int, op executionFunc) {
 }
 
 func TestSignedCmp(t *testing.T) {
+	var gas uint64
+
 	// b := uint256.NewInt(15)
 	// a := uint256.NewInt(23)
 	a := new(uint256.Int).Neg(uint256.NewInt(14))
 	b := new(uint256.Int).Neg(uint256.NewInt(15))
-	c := SignedCmp(a, b)
+	c := SignedCmp(a, b, &gas)
 	fmt.Println(c)
 }
 
 func TestDecAdd(t *testing.T) {
+	var gas uint64
+
 	tests := []struct {
 		a Decimal
 		b Decimal
 		c Decimal
 	}{
-		{*createDecimal(uint256.NewInt(5), ZERO_INT256), *createDecimal(uint256.NewInt(121), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(171), MINUS_ONE_INT256)},
-		{*createDecimal(uint256.NewInt(5), ZERO_INT256), *createDecimal(uint256.NewInt(121), ZERO_INT256), *createDecimal(uint256.NewInt(126), ZERO_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(8), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(6), MINUS_ONE_INT256)},
-		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(uint256.NewInt(15)), MINUS_ONE_INT256)},
+		{*createDecimal(uint256.NewInt(5), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(121), MINUS_ONE_INT256, &gas), *createDecimal(uint256.NewInt(171), MINUS_ONE_INT256, &gas)},
+		{*createDecimal(uint256.NewInt(5), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(121), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(126), ZERO_INT256, &gas)},
+		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), MINUS_ONE_INT256, &gas), *createDecimal(uint256.NewInt(8), MINUS_ONE_INT256, &gas), *createDecimal(uint256.NewInt(6), MINUS_ONE_INT256, &gas)},
+		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256, &gas), *createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256, &gas), *createDecimal(new(uint256.Int).Neg(uint256.NewInt(15)), MINUS_ONE_INT256, &gas)},
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Add(&tt.a, &tt.b, PRECISION)
+		out.Add(&tt.a, &tt.b, PRECISION, &gas)
 		// fmt.Println("a", showDecimal(&tt.a), "b", showDecimal(&tt.b), "out", showDecimal(&out), "c", showDecimal(&tt.c))
 
-		if !out.eq(&tt.c, PRECISION) {
+		if !out.eq(&tt.c, PRECISION, &gas) {
 			t.Fatal(tt.a, tt.b, out, tt.c)
 		}
 	}
 }
 
 func TestDecNegate(t *testing.T) {
+	var gas uint64
+
 	tests := []struct {
 		a Decimal
 		b Decimal
 	}{
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256)},
-		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256)},
+		{*createDecimal(uint256.NewInt(2), ZERO_INT256, &gas), *createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256, &gas)},
+		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256, &gas), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256, &gas)},
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Negate(&tt.a)
+		out.Negate(&tt.a, &gas)
 		// fmt.Println("a", showDecimal(&tt.a))
 		// fmt.Println("b", showDecimal(&tt.b))
 		// fmt.Println("out", showDecimal(&out))
 
-		if !out.eq(&tt.b, PRECISION) {
+		if !out.eq(&tt.b, PRECISION, &gas) {
 			t.Fatal(tt.a, tt.b, out)
 		}
 	}
 }
 
 func TestDecMultiply(t *testing.T) {
+	var gas uint64
+
 	tests := []struct {
 		a Decimal
 		b Decimal
 		c Decimal
 	}{
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(4), ZERO_INT256)},
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256), *createDecimal(MINUS_ONE_INT256, ZERO_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(1), ZERO_INT256)},
+		{*createDecimal(uint256.NewInt(2), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(2), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(4), ZERO_INT256, &gas)},
+		{*createDecimal(uint256.NewInt(2), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256, &gas), *createDecimal(uint256.NewInt(1), ZERO_INT256, &gas)},
+		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256, &gas), *createDecimal(MINUS_ONE_INT256, ZERO_INT256, &gas)},
+		{*createDecimal(new(uint256.Int).Neg(TWO_INT256), ZERO_INT256, &gas), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256, &gas), *createDecimal(uint256.NewInt(1), ZERO_INT256, &gas)},
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Multiply(&tt.a, &tt.b, PRECISION)
+		out.Multiply(&tt.a, &tt.b, PRECISION, &gas)
 
-		if !out.eq(&tt.c, PRECISION) {
+		if !out.eq(&tt.c, PRECISION, &gas) {
 			t.Fatal(tt.a, tt.b, out, tt.c)
 		}
 	}
 }
 
 func TestDecInv(t *testing.T) {
+	var gas uint64
+
 	tests := []struct {
 		a Decimal
 		b Decimal
 	}{
-		{*copyDecimal(ONE_DECIMAL), *copyDecimal(ONE_DECIMAL)},
-		{*createDecimal(uint256.NewInt(2), ZERO_INT256), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256)},
-		{*createDecimal(new(uint256.Int).Neg(uint256.NewInt(20)), MINUS_ONE_INT256), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256)},
-		{*createDecimal(uint256.NewInt(2), ONE_INT256), *createDecimal(uint256.NewInt(5), new(uint256.Int).Neg(TWO_INT256))},
-		{*createDecimal(uint256.NewInt(2), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(5), ZERO_INT256)},
+		{*copyDecimal(ONE_DECIMAL, &gas), *copyDecimal(ONE_DECIMAL, &gas)},
+		{*createDecimal(uint256.NewInt(2), ZERO_INT256, &gas), *createDecimal(uint256.NewInt(5), MINUS_ONE_INT256, &gas)},
+		{*createDecimal(new(uint256.Int).Neg(uint256.NewInt(20)), MINUS_ONE_INT256, &gas), *createDecimal(new(uint256.Int).Neg(FIVE_INT256), MINUS_ONE_INT256, &gas)},
+		{*createDecimal(uint256.NewInt(2), ONE_INT256, &gas), *createDecimal(uint256.NewInt(5), new(uint256.Int).Neg(TWO_INT256), &gas)},
+		{*createDecimal(uint256.NewInt(2), MINUS_ONE_INT256, &gas), *createDecimal(uint256.NewInt(5), ZERO_INT256, &gas)},
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Inverse(&tt.a, PRECISION)
+		out.Inverse(&tt.a, PRECISION, &gas)
 		// fmt.Println("a", showDecimal(&tt.a), "out", showDecimal(&out), "b", showDecimal(&tt.b))
 
-		if !out.eq(&tt.b, PRECISION) {
+		if !out.eq(&tt.b, PRECISION, &gas) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
 }
 
 func TestDecNormalize(t *testing.T) {
+	var gas uint64
 
 	LARGE_TEN := uint256.NewInt(10)
 	LARGE_TEN.Exp(LARGE_TEN, uint256.NewInt(75))
@@ -236,61 +247,65 @@ func TestDecNormalize(t *testing.T) {
 		b       Decimal
 		rounded bool
 	}{
-		{*createDecimal(uint256.NewInt(15), MINUS_ONE_INT256), *createDecimal(uint256.NewInt(15), MINUS_ONE_INT256), false},
-		{*copyDecimal(ONE_DECIMAL), *copyDecimal(ONE_DECIMAL), false},
-		{*createDecimal(uint256.NewInt(100), new(uint256.Int).Neg(TWO_INT256)), *copyDecimal(ONE_DECIMAL), false},
-		{*createDecimal(LARGE_TEN, NEG_75), *copyDecimal(ONE_DECIMAL), false},
-		{*createDecimal(TEN_TEN, NEG_55), *createDecimal(ONE_INT256, NEG_45), true},
-		{*createDecimal(&MINUS_FIVE_48, MINUS_49), *createDecimal(MINUS_5, MINUS_ONE_INT256), false},
+		{*createDecimal(uint256.NewInt(15), MINUS_ONE_INT256, &gas), *createDecimal(uint256.NewInt(15), MINUS_ONE_INT256, &gas), false},
+		{*copyDecimal(ONE_DECIMAL, &gas), *copyDecimal(ONE_DECIMAL, &gas), false},
+		{*createDecimal(uint256.NewInt(100), new(uint256.Int).Neg(TWO_INT256), &gas), *copyDecimal(ONE_DECIMAL, &gas), false},
+		{*createDecimal(LARGE_TEN, NEG_75, &gas), *copyDecimal(ONE_DECIMAL, &gas), false},
+		{*createDecimal(TEN_TEN, NEG_55, &gas), *createDecimal(ONE_INT256, NEG_45, &gas), true},
+		{*createDecimal(&MINUS_FIVE_48, MINUS_49, &gas), *createDecimal(MINUS_5, MINUS_ONE_INT256, &gas), false},
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.normalize(&tt.a, PRECISION, tt.rounded)
+		out.normalize(&tt.a, PRECISION, tt.rounded, &gas)
 		// fmt.Println("normalize", tt.a.String(), out.String(), tt.b.String())
 
-		if !out.eq(&tt.b, PRECISION) {
+		if !out.eq(&tt.b, PRECISION, &gas) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
 }
 
 func TestDecExp(t *testing.T) {
+	var gas uint64
+
 	tests := []struct {
 		a     Decimal
 		steps uint256.Int
 		b     Decimal
 	}{
-		{*copyDecimal(ONE_DECIMAL), *uint256.NewInt(10), *createDecimal(uint256.NewInt(27182815251), new(uint256.Int).Neg(TEN_INT256))},
-		{*createDecimal(MINUS_ONE_INT256, uint256.NewInt(0)), *uint256.NewInt(10), *createDecimal(uint256.NewInt(3678791887), new(uint256.Int).Neg(TEN_INT256))},
+		{*copyDecimal(ONE_DECIMAL, &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(27182815251), new(uint256.Int).Neg(TEN_INT256), &gas)},
+		{*createDecimal(MINUS_ONE_INT256, uint256.NewInt(0), &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(3678791887), new(uint256.Int).Neg(TEN_INT256), &gas)},
 	}
 	for _, tt := range tests {
 
 		var out Decimal
-		out.Exp(&tt.a, PRECISION, &tt.steps)
+		out.Exp(&tt.a, PRECISION, &tt.steps, &gas)
 		// fmt.Println(out.String())
 
-		if !out.eq(&tt.b, PRECISION) {
+		if !out.eq(&tt.b, PRECISION, &gas) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}
 }
 
 func TestDecLn(t *testing.T) {
+	var gas uint64
+
 	tests := []struct {
 		a     Decimal
 		steps uint256.Int
 		b     Decimal
 	}{
-		// {*ONE_DECIMAL256, *uint256.NewInt(10), *createDecimal256(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
-		// {*createDecimal256(uint256.NewInt(5), MINUS_ONE_INT256), *uint256.NewInt(10), *createDecimal256(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
-		// {*createDecimal256(new(uint256.Int).Neg(uint256.NewInt(8)), new(uint256.Int).Neg(uint256.NewInt(1))), *uint256.NewInt(10), *createDecimal256(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
-		// {*createDecimal256(new(uint256.Int).Neg(uint256.NewInt(1)), new(uint256.Int).Neg(uint256.NewInt(1))), *uint256.NewInt(10), *createDecimal256(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
-		{*createDecimal(uint256.NewInt(11), ZERO_INT256), *uint256.NewInt(5), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256))},
+		{*ONE_DECIMAL, *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
+		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256, &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
+		{*createDecimal(new(uint256.Int).Neg(uint256.NewInt(8)), new(uint256.Int).Neg(uint256.NewInt(1)), &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
+		{*createDecimal(new(uint256.Int).Neg(uint256.NewInt(1)), new(uint256.Int).Neg(uint256.NewInt(1)), &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
+		{*createDecimal(uint256.NewInt(11), ZERO_INT256, &gas), *uint256.NewInt(5), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
 	}
 	for _, tt := range tests {
 		var out Decimal
 		// var out, out2 Decimal
-		out.Ln(&tt.a, PRECISION, &tt.steps)
+		out.Ln(&tt.a, PRECISION, &tt.steps, &gas)
 		fmt.Println(out.String())
 		// if !out.eq(&tt.b, PRECISION) {
 		// 	t.Fatal(tt.a, out, tt.b)
@@ -299,18 +314,20 @@ func TestDecLn(t *testing.T) {
 }
 
 func TestDecSin(t *testing.T) {
+	var gas uint64
+
 	tests := []struct {
 		a     Decimal
 		steps uint256.Int
 		b     Decimal
 	}{
-		{*copyDecimal(ONE_DECIMAL), *uint256.NewInt(10), *createDecimal(uint256.NewInt(8414709849), new(uint256.Int).Neg(TEN_INT256))},
+		{*copyDecimal(ONE_DECIMAL, &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(8414709849), new(uint256.Int).Neg(TEN_INT256), &gas)},
 	}
 	for _, tt := range tests {
 		var out Decimal
-		out.Sin(&tt.a, PRECISION, &tt.steps)
+		out.Sin(&tt.a, PRECISION, &tt.steps, &gas)
 		// fmt.Println(out.String())
-		if !out.eq(&tt.b, PRECISION) {
+		if !out.eq(&tt.b, PRECISION, &gas) {
 			t.Fatal(tt.a, out, tt.b)
 		}
 	}

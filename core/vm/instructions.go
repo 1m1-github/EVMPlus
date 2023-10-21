@@ -939,7 +939,8 @@ func makeSwap(size int64) executionFunc {
 func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
-	cc, cq := DecAdd(&ac, &aq, &bc, &bq, &precision)
+	var gas uint64
+	cc, cq := DecAdd(&ac, &aq, &bc, &bq, &precision, &gas)
 
 	scope.Stack.push(cc)
 	scope.Stack.push(cq)
@@ -950,7 +951,8 @@ func opDecAdd(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 func opDecNeg(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq := scope.Stack.pop(), scope.Stack.pop()
 
-	bc, bq := DecNegate(&ac, &aq)
+	var gas uint64
+	bc, bq := DecNeg(&ac, &aq, &gas)
 
 	scope.Stack.push(bc)
 	scope.Stack.push(bq)
@@ -961,7 +963,8 @@ func opDecNeg(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, bc, bq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
-	cc, cq := DecMultiply(&ac, &aq, &bc, &bq, &precision)
+	var gas uint64
+	cc, cq := DecMul(&ac, &aq, &bc, &bq, &precision, &gas)
 
 	scope.Stack.push(cc)
 	scope.Stack.push(cq)
@@ -972,7 +975,8 @@ func opDecMul(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, precision := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
-	bc, bq := DecInverse(&ac, &aq, &precision)
+	var gas uint64
+	bc, bq := DecInv(&ac, &aq, &precision, &gas)
 
 	scope.Stack.push(bc)
 	scope.Stack.push(bq)
@@ -983,7 +987,8 @@ func opDecInv(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, precision, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
-	bc, bq := DecExp(&ac, &aq, &precision, &steps)
+	var gas uint64
+	bc, bq := DecExp(&ac, &aq, &precision, &steps, &gas)
 
 	scope.Stack.push(bc)
 	scope.Stack.push(bq)
@@ -994,7 +999,8 @@ func opDecExp(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 func opDecLn(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, precision, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
-	bc, bq := DecLn(&ac, &aq, &precision, &steps)
+	var gas uint64
+	bc, bq := DecLn(&ac, &aq, &precision, &steps, &gas)
 
 	scope.Stack.push(bc)
 	scope.Stack.push(bq)
@@ -1005,7 +1011,8 @@ func opDecLn(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]by
 func opDecSin(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	ac, aq, precision, steps := scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop(), scope.Stack.pop()
 
-	bc, bq := DecSin(&ac, &aq, &precision, &steps)
+	var gas uint64
+	bc, bq := DecSin(&ac, &aq, &precision, &steps, &gas)
 
 	scope.Stack.push(bc)
 	scope.Stack.push(bq)
