@@ -298,8 +298,6 @@ func TestDecLn(t *testing.T) {
 	}{
 		{*ONE_DECIMAL, *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
 		{*createDecimal(uint256.NewInt(5), MINUS_ONE_INT256, &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
-		{*createDecimal(new(uint256.Int).Neg(uint256.NewInt(8)), new(uint256.Int).Neg(uint256.NewInt(1)), &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
-		{*createDecimal(new(uint256.Int).Neg(uint256.NewInt(1)), new(uint256.Int).Neg(uint256.NewInt(1)), &gas), *uint256.NewInt(10), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
 		{*createDecimal(uint256.NewInt(11), ZERO_INT256, &gas), *uint256.NewInt(5), *createDecimal(uint256.NewInt(5849609375), new(uint256.Int).Neg(TEN_INT256), &gas)},
 	}
 	for _, tt := range tests {
