@@ -23,5 +23,7 @@ tmux new -s geth
 
 
 ./build/bin/geth init --datadir ~/Downloads/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --http --http.api web3,eth,net --datadir ~/Downloads/chaindata --networkid 196790 --dev --nat extip:35.209.100.125
-./build/bin/geth --http --http.api web3,eth,debug,personal,net --vmdebug --datadir ~/Downloads/chaindata --dev --nodiscover console
+./build/bin/geth --http --http.api web3,eth,net --datadir ~/Downloads/chaindata --networkid 196790 --vmdebug --dev --nat extip:35.209.100.125
+./build/bin/geth --datadir ~/Downloads/chaindata --networkid 196790 --nat extip:35.209.100.125
+
+./build/bin/geth account new --datadir ~/chaindata
