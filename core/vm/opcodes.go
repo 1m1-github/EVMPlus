@@ -210,13 +210,13 @@ const (
 
 // 0xd0 range - decimal float ops.
 const (
-	DECADD  OpCode = 0xd0
-	DECNEG  OpCode = 0xd1
-	DECMUL  OpCode = 0xd2
-	DECINV  OpCode = 0xd3
-	DECEXP  OpCode = 0xd4
-	DECLOG2 OpCode = 0xd5
-	DECSIN  OpCode = 0xd6
+	DECADD OpCode = 0xd0
+	DECNEG OpCode = 0xd1
+	DECMUL OpCode = 0xd2
+	DECINV OpCode = 0xd3
+	DECEXP OpCode = 0xd4
+	DECLN  OpCode = 0xd5
+	DECSIN OpCode = 0xd6
 )
 
 // 0xf0 range - closures.
@@ -400,7 +400,7 @@ var opCodeToString = map[OpCode]string{
 	DECMUL: "DECMUL",
 	DECINV: "DECINV",
 	DECEXP: "DECEXP",
-	DECLOG2: "DECLOG2",
+	DECLN:  "DECLN",
 	DECSIN: "DECSIN",
 
 	// 0xf0 range - closures.
@@ -426,23 +426,23 @@ func (op OpCode) String() string {
 }
 
 var stringToOp = map[string]OpCode{
-	"STOP":       STOP,
-	"ADD":        ADD,
-	"MUL":        MUL,
-	"SUB":        SUB,
-	"DIV":        DIV,
-	"SDIV":       SDIV,
-	"MOD":        MOD,
-	"SMOD":       SMOD,
-	"EXP":        EXP,
-	"NOT":        NOT,
-	"LT":         LT,
-	"GT":         GT,
-	"SLT":        SLT,
-	"SGT":        SGT,
-	"EQ":         EQ,
-	"ISZERO":     ISZERO,
-	"SIGNEXTEND": SIGNEXTEND,
+	"STOP":           STOP,
+	"ADD":            ADD,
+	"MUL":            MUL,
+	"SUB":            SUB,
+	"DIV":            DIV,
+	"SDIV":           SDIV,
+	"MOD":            MOD,
+	"SMOD":           SMOD,
+	"EXP":            EXP,
+	"NOT":            NOT,
+	"LT":             LT,
+	"GT":             GT,
+	"SLT":            SLT,
+	"SGT":            SGT,
+	"EQ":             EQ,
+	"ISZERO":         ISZERO,
+	"SIGNEXTEND":     SIGNEXTEND,
 	"AND":            AND,
 	"OR":             OR,
 	"XOR":            XOR,
@@ -566,13 +566,13 @@ var stringToOp = map[string]OpCode{
 	"LOG2":           LOG2,
 	"LOG3":           LOG3,
 	"LOG4":           LOG4,
-	"DECADD": 		  DECADD,
-	"DECNEG": 		  DECNEG,
-	"DECMUL": 		  DECMUL,
-	"DECINV": 		  DECINV,
-	"DECEXP": 		  DECEXP,
-	"DECLOG2": 		  DECLOG2,
-	"DECSIN": 		  DECSIN,
+	"DECADD":         DECADD,
+	"DECNEG":         DECNEG,
+	"DECMUL":         DECMUL,
+	"DECINV":         DECINV,
+	"DECEXP":         DECEXP,
+	"DECLN":          DECLN,
+	"DECSIN":         DECSIN,
 	"CREATE":         CREATE,
 	"CREATE2":        CREATE2,
 	"CALL":           CALL,

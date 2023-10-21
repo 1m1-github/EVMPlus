@@ -1,30 +1,30 @@
 ## EVM+
 
-Add decimal math to the EVM.
+Add decimal math to the EVM  
 
-### Decimal256
+### Decimal
 
-A decimal defined as $c * 10^q$
+A Decimal defined as $c * 10^q$ (as a golang `struct`)
 
 with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpreted as `int256` (via twos complement).
 
 ### OPCODE defs
 
-Add OPCODES: DECADD, DECNEG , DECMUL, DECINV, DECEXP, DECLOG2, DECSIN
+Add OPCODES: DECADD, DECNEG , DECMUL, DECINV, DECEXP, DECLN, DECSIN
 
 DECADD  a + b  OpCode = 0xd0  (ac, aq, bc, bq, precision) -> (cc, cq)  
 DECNEG  -a  OpCode = 0xd1  (ac, aq) -> (bc, bq)  
 DECMUL  a * b  OpCode = 0xd2  (ac, aq, bc, bq, precision) -> (cc, cq)  
 DECINV  1/a  OpCode = 0xd3  (ac, aq, precision) -> (bc, bq)  // precision = # digits  
 DECEXP  exp(a)  OpCode = 0xd4  (ac, aq, precision, steps) -> (bc, bq)  // precision = # num Taylor steps  
-DECLOG2 log2(a)  OpCode = 0xd5  (ac, aq, precision, steps) -> (bc, bq)  // precision = # digits  
+DECLN ln(a)  OpCode = 0xd5  (ac, aq, precision, steps) -> (bc, bq)  // precision = # digits  
 DECSIN  sin(a)  OpCode = 0xd6  (ac, aq, precision, steps) -> (bc, bq)  // precision = # num Taylor steps  
 
 ### derived functions
 
 in the smart contract code (or as precompiled smart contracts), we can easily get the following functions:
 
-a^b = POW(a, b) = EXP(b * LOG2(a) * LN(2)) // LN(2) is a constant added by the user to desired precision  
+a^b = POW(a, b) = EXP(b * LN(a))  
 COS(a) = SIN(TAU/4 - a) // TAU is a constant added by the user to desired precision  
 TAN(a) = SIN(a) / COS(a)  
 ...
@@ -32,12 +32,11 @@ TAN(a) = SIN(a) / COS(a)
 ### implementation
 
 1. define DECADD, DECNEG , DECMUL, DECINV
-2. DECEXP, DECSIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
-3. DECLOG2 using a binary algorithm - TODO try continued fractions for LN; LN would be more natural to pair with EXP, but LN Taylor only converges in small interval, would need transformation; might still be better
+2. DECEXP, DECLN, DECSIN as a Taylor series expansion, such that, given a target precision, the calculations required are deterministic
 
 ### use cases
 
-lots of scientific, mathematical, financial, digital art calculations require universal functions such as EXP, LOG2, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
+lots of scientific, mathematical, financial, digital art calculations require universal functions such as EXP, LN, SIN. the ability to calculate a^b is considered so basic, that even high school scientific calculators include it. in mathematical finance e.g., going from annualized volatility to daily volatility requires taking the 16th root (a^(1/16)).
 
 these new capabilities will invite large universes of apps into Ethereum.
 
@@ -62,9 +61,9 @@ DECADD 75
 DECNEG 30
 DECMUL 60
 DECINV 75
-DECEXP 100+100*precision
-DECLOG2 200+200*precision
-DECSIN 100+100*precision
+DECEXP 100+100*steps
+DECLN 100+100*steps
+DECSIN 100+100*steps
 
 the above values fluctuate in benchmark testing; it would make sense to have more tests to determine conservative gas costs
 
@@ -80,14 +79,14 @@ adding the ability to represent any decimal value precisely and do calculations 
 
 1. run private EVM network from local geth
 2. add DECADD, DECNEG , DECMUL, DECINV
-3. add DECEXP, DECLOG2, DECSIN
+3. add DECEXP, DECLN, DECSIN
 4. workout, test and analyze gas correctly
 5. write example smart contracts
 6. write EIP
 
 ### *virtual* machine
 
-the EVM is a virtual machine and thereby not restricted by hardware. usually, assembly languages provide OPCODES that are basic due to the basic and binary nature of hardware. in a virtual machine, we have no such limitations and nothing stops us from adding complex OPCODES like EXP and LOG. at the same time, we do not want to clutter the OPCODES library. EXP and LOG however are universal functions that open the path to: powers, trigonometry, integrals, differential equations, machine learning, etc.
+the EVM is a virtual machine and thereby not restricted by hardware. usually, assembly languages provide OPCODES that are basic due to the basic and binary nature of hardware. in a virtual machine, we have no such limitations and nothing stops us from adding complex OPCODES like EXP and LN. at the same time, we do not want to clutter the OPCODES library. EXP and LN however are universal functions that open the path to: powers, trigonometry, integrals, differential equations, machine learning, etc.
 
 ### arbitrary precision
 
