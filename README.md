@@ -53,21 +53,25 @@ testing the correctness of the math itself is trivial. we can achieve as high a 
 
 ### gas
 
-the opcodes will have as an input the desired target precion of the user. this will render the calculation deterministic. e.g. we know how many Taylor steps we need to achieve a certain precision.
+all the above OPCODEs are deterministic, hence the gas cost can be determined.
+at the same time, the calculations are complex and depend on the input.
 
-tested on a M1 macbook air
-based on ADD opcode having gas cost 3 (GasFastestStep), we get the following ca. gas costs using golang (runtime) benchmarks:
-DECADD 75
-DECNEG 30
-DECMUL 60
-DECINV 75
-DECEXP 100+100*steps
-DECLN 100+100*steps
-DECSIN 100+100*steps
+it is crucial to have accurate gas costs to avoid energy attacks on nodes.
 
-the above values fluctuate in benchmark testing; it would make sense to have more tests to determine conservative gas costs
+to this end, i have wrapped the underlying uint256 lib with gas accumulation (https://github.com/1m1-github/go-ethereum-plus/blob/main/core/vm/uint256_wrapped.go).
+this gives a bottom-up approach to calculating gas, by running the OPCODE.
 
-THE ABOVE ARE APPROXIMATIONS. EXACT VALUES CAN BE DERIVED THEORETICALLY. TODO
+because the EVM interprator expects the gas cost before actually running the OPCODE, we are running the OPCODE twice.
+the first run, identical to the second, is to get the bottom-up gas cost, which is then doubled to account for the actual run plus the gas calculation. on top, we add a fixed emulation cost.
+
+this gives an embedded gas calcuation, which works well for complex OPCODEs (see `gasEVMPlusEmulate` in https://github.com/1m1-github/go-ethereum-plus/blob/main/core/vm/gas_table.go).
+
+to remove the double gas, a future EIP would suggest the following:
+allow contract code to run whilst accumulating gas (at runtime) and panicking in case of limit breach, without requiring the cost in advance.
+this only works for contract code that is *local*, defined as code that only depends on the user input and the inner bytecode of the contract. local contracts cannot use state from the chain, nor make calls to other contracts. pure mathematical functions would e.g. be local contracts.
+local contracts are fully deterministic given the input, allowing a user to estimate gas costs offline (cheaper) and the EVM to panic at runtime, without knowing gas in advance.
+
+since the costs depend on the input, a fuzzing would give us close to the worst cases (TODO). 
 
 ### binary vs decimal
 
