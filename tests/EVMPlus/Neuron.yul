@@ -44,7 +44,7 @@ object "Neuron" {
                 let yc, yq := neuron(num_inputs, precision, steps)
                 
                 mstore(0, yc)
-                mstore(32, yc)
+                mstore(32, yq)
 
                 //debug
                 // sstore(12, num_inputs)
