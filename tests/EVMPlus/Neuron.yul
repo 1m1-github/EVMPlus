@@ -50,8 +50,10 @@ object "Neuron" {
                 // sstore(12, num_inputs)
                 // sstore(13, precision)
                 // sstore(14, steps)
-                // sstore(10, yc)
-                // sstore(11, yq)
+                // sstore(15, yc)
+                // sstore(16, yq)
+                log0(0, 32) // yc
+                log0(32, 32) // yq
                 //debug
 
                 return(0, 64)
