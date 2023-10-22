@@ -42,15 +42,17 @@ object "Neuron" {
                 
                 let num_inputs := div(num_inputs_times_64, 64) // expect full word per weight // 64 since two words make one decimal // 68: 4 for function selector
                 let yc, yq := neuron(num_inputs, precision, steps)
-                //debug
-                sstore(12, num_inputs)
-                sstore(13, precision)
-                sstore(14, steps)
-                sstore(10, yc)
-                sstore(11, yq)
-                //debug
+                
                 mstore(0, yc)
                 mstore(32, yc)
+
+                //debug
+                // sstore(12, num_inputs)
+                // sstore(13, precision)
+                // sstore(14, steps)
+                // sstore(10, yc)
+                // sstore(11, yq)
+                //debug
 
                 return(0, 64)
             }
@@ -69,10 +71,10 @@ object "Neuron" {
                 yc, yq := phi(xc, xq, precision, steps)
 
                 //debug
-                sstore(15, xc)
-                sstore(16, xq)
-                sstore(17, yc)
-                sstore(18, yq)
+                // sstore(15, xc)
+                // sstore(16, xq)
+                // sstore(17, yc)
+                // sstore(18, yq)
                 //debug
                 
             }
@@ -98,16 +100,16 @@ object "Neuron" {
                     total_c, total_q := dec_add(total_c, total_q, product_c, product_q, precision)
 
                     //debug
-                    sstore(add(mul(i,10),30), index_address)
-                    sstore(add(mul(i,10),31), memory_address)
-                    sstore(add(mul(i,10),32), input_c)
-                    sstore(add(mul(i,10),33), input_q)
-                    sstore(add(mul(i,10),34), weight_c)
-                    sstore(add(mul(i,10),35), weight_q)
-                    sstore(add(mul(i,10),36), product_c)
-                    sstore(add(mul(i,10),37), product_q)
-                    sstore(add(mul(i,10),38), total_c)
-                    sstore(add(mul(i,10),39), total_q)
+                    // sstore(add(mul(i,10),30), index_address)
+                    // sstore(add(mul(i,10),31), memory_address)
+                    // sstore(add(mul(i,10),32), input_c)
+                    // sstore(add(mul(i,10),33), input_q)
+                    // sstore(add(mul(i,10),34), weight_c)
+                    // sstore(add(mul(i,10),35), weight_q)
+                    // sstore(add(mul(i,10),36), product_c)
+                    // sstore(add(mul(i,10),37), product_q)
+                    // sstore(add(mul(i,10),38), total_c)
+                    // sstore(add(mul(i,10),39), total_q)
                     //debug
                 }
             }
