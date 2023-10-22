@@ -21,12 +21,12 @@ tmux new -s geth
 ./build/bin/geth account new --datadir ~/chaindata
 // add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --rpcapi eth,personal,net,admin,web3 --datadir ~/chaindata --networkid 196790 --port 30313 --nat extip:35.209.100.125
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --nat extip:35.209.100.125
 
 // remember to open HTTP port, any other?
 
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
-enr:-KO4QAHtFu3-uVxR29yZAcfFxbOfGQCVDBz4Ld5BHSAMN6Mwe_jCO_JGl0VZ6GFSJk70T99JmBY0Wq5z_x70IWzUY8GGAYtU7X0Ug2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQPTdT-sDAaR-zugRyw5nb6AFApvJND81gu1zmlDp2fi-oRzbmFwwIN0Y3CCdmmDdWRwgnZp
+enr:-KO4QFFzqcNw-MmlNGkhVzUxLnrKjofxJkMQ4OMYHgAMoRXWcLsxORD6ZQdEaf8taOSXHZ3QZLt7ytIq_LntSB3kuheGAYtU_c0Wg2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQJcLOQyM1uEO4XA7ud1oNfJk2ZduzNkzX6m1ImVjjqes4RzbmFwwIN0Y3CCdmmDdWRwgnZp
 
 // write password from account new step into file
 echo "password" >> ~/chaindata/password.txt
