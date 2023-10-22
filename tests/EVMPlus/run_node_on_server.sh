@@ -19,7 +19,15 @@ make all
 tmux new -s bootnode
 
 ./build/bin/bootnode --genkey=boot.key
-./build/bin/bootnode --nodekey=boot.key
+./build/bin/bootnode --nodekey=boot.key -addr :30313
+
+// above gives this:
+export ENODE=enode://b5576d7ca1a7960a661a6e9c7e350fd7db9b6a70d4fefb8ac9c1c530023ecbfe2627796f6db828ee126d548b02395a9c258cc02b05c5920753e80a2467c98c16@127.0.0.1:0?discport=30313
+
+// need new terminal
+tmux new -s miner
+
+./build/bin/geth --datadir ~/chaindata --bootnodes $ENODE --mine --miner.etherbase 0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e
 
 ./build/bin/geth account new --datadir ~/chaindata
 // add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
