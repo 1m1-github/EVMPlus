@@ -29,6 +29,13 @@ tmux new -s miner
 
 ./build/bin/geth --datadir ~/chaindata --bootnodes $ENODE --mine --miner.etherbase 0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e
 
+// 
+tmux new -s geth
+
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --http --http.corsdomain '*' --ws --ws.origins '*' --allow-insecure-unlock --unlock 0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e --mine
+--miner.etherbase=0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e
+
+
 ./build/bin/geth account new --datadir ~/chaindata
 // add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
