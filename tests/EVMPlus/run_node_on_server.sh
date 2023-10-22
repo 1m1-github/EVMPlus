@@ -14,9 +14,12 @@ source .profile
 
 git clone https://github.com/1m1-github/go-ethereum-plus.git
 cd go-ethereum-plus
-make geth
+make all
 
-tmux new -s geth
+tmux new -s bootnode
+
+./build/bin/bootnode --genkey=boot.key
+./build/bin/bootnode --nodekey=boot.key
 
 ./build/bin/geth account new --datadir ~/chaindata
 // add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
