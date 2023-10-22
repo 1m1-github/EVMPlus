@@ -28,17 +28,16 @@ tmux new -s geth
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
 enr:-KO4QFFzqcNw-MmlNGkhVzUxLnrKjofxJkMQ4OMYHgAMoRXWcLsxORD6ZQdEaf8taOSXHZ3QZLt7ytIq_LntSB3kuheGAYtU_c0Wg2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQJcLOQyM1uEO4XA7ud1oNfJk2ZduzNkzX6m1ImVjjqes4RzbmFwwIN0Y3CCdmmDdWRwgnZp
 
-// write password from account new step into file
-echo "password" >> ~/chaindata/password.txt
-./build/bin/geth --unlock 0xa26c76a509795d921539c189c139e870666553a7 --password ~/chaindata/password.txt attach ~/chaindata/geth.ipc
-
-// send gas to friends
-eth.sendTransaction({from: eth.accounts[0], to: "0xd442f325d8B7491029417b87607e35DA9A8F4619", value: 55})
-
 // member node steps
 
 ./build/bin/geth account new --datadir ~/chaindata
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --bootnodes enr:-KO4QAHtFu3-uVxR29yZAcfFxbOfGQCVDBz4Ld5BHSAMN6Mwe_jCO_JGl0VZ6GFSJk70T99JmBY0Wq5z_x70IWzUY8GGAYtU7X0Ug2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQPTdT-sDAaR-zugRyw5nb6AFApvJND81gu1zmlDp2fi-oRzbmFwwIN0Y3CCdmmDdWRwgnZp
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --http --http.api 'personal,eth,net,web3' --bootnodes enr:-KO4QFFzqcNw-MmlNGkhVzUxLnrKjofxJkMQ4OMYHgAMoRXWcLsxORD6ZQdEaf8taOSXHZ3QZLt7ytIq_LntSB3kuheGAYtU_c0Wg2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQJcLOQyM1uEO4XA7ud1oNfJk2ZduzNkzX6m1ImVjjqes4RzbmFwwIN0Y3CCdmmDdWRwgnZp
 ./build/bin/geth attach ~/chaindata/geth.ipc
 
+// write password from account new step into file
+echo "password" >> ~/chaindata/password.txt
+./build/bin/geth --unlock 0xb316c8ca80e0dce73f3a81338ed97f31fe0a31eb --password ~/chaindata/password.txt attach ~/chaindata/geth.ipc
+
+// send gas to friends
+eth.sendTransaction({from: eth.accounts[0], to: "0xd442f325d8B7491029417b87607e35DA9A8F4619", value: 55})
