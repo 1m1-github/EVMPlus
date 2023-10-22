@@ -43,10 +43,10 @@ lots of scientific, mathematical, financial, digital art calculations require un
 
 these new capabilities will invite large universes of apps into Ethereum.
 
-we will (time permitting) implement two example use cases:
+two example, functional use cases:
 
 1. Black-Scholes ~ basic formula to value options risk neutrally (https://github.com/1m1-github/go-ethereum-plus/blob/main/tests/EVMPlus/BlackScholes.yul)
-2. MLP ~ basic neural network
+2. Neuron ~ sigmoid activated single neuron (https://github.com/1m1-github/EVMPlus/blob/main/tests/EVMPlus/Neuron.yul)
 
 generally, with these OPCODES, users can solve integrals, diff. equations, etc.
 

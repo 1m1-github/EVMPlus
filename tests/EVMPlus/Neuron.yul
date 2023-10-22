@@ -1,5 +1,8 @@
 // solc --evm-version london --strict-assembly Neuron.yul >> Neuron.txt
 
+// user can set_weights any number of (decimal) weights
+// user can run the Neuron, outputting sigmoid of the weighted sum of inputs
+
 object "Neuron" {
     code {
         datacopy(0, dataoffset("runtime"), datasize("runtime"))
@@ -70,7 +73,7 @@ object "Neuron" {
 
             function neuron(num_inputs, precision, steps) -> yc, yq {
                 let xc, xq := weighted_sum(num_inputs, precision, steps)
-                yc, yq := phi(xc, xq, precision, steps)
+                yc, yq := sigmoid(xc, xq, precision, steps)
 
                 //debug
                 // sstore(15, xc)
@@ -116,7 +119,7 @@ object "Neuron" {
                 }
             }
 
-            function phi(xc, xq, precision, steps) -> yc, yq {
+            function sigmoid(xc, xq, precision, steps) -> yc, yq {
                 let mxc, mxq := dec_neg(xc, xq) // -x
                 let emxc, emxq := dec_exp(mxc, mxq, precision, steps) // exp(-x)
                 let oemxc, oemxq := dec_add(1, 0, emxc, emxq, precision) // 1 + exp(-x)
