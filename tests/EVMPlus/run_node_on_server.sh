@@ -1,3 +1,5 @@
+// server bootnode steps
+
 sudo apt update
 sudo apt install git -y
 sudo apt install make -y
@@ -19,15 +21,20 @@ tmux new -s geth
 ./build/bin/geth account new --datadir ~/chaindata
 // add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --datadir ~/chaindata --networkid 196790 --nat extip:35.209.100.125
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --nat extip:35.209.100.125
 
 // remember to open HTTP port, any other?
 
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
 enr:-KO4QMDjuzf4kyaxHbu6erV9l6ekJHKTUGCoK5nmAryLsluSAwWYbpXtJNocI6T8ePAivTTwL7e2zSnHpvqMSSDdzOuGAYtU32_5g2V0aMfGhLFOWi2AgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQP-8pqTWte8Djic2jDtFQ_iwB9NTUw3crn-IV4YCpUvDoRzbmFwwIN0Y3CCdl-DdWRwgnZf
 
-./build/bin/geth init --datadir ~/Downloads/chaindata1 ./tests/EVMPlus/genesis.json
-./build/bin/geth --datadir ~/Downloads/chaindata1 --networkid 196790 --port 30303 --bootnodes enr:-KO4QCnVVlXYZrs6y8EIOjUlR6pqtO0BAkLxKQxvW3B72muNCmbpnqrXx8KOGcoBsyWsiCJW9h32uTe7SHMmejkFRG2GAYtUsPIFg2V0aMfGhDgzR7mAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQNU9riSVzaP3AwzmhA3-GH78YP7TTFwo_KP70rB5BWZJIRzbmFwwIN0Y3CCdl-DdWRwgnZf --authrpc.port 8551
-./build/bin/geth --datadir ~/Downloads/chaindata2 --networkid 196790 --port 30304 --bootnodes enr:-KO4QCnVVlXYZrs6y8EIOjUlR6pqtO0BAkLxKQxvW3B72muNCmbpnqrXx8KOGcoBsyWsiCJW9h32uTe7SHMmejkFRG2GAYtUsPIFg2V0aMfGhDgzR7mAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQNU9riSVzaP3AwzmhA3-GH78YP7TTFwo_KP70rB5BWZJIRzbmFwwIN0Y3CCdl-DdWRwgnZf --authrpc.port 8552
+// member node steps
 
-./build/bin/geth attach ~/Downloads/chaindata1/geth.ipc
+./build/bin/geth init --datadir ~/Downloads/chaindata ./tests/EVMPlus/genesis.json
+./build/bin/geth account new --datadir ~/Downloads/chaindata
+./build/bin/geth --datadir ~/Downloads/chaindata --networkid 196790 --port 30303 --bootnodes enr:-KO4QMDjuzf4kyaxHbu6erV9l6ekJHKTUGCoK5nmAryLsluSAwWYbpXtJNocI6T8ePAivTTwL7e2zSnHpvqMSSDdzOuGAYtU32_5g2V0aMfGhLFOWi2AgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQP-8pqTWte8Djic2jDtFQ_iwB9NTUw3crn-IV4YCpUvDoRzbmFwwIN0Y3CCdl-DdWRwgnZf --authrpc.port 8551
+./build/bin/geth attach ~/Downloads/chaindata/geth.ipc
+
+--unlock 0xC1B2c0dFD381e6aC08f34816172d6343Decbb12b --password node1/password.txt
+personal.unlockAccount(eth.accounts[0], "", 300)
+eth.sendTransaction({from: eth.accounts[0], to: "0xb3360a6ef50f5a540c5d6aa99fe5d2467a1d342a", value: 55})
