@@ -24,7 +24,7 @@ tmux new -s geth
 // remember to open HTTP port, any other?
 
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
-enr:-KO4QCnVVlXYZrs6y8EIOjUlR6pqtO0BAkLxKQxvW3B72muNCmbpnqrXx8KOGcoBsyWsiCJW9h32uTe7SHMmejkFRG2GAYtUsPIFg2V0aMfGhDgzR7mAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQNU9riSVzaP3AwzmhA3-GH78YP7TTFwo_KP70rB5BWZJIRzbmFwwIN0Y3CCdl-DdWRwgnZf
+enr:-KO4QMDjuzf4kyaxHbu6erV9l6ekJHKTUGCoK5nmAryLsluSAwWYbpXtJNocI6T8ePAivTTwL7e2zSnHpvqMSSDdzOuGAYtU32_5g2V0aMfGhLFOWi2AgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQP-8pqTWte8Djic2jDtFQ_iwB9NTUw3crn-IV4YCpUvDoRzbmFwwIN0Y3CCdl-DdWRwgnZf
 
 ./build/bin/geth init --datadir ~/Downloads/chaindata1 ./tests/EVMPlus/genesis.json
 ./build/bin/geth --datadir ~/Downloads/chaindata1 --networkid 196790 --port 30303 --bootnodes enr:-KO4QCnVVlXYZrs6y8EIOjUlR6pqtO0BAkLxKQxvW3B72muNCmbpnqrXx8KOGcoBsyWsiCJW9h32uTe7SHMmejkFRG2GAYtUsPIFg2V0aMfGhDgzR7mAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQNU9riSVzaP3AwzmhA3-GH78YP7TTFwo_KP70rB5BWZJIRzbmFwwIN0Y3CCdl-DdWRwgnZf --authrpc.port 8551
