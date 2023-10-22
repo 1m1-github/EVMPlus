@@ -16,6 +16,8 @@ make geth
 
 tmux new -s geth
 
+./build/bin/geth account new --datadir ~/chaindata
+// add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
 ./build/bin/geth --http --http.api web3,eth,net --datadir ~/chaindata --networkid 196790 --nat extip:35.209.100.125
 
@@ -26,4 +28,3 @@ tmux new -s geth
 ./build/bin/geth --http --http.api web3,eth,net --datadir ~/Downloads/chaindata --networkid 196790 --vmdebug --dev --nat extip:35.209.100.125
 ./build/bin/geth --datadir ~/Downloads/chaindata --networkid 196790 --nat extip:35.209.100.125
 
-./build/bin/geth account new --datadir ~/chaindata
