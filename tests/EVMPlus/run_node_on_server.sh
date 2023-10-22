@@ -21,12 +21,15 @@ tmux new -s geth
 ./build/bin/geth account new --datadir ~/chaindata
 // add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --nat extip:35.209.100.125
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --nat extip:35.209.100.125 --unlock 0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e --mine
 
 // remember to open HTTP port, any other?
 
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
 enr:-KO4QADz4jFPdEhiGCd7NRkYqF4E_RZVWJzWiyQh33NrB-IJBzzsSy22EmyqcLW9uZH8bpA1DqpjQtsLvUR0eS7yrZiGAYtVJttTg2V0aMfGhKkY9ZOAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQMbb-flS4GLsP7tkVEDFltsiJnKszXtgKU3uVRh4EkJ34RzbmFwwIN0Y3CCdmmDdWRwgnZp
+
+// cliqiue mining
+./build/bin/geth --unlock 0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e --mine
 
 // member node steps
 
