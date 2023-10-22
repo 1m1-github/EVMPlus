@@ -1,0 +1,697 @@
+
+======= Neuron.yul (EVM) =======
+
+Pretty printed source:
+object "Neuron" {
+    code {
+        datacopy(0, dataoffset("runtime"), datasize("runtime"))
+        return(0, datasize("runtime"))
+    }
+    object "runtime" {
+        code {
+            switch selector()
+            case 0x61d311e8 {
+                let num_weights := div(calldatasize(), 64)
+                for { let i := 0 } lt(i, num_weights) { i := add(i, 32) }
+                {
+                    let weight := calldataload(i)
+                    sstore(i, weight)
+                }
+            }
+            case 0xc5b5bb77 {
+                let precision := calldataload(0)
+                let steps := calldataload(32)
+                let num_inputs_times_64 := sub(calldatasize(), 68)
+                calldatacopy(0, 68, num_inputs_times_64)
+                let yc, yq := neuron(num_inputs_times_64, precision, steps)
+                mstore(0, yc)
+                mstore(32, yc)
+                return(0, 64)
+            }
+            default { revert(0, 0) }
+            function selector() -> s
+            {
+                s := div(calldataload(0), 0x100000000000000000000000000000000000000000000000000000000)
+            }
+            function neuron(num_inputs_times_64, precision, steps) -> yc, yq
+            {
+                let xc, xq := weighted_sum(num_inputs_times_64, precision, steps)
+                yc, yq := phi(xc, xq)
+            }
+            function weighted_sum(num_inputs_times_64, precision, steps) -> total_c, total_q
+            {
+                total_c := 0
+                total_q := 0
+                for { let i := 0 } lt(i, num_inputs_times_64) { i := add(i, 64) }
+                {
+                    let weight_c := sload(i)
+                    let weight_q := sload(add(i, 32))
+                    let input_c := mload(i)
+                    let input_q := mload(add(i, 32))
+                    let product_c, product_q := dec_mul(weight_c, weight_q, input_c, input_q, precision)
+                    total_c, total_q := dec_add(total_c, total_q, product_c, product_q, precision)
+                }
+            }
+            function phi(xc, xq) -> yc, yq
+            {
+                let precision := mload(0)
+                let steps := mload(32)
+                let mxc, mxq := dec_neg(xc, xq)
+                let emxc, emxq := dec_exp(mxc, mxq, precision, steps)
+                let oemxc, oemxq := dec_add(1, 0, emxc, emxq, precision)
+                yc, yq := dec_inv(oemxc, oemxq, precision)
+            }
+            function dec_add(ac, aq, bc, bq, precision) -> cc, cq
+            {
+                cc, cq := verbatim_5i_2o("\xd0", ac, aq, bc, bq, precision)
+            }
+            function dec_neg(ac, aq) -> bc, bq
+            {
+                bc, bq := verbatim_2i_2o("\xd1", ac, aq)
+            }
+            function dec_mul(ac, aq, bc, bq, precision) -> cc, cq
+            {
+                cc, cq := verbatim_5i_2o("\xd2", ac, aq, bc, bq, precision)
+            }
+            function dec_inv(ac, aq, precision) -> bc, bq
+            {
+                bc, bq := verbatim_3i_2o("\xd3", ac, aq, precision)
+            }
+            function dec_exp(ac, aq, precision, steps) -> bc, bq
+            {
+                bc, bq := verbatim_4i_2o("\xd4", ac, aq, precision, steps)
+            }
+            function dec_ln(ac, aq, precision, steps) -> bc, bq
+            {
+                bc, bq := verbatim_4i_2o("\xd5", ac, aq, precision, steps)
+            }
+            function dec_sin(ac, aq, precision, steps) -> bc, bq
+            {
+                bc, bq := verbatim_4i_2o("\xd6", ac, aq, precision, steps)
+            }
+            function dec_sub(ac, aq, bc, bq, precision) -> cc, cq
+            {
+                cc, cq := dec_neg(bc, bq)
+                cc, cq := dec_add(ac, aq, cc, cq, precision)
+            }
+            function dec_div(ac, aq, bc, bq, precision) -> cc, cq
+            {
+                cc, cq := dec_inv(bc, bq, precision)
+                cc, cq := dec_mul(ac, aq, cc, cq, precision)
+            }
+            function pow(ac, aq, bc, bq, precision, steps) -> cc, cq
+            {
+                cc, cq := dec_ln(ac, aq, precision, steps)
+                cc, cq := dec_mul(bc, bq, cc, cq, precision)
+                cc, cq := dec_exp(cc, cq, precision, steps)
+            }
+            function dec_sqrt(ac, aq, precision, steps) -> bc, bq
+            {
+                let MINUS_ONE := 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+                bc, bq := pow(ac, aq, 5, MINUS_ONE, precision, steps)
+            }
+            function dec_sqr(ac, aq, precision) -> bc, bq
+            {
+                bc, bq := dec_mul(ac, aq, ac, aq, precision)
+            }
+        }
+    }
+}
+
+
+Binary representation:
+6101d76100106000396101d76000f3fe610007610078565b6361d311e881146100225763c5b5bb77811461004957600080fd5b6040360460005b8181101561004257803580825550602081019050610029565b5050610072565b600035602035604436038060446000376100648284836100a1565b816000528160205260406000f35b506101d6565b60007c010000000000000000000000000000000000000000000000000000000060003504905090565b6000806100af8585856100c7565b6100b98183610123565b935093505050935093915050565b600080600091506000905060005b8381101561011a5780546020820154825160208401516100f88982848688610197565b6101058b82848b8d61016f565b985098505050505050506040810190506100d5565b50935093915050565b6000806000516020516101368686610186565b610142838583856101c1565b6101518682846000600161016f565b61015c8882846101ae565b9950995050505050505050509250929050565b6000808686868686d0915091509550959350505050565b6000808383d1915091509250929050565b6000808686868686d2915091509550959350505050565b600080848484d391509150935093915050565b60008085858585d49150915094509492505050565b
+
+Text representation:
+    /* "Neuron.yul":145:164   */
+  dataSize(sub_0)
+    /* "Neuron.yul":122:143   */
+  dataOffset(sub_0)
+    /* "Neuron.yul":119:120   */
+  0x00
+    /* "Neuron.yul":110:165   */
+  codecopy
+    /* "Neuron.yul":184:203   */
+  dataSize(sub_0)
+    /* "Neuron.yul":181:182   */
+  0x00
+    /* "Neuron.yul":174:204   */
+  return
+stop
+
+sub_0: assembly {
+        /* "Neuron.yul":383:393   */
+      tag_17
+      tag_1
+      jump	// in
+    tag_17:
+        /* "Neuron.yul":461:471   */
+      0x61d311e8
+        /* "Neuron.yul":456:801   */
+      dup2
+      eq
+      tag_19
+      jumpi
+        /* "Neuron.yul":969:979   */
+      0xc5b5bb77
+        /* "Neuron.yul":964:1527   */
+      dup2
+      eq
+      tag_20
+      jumpi
+        /* "Neuron.yul":1576:1577   */
+      0x00
+        /* "Neuron.yul":1573:1574   */
+      dup1
+        /* "Neuron.yul":1566:1578   */
+      revert
+        /* "Neuron.yul":456:801   */
+    tag_19:
+        /* "Neuron.yul":529:531   */
+      0x40
+        /* "Neuron.yul":513:527   */
+      calldatasize
+        /* "Neuron.yul":509:532   */
+      div
+        /* "Neuron.yul":621:622   */
+      0x00
+        /* "Neuron.yul":606:787   */
+    tag_21:
+        /* "Neuron.yul":631:642   */
+      dup2
+        /* "Neuron.yul":628:629   */
+      dup2
+        /* "Neuron.yul":625:643   */
+      lt
+        /* "Neuron.yul":606:787   */
+      iszero
+      tag_23
+      jumpi
+        /* "Neuron.yul":729:730   */
+      dup1
+        /* "Neuron.yul":716:731   */
+      calldataload
+        /* "Neuron.yul":762:768   */
+      dup1
+        /* "Neuron.yul":759:760   */
+      dup3
+        /* "Neuron.yul":752:769   */
+      sstore
+        /* "Neuron.yul":680:787   */
+      pop
+        /* "Neuron.yul":658:660   */
+      0x20
+        /* "Neuron.yul":655:656   */
+      dup2
+        /* "Neuron.yul":651:661   */
+      add
+        /* "Neuron.yul":646:661   */
+      swap1
+      pop
+        /* "Neuron.yul":606:787   */
+      jump(tag_21)
+    tag_23:
+        /* "Neuron.yul":610:624   */
+      pop
+        /* "Neuron.yul":472:801   */
+      pop
+        /* "Neuron.yul":456:801   */
+      jump(tag_18)
+        /* "Neuron.yul":964:1527   */
+    tag_20:
+        /* "Neuron.yul":1028:1029   */
+      0x00
+        /* "Neuron.yul":1015:1030   */
+      calldataload
+        /* "Neuron.yul":1073:1075   */
+      0x20
+        /* "Neuron.yul":1060:1076   */
+      calldataload
+        /* "Neuron.yul":1157:1159   */
+      0x44
+        /* "Neuron.yul":1141:1155   */
+      calldatasize
+        /* "Neuron.yul":1137:1160   */
+      sub
+        /* "Neuron.yul":1298:1317   */
+      dup1
+        /* "Neuron.yul":1294:1296   */
+      0x44
+        /* "Neuron.yul":1291:1292   */
+      0x00
+        /* "Neuron.yul":1278:1318   */
+      calldatacopy
+        /* "Neuron.yul":1376:1421   */
+      tag_24
+        /* "Neuron.yul":1415:1420   */
+      dup3
+        /* "Neuron.yul":1404:1413   */
+      dup5
+        /* "Neuron.yul":1383:1402   */
+      dup4
+        /* "Neuron.yul":1376:1421   */
+      tag_2
+      jump	// in
+    tag_24:
+        /* "Neuron.yul":1448:1450   */
+      dup2
+        /* "Neuron.yul":1445:1446   */
+      0x00
+        /* "Neuron.yul":1438:1451   */
+      mstore
+        /* "Neuron.yul":1479:1481   */
+      dup2
+        /* "Neuron.yul":1475:1477   */
+      0x20
+        /* "Neuron.yul":1468:1482   */
+      mstore
+        /* "Neuron.yul":1510:1512   */
+      0x40
+        /* "Neuron.yul":1507:1508   */
+      0x00
+        /* "Neuron.yul":1500:1513   */
+      return
+        /* "Neuron.yul":376:1592   */
+    tag_18:
+      pop
+        /* "Neuron.yul":1605:1748   */
+      jump(tag_25)
+    tag_1:
+        /* "Neuron.yul":1628:1629   */
+      0x00
+        /* "Neuron.yul":1674:1733   */
+      0x0100000000000000000000000000000000000000000000000000000000
+        /* "Neuron.yul":1670:1671   */
+      0x00
+        /* "Neuron.yul":1657:1672   */
+      calldataload
+        /* "Neuron.yul":1653:1734   */
+      div
+        /* "Neuron.yul":1648:1734   */
+      swap1
+      pop
+        /* "Neuron.yul":1605:1748   */
+      swap1
+      jump	// out
+        /* "Neuron.yul":1872:2072   */
+    tag_2:
+        /* "Neuron.yul":1930:1932   */
+      0x00
+        /* "Neuron.yul":1934:1936   */
+      dup1
+        /* "Neuron.yul":1969:2020   */
+      tag_28
+        /* "Neuron.yul":2014:2019   */
+      dup6
+        /* "Neuron.yul":2003:2012   */
+      dup6
+        /* "Neuron.yul":1982:2001   */
+      dup6
+        /* "Neuron.yul":1969:2020   */
+      tag_3
+      jump	// in
+    tag_28:
+        /* "Neuron.yul":2047:2058   */
+      tag_29
+        /* "Neuron.yul":2055:2057   */
+      dup2
+        /* "Neuron.yul":2051:2053   */
+      dup4
+        /* "Neuron.yul":2047:2058   */
+      tag_4
+      jump	// in
+    tag_29:
+        /* "Neuron.yul":2037:2058   */
+      swap4
+      pop
+      swap4
+      pop
+        /* "Neuron.yul":1937:2072   */
+      pop
+      pop
+        /* "Neuron.yul":1872:2072   */
+      swap4
+      pop
+      swap4
+      swap2
+      pop
+      pop
+      jump	// out
+        /* "Neuron.yul":2086:2762   */
+    tag_3:
+        /* "Neuron.yul":2150:2157   */
+      0x00
+        /* "Neuron.yul":2159:2166   */
+      dup1
+        /* "Neuron.yul":2196:2197   */
+      0x00
+        /* "Neuron.yul":2185:2197   */
+      swap2
+      pop
+        /* "Neuron.yul":2225:2226   */
+      0x00
+        /* "Neuron.yul":2214:2226   */
+      swap1
+      pop
+        /* "Neuron.yul":2259:2260   */
+      0x00
+        /* "Neuron.yul":2244:2748   */
+    tag_31:
+        /* "Neuron.yul":2269:2288   */
+      dup4
+        /* "Neuron.yul":2266:2267   */
+      dup2
+        /* "Neuron.yul":2263:2289   */
+      lt
+        /* "Neuron.yul":2244:2748   */
+      iszero
+      tag_33
+      jumpi
+        /* "Neuron.yul":2370:2371   */
+      dup1
+        /* "Neuron.yul":2364:2372   */
+      sload
+        /* "Neuron.yul":2422:2424   */
+      0x20
+        /* "Neuron.yul":2419:2420   */
+      dup3
+        /* "Neuron.yul":2415:2425   */
+      add
+        /* "Neuron.yul":2409:2426   */
+      sload
+        /* "Neuron.yul":2469:2470   */
+      dup3
+        /* "Neuron.yul":2463:2471   */
+      mload
+        /* "Neuron.yul":2520:2522   */
+      0x20
+        /* "Neuron.yul":2517:2518   */
+      dup5
+        /* "Neuron.yul":2513:2523   */
+      add
+        /* "Neuron.yul":2507:2524   */
+      mload
+        /* "Neuron.yul":2574:2630   */
+      tag_34
+        /* "Neuron.yul":2620:2629   */
+      dup10
+        /* "Neuron.yul":2611:2618   */
+      dup3
+        /* "Neuron.yul":2602:2609   */
+      dup5
+        /* "Neuron.yul":2592:2600   */
+      dup7
+        /* "Neuron.yul":2582:2590   */
+      dup9
+        /* "Neuron.yul":2574:2630   */
+      tag_7
+      jump	// in
+    tag_34:
+        /* "Neuron.yul":2672:2730   */
+      tag_35
+        /* "Neuron.yul":2720:2729   */
+      dup12
+        /* "Neuron.yul":2709:2718   */
+      dup3
+        /* "Neuron.yul":2698:2707   */
+      dup5
+        /* "Neuron.yul":2689:2696   */
+      dup12
+        /* "Neuron.yul":2680:2687   */
+      dup14
+        /* "Neuron.yul":2672:2730   */
+      tag_5
+      jump	// in
+    tag_35:
+        /* "Neuron.yul":2652:2730   */
+      swap9
+      pop
+      swap9
+      pop
+        /* "Neuron.yul":2326:2748   */
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+        /* "Neuron.yul":2304:2306   */
+      0x40
+        /* "Neuron.yul":2301:2302   */
+      dup2
+        /* "Neuron.yul":2297:2307   */
+      add
+        /* "Neuron.yul":2292:2307   */
+      swap1
+      pop
+        /* "Neuron.yul":2244:2748   */
+      jump(tag_31)
+    tag_33:
+        /* "Neuron.yul":2248:2262   */
+      pop
+        /* "Neuron.yul":2086:2762   */
+      swap4
+      pop
+      swap4
+      swap2
+      pop
+      pop
+      jump	// out
+        /* "Neuron.yul":2776:3221   */
+    tag_4:
+        /* "Neuron.yul":2800:2802   */
+      0x00
+        /* "Neuron.yul":2804:2806   */
+      dup1
+        /* "Neuron.yul":2848:2849   */
+      0x00
+        /* "Neuron.yul":2842:2850   */
+      mload
+        /* "Neuron.yul":2886:2888   */
+      0x20
+        /* "Neuron.yul":2880:2889   */
+      mload
+        /* "Neuron.yul":2923:2938   */
+      tag_37
+        /* "Neuron.yul":2935:2937   */
+      dup7
+        /* "Neuron.yul":2931:2933   */
+      dup7
+        /* "Neuron.yul":2923:2938   */
+      tag_6
+      jump	// in
+    tag_37:
+        /* "Neuron.yul":2979:3014   */
+      tag_38
+        /* "Neuron.yul":3008:3013   */
+      dup4
+        /* "Neuron.yul":2997:3006   */
+      dup6
+        /* "Neuron.yul":2992:2995   */
+      dup4
+        /* "Neuron.yul":2987:2990   */
+      dup6
+        /* "Neuron.yul":2979:3014   */
+      tag_9
+      jump	// in
+    tag_38:
+        /* "Neuron.yul":3062:3098   */
+      tag_39
+        /* "Neuron.yul":3088:3097   */
+      dup7
+        /* "Neuron.yul":3082:3086   */
+      dup3
+        /* "Neuron.yul":3076:3080   */
+      dup5
+        /* "Neuron.yul":3073:3074   */
+      0x00
+        /* "Neuron.yul":3070:3071   */
+      0x01
+        /* "Neuron.yul":3062:3098   */
+      tag_5
+      jump	// in
+    tag_39:
+        /* "Neuron.yul":3140:3172   */
+      tag_40
+        /* "Neuron.yul":3162:3171   */
+      dup9
+        /* "Neuron.yul":3155:3160   */
+      dup3
+        /* "Neuron.yul":3148:3153   */
+      dup5
+        /* "Neuron.yul":3140:3172   */
+      tag_8
+      jump	// in
+    tag_40:
+        /* "Neuron.yul":3130:3172   */
+      swap10
+      pop
+      swap10
+      pop
+        /* "Neuron.yul":2807:3221   */
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+      pop
+        /* "Neuron.yul":2776:3221   */
+      swap3
+      pop
+      swap3
+      swap1
+      pop
+      jump	// out
+        /* "Neuron.yul":3296:3442   */
+    tag_5:
+        /* "Neuron.yul":3343:3345   */
+      0x00
+        /* "Neuron.yul":3347:3349   */
+      dup1
+        /* "Neuron.yul":3418:3427   */
+      dup7
+        /* "Neuron.yul":3414:3416   */
+      dup7
+        /* "Neuron.yul":3410:3412   */
+      dup7
+        /* "Neuron.yul":3406:3408   */
+      dup7
+        /* "Neuron.yul":3402:3404   */
+      dup7
+        /* "Neuron.yul":3378:3428   */
+      verbatimbytecode_d0
+        /* "Neuron.yul":3368:3428   */
+      swap2
+      pop
+      swap2
+      pop
+        /* "Neuron.yul":3296:3442   */
+      swap6
+      pop
+      swap6
+      swap4
+      pop
+      pop
+      pop
+      pop
+      jump	// out
+        /* "Neuron.yul":3478:3586   */
+    tag_6:
+        /* "Neuron.yul":3506:3508   */
+      0x00
+        /* "Neuron.yul":3510:3512   */
+      dup1
+        /* "Neuron.yul":3569:3571   */
+      dup4
+        /* "Neuron.yul":3565:3567   */
+      dup4
+        /* "Neuron.yul":3541:3572   */
+      verbatimbytecode_d1
+        /* "Neuron.yul":3531:3572   */
+      swap2
+      pop
+      swap2
+      pop
+        /* "Neuron.yul":3478:3586   */
+      swap3
+      pop
+      swap3
+      swap1
+      pop
+      jump	// out
+        /* "Neuron.yul":3625:3771   */
+    tag_7:
+        /* "Neuron.yul":3672:3674   */
+      0x00
+        /* "Neuron.yul":3676:3678   */
+      dup1
+        /* "Neuron.yul":3747:3756   */
+      dup7
+        /* "Neuron.yul":3743:3745   */
+      dup7
+        /* "Neuron.yul":3739:3741   */
+      dup7
+        /* "Neuron.yul":3735:3737   */
+      dup7
+        /* "Neuron.yul":3731:3733   */
+      dup7
+        /* "Neuron.yul":3707:3757   */
+      verbatimbytecode_d2
+        /* "Neuron.yul":3697:3757   */
+      swap2
+      pop
+      swap2
+      pop
+        /* "Neuron.yul":3625:3771   */
+      swap6
+      pop
+      swap6
+      swap4
+      pop
+      pop
+      pop
+      pop
+      jump	// out
+        /* "Neuron.yul":3810:3940   */
+    tag_8:
+        /* "Neuron.yul":3849:3851   */
+      0x00
+        /* "Neuron.yul":3853:3855   */
+      dup1
+        /* "Neuron.yul":3916:3925   */
+      dup5
+        /* "Neuron.yul":3912:3914   */
+      dup5
+        /* "Neuron.yul":3908:3910   */
+      dup5
+        /* "Neuron.yul":3884:3926   */
+      verbatimbytecode_d3
+        /* "Neuron.yul":3874:3926   */
+      swap2
+      pop
+      swap2
+      pop
+        /* "Neuron.yul":3810:3940   */
+      swap4
+      pop
+      swap4
+      swap2
+      pop
+      pop
+      jump	// out
+        /* "Neuron.yul":3984:4128   */
+    tag_9:
+        /* "Neuron.yul":4030:4032   */
+      0x00
+        /* "Neuron.yul":4034:4036   */
+      dup1
+        /* "Neuron.yul":4108:4113   */
+      dup6
+        /* "Neuron.yul":4097:4106   */
+      dup6
+        /* "Neuron.yul":4093:4095   */
+      dup6
+        /* "Neuron.yul":4089:4091   */
+      dup6
+        /* "Neuron.yul":4065:4114   */
+      verbatimbytecode_d4
+        /* "Neuron.yul":4055:4114   */
+      swap2
+      pop
+      swap2
+      pop
+        /* "Neuron.yul":3984:4128   */
+      swap5
+      pop
+      swap5
+      swap3
+      pop
+      pop
+      pop
+      jump	// out
+        /* "Neuron.yul":5633:5755   */
+    tag_25:
+}
+

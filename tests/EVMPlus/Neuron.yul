@@ -14,11 +14,11 @@ object "Neuron" {
             switch selector()
             
             // set_weights(int256[])
-            case 0x95ba71af {
-                let num_weights := calldatasize() / 64 // should be even // 64 since two words make one decimal
+            case 0x61d311e8 {
+                let num_weights := div(calldatasize(), 64) // should be even // 64 since two words make one decimal
                 for { let i := 0 } lt(i, num_weights) { i := add(i, 32) }
                 {
-                    weight := calldataload(i)
+                    let weight := calldataload(i)
                     sstore(i, weight)
                 }
             }
@@ -26,11 +26,11 @@ object "Neuron" {
             // will use as many input weights as input supplied
             // first two inputs are precision and steps
             // run(int256[])
-            case 0x95ba71af {
+            case 0xc5b5bb77 {
                 let precision := calldataload(0)
                 let steps := calldataload(32)
                 
-                num_inputs_times_64 := calldatasize() - 68 // expect full word per weight // 64 since two words make one decimal // 68: 4 for function selector
+                let num_inputs_times_64 := sub(calldatasize(), 68) // expect full word per weight // 64 since two words make one decimal // 68: 4 for function selector
                 calldatacopy(0, 68, num_inputs_times_64) // inputs
                 
                 let yc, yq := neuron(num_inputs_times_64, precision, steps)
@@ -54,24 +54,22 @@ object "Neuron" {
                 yc, yq := phi(xc, xq)
             }
 
-            function weighted_sum(num_inputs_times_64, precision, steps) -> yc, yq {
-                let total_c := 0
-                let total_q := 0
+            function weighted_sum(num_inputs_times_64, precision, steps) -> total_c, total_q {
+                total_c := 0
+                total_q := 0
 
                 for { let i := 0 } lt(i, num_inputs_times_64) { i := add(i, 64) }
                 {
                     let weight_c := sload(i)
-                    let weight_q := sload(i+32)
+                    let weight_q := sload(add(i, 32))
 
                     let input_c := mload(i)
-                    let input_q := mload(i+32)
+                    let input_q := mload(add(i, 32))
 
                     let product_c, product_q := dec_mul(weight_c, weight_q, input_c, input_q, precision)
 
                     total_c, total_q := dec_add(total_c, total_q, product_c, product_q, precision)
                 }
-
-                return total_c, total_q
             }
 
             function phi(xc, xq) -> yc, yq {
@@ -81,7 +79,7 @@ object "Neuron" {
                 let mxc, mxq := dec_neg(xc, xq) // -x
                 let emxc, emxq := dec_exp(mxc, mxq, precision, steps) // exp(-x)
                 let oemxc, oemxq := dec_add(1, 0, emxc, emxq, precision) // 1 + exp(-x)
-                let yc, yq := dec_inv(oemxc, oemxq, precision) // (1 + exp(-x))^(-1) = sigmoid(x)
+                yc, yq := dec_inv(oemxc, oemxq, precision) // (1 + exp(-x))^(-1) = sigmoid(x)
             }
 
 
