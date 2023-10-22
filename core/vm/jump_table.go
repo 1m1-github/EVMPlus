@@ -100,9 +100,6 @@ func newShanghaiInstructionSet() JumpTable {
 	instructionSet := newMergeInstructionSet()
 	enable3855(&instructionSet) // PUSH0 instruction
 	enable3860(&instructionSet) // Limit and meter initcode
-
-	enableEVMPlus(&instructionSet) // EVMPlus - for testing as local runs as Shanghai
-
 	return validate(instructionSet)
 }
 
@@ -123,9 +120,6 @@ func newLondonInstructionSet() JumpTable {
 	instructionSet := newBerlinInstructionSet()
 	enable3529(&instructionSet) // EIP-3529: Reduction in refunds https://eips.ethereum.org/EIPS/eip-3529
 	enable3198(&instructionSet) // Base fee opcode https://eips.ethereum.org/EIPS/eip-3198
-
-	enableEVMPlus(&instructionSet) // EVMPlus - for testing as local runs as Shanghai
-	
 	return validate(instructionSet)
 }
 
@@ -1064,6 +1058,8 @@ func newFrontierInstructionSet() JumpTable {
 			maxStack:   maxStack(1, 0),
 		},
 	}
+
+	enableEVMPlus(&tbl) // EVMPlus - added here for testing
 
 	// Fill all unassigned slots with opUndefined.
 	for i, entry := range tbl {
