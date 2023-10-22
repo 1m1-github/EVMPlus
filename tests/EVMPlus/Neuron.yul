@@ -16,10 +16,17 @@ object "Neuron" {
             // set_weights(int256[])
             case 0x61d311e8 {
                 let num_weights := div(calldatasize(), 64) // should be even // 64 since two words make one decimal
-                for { let i := 0 } lt(i, num_weights) { i := add(i, 32) }
+                for { let i := 0 } lt(i, num_weights) { i := add(i, 1) }
                 {
-                    let weight := calldataload(i)
-                    sstore(i, weight)
+                    let memory_address := add(mul(i, 64), 4)
+                    let weight_c := calldataload(memory_address)
+                    let index_address := mul(i, 2)
+                    sstore(index_address, weight_c)
+
+                    memory_address := add(memory_address, 32)
+                    let weight_q := calldataload(memory_address)
+                    index_address := add(index_address, 1)
+                    sstore(index_address, weight_q)
                 }
             }
 
@@ -27,13 +34,21 @@ object "Neuron" {
             // first two inputs are precision and steps
             // run(int256[])
             case 0xc5b5bb77 {
-                let precision := calldataload(0)
-                let steps := calldataload(32)
+                let precision := calldataload(4)
+                let steps := calldataload(36)
                 
                 let num_inputs_times_64 := sub(calldatasize(), 68) // expect full word per weight // 64 since two words make one decimal // 68: 4 for function selector
                 calldatacopy(0, 68, num_inputs_times_64) // inputs
                 
-                let yc, yq := neuron(num_inputs_times_64, precision, steps)
+                let num_inputs := div(num_inputs_times_64, 64) // expect full word per weight // 64 since two words make one decimal // 68: 4 for function selector
+                let yc, yq := neuron(num_inputs, precision, steps)
+                //debug
+                sstore(12, num_inputs)
+                sstore(13, precision)
+                sstore(14, steps)
+                sstore(10, yc)
+                sstore(11, yq)
+                //debug
                 mstore(0, yc)
                 mstore(32, yc)
 
@@ -49,33 +64,55 @@ object "Neuron" {
             // Neuron with sigmoid activation
             // https://en.wikipedia.org/wiki/Artificial_neuron
 
-            function neuron(num_inputs_times_64, precision, steps) -> yc, yq {
-                let xc, xq := weighted_sum(num_inputs_times_64, precision, steps)
-                yc, yq := phi(xc, xq)
+            function neuron(num_inputs, precision, steps) -> yc, yq {
+                let xc, xq := weighted_sum(num_inputs, precision, steps)
+                yc, yq := phi(xc, xq, precision, steps)
+
+                //debug
+                sstore(15, xc)
+                sstore(16, xq)
+                sstore(17, yc)
+                sstore(18, yq)
+                //debug
+                
             }
 
-            function weighted_sum(num_inputs_times_64, precision, steps) -> total_c, total_q {
+            function weighted_sum(num_inputs, precision, steps) -> total_c, total_q {
                 total_c := 0
                 total_q := 0
 
-                for { let i := 0 } lt(i, num_inputs_times_64) { i := add(i, 64) }
+                for { let i := 0 } lt(i, num_inputs) { i := add(i, 1) }
                 {
-                    let weight_c := sload(i)
-                    let weight_q := sload(add(i, 32))
-
-                    let input_c := mload(i)
-                    let input_q := mload(add(i, 32))
+                    let index_address := mul(i, 2)
+                    let weight_c := sload(index_address)
+                    index_address := add(index_address, 1)
+                    let weight_q := sload(index_address)
+                    
+                    let memory_address := mul(i, 64)
+                    let input_c := mload(memory_address)
+                    memory_address := add(memory_address, 32)
+                    let input_q := mload(memory_address)
 
                     let product_c, product_q := dec_mul(weight_c, weight_q, input_c, input_q, precision)
 
                     total_c, total_q := dec_add(total_c, total_q, product_c, product_q, precision)
+
+                    //debug
+                    sstore(add(mul(i,10),30), index_address)
+                    sstore(add(mul(i,10),31), memory_address)
+                    sstore(add(mul(i,10),32), input_c)
+                    sstore(add(mul(i,10),33), input_q)
+                    sstore(add(mul(i,10),34), weight_c)
+                    sstore(add(mul(i,10),35), weight_q)
+                    sstore(add(mul(i,10),36), product_c)
+                    sstore(add(mul(i,10),37), product_q)
+                    sstore(add(mul(i,10),38), total_c)
+                    sstore(add(mul(i,10),39), total_q)
+                    //debug
                 }
             }
 
-            function phi(xc, xq) -> yc, yq {
-                let precision := mload(0)
-                let steps := mload(32)
-
+            function phi(xc, xq, precision, steps) -> yc, yq {
                 let mxc, mxq := dec_neg(xc, xq) // -x
                 let emxc, emxq := dec_exp(mxc, mxq, precision, steps) // exp(-x)
                 let oemxc, oemxq := dec_add(1, 0, emxc, emxq, precision) // 1 + exp(-x)
