@@ -117,6 +117,8 @@ you can now write Yul smart contracts like in the BlackScholes or Neuron example
 
 yes, you could attack it and take control of the PoA account ~ pls do not, it's just for testing/showcasing.
 
+i used this project to test the smart contracts: https://github.com/1m1-github/EVMPlus_TESTING
+
 ## Go Ethereum
 
 Official Golang execution layer implementation of the Ethereum protocol.
