@@ -21,20 +21,24 @@ tmux new -s geth
 ./build/bin/geth account new --datadir ~/chaindata
 // add public address to genesis.json following https://geth.ethereum.org/docs/fundamentals/private-network#clique-example
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --nat extip:35.209.100.125
+./build/bin/geth --rpcapi eth,personal,net,admin,web3 --datadir ~/chaindata --networkid 196790 --port 30313 --nat extip:35.209.100.125
 
 // remember to open HTTP port, any other?
 
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
-enr:-KO4QMDjuzf4kyaxHbu6erV9l6ekJHKTUGCoK5nmAryLsluSAwWYbpXtJNocI6T8ePAivTTwL7e2zSnHpvqMSSDdzOuGAYtU32_5g2V0aMfGhLFOWi2AgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQP-8pqTWte8Djic2jDtFQ_iwB9NTUw3crn-IV4YCpUvDoRzbmFwwIN0Y3CCdl-DdWRwgnZf
+enr:-KO4QAHtFu3-uVxR29yZAcfFxbOfGQCVDBz4Ld5BHSAMN6Mwe_jCO_JGl0VZ6GFSJk70T99JmBY0Wq5z_x70IWzUY8GGAYtU7X0Ug2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQPTdT-sDAaR-zugRyw5nb6AFApvJND81gu1zmlDp2fi-oRzbmFwwIN0Y3CCdmmDdWRwgnZp
+
+// write password from account new step into file
+echo "password" >> ~/chaindata/password.txt
+./build/bin/geth --unlock 0xa26c76a509795d921539c189c139e870666553a7 --password ~/chaindata/password.txt attach ~/chaindata/geth.ipc
+
+// send gas to friends
+eth.sendTransaction({from: eth.accounts[0], to: "0xd442f325d8B7491029417b87607e35DA9A8F4619", value: 55})
 
 // member node steps
 
-./build/bin/geth init --datadir ~/Downloads/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth account new --datadir ~/Downloads/chaindata
-./build/bin/geth --datadir ~/Downloads/chaindata --networkid 196790 --port 30303 --bootnodes enr:-KO4QMDjuzf4kyaxHbu6erV9l6ekJHKTUGCoK5nmAryLsluSAwWYbpXtJNocI6T8ePAivTTwL7e2zSnHpvqMSSDdzOuGAYtU32_5g2V0aMfGhLFOWi2AgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQP-8pqTWte8Djic2jDtFQ_iwB9NTUw3crn-IV4YCpUvDoRzbmFwwIN0Y3CCdl-DdWRwgnZf --authrpc.port 8551
-./build/bin/geth attach ~/Downloads/chaindata/geth.ipc
+./build/bin/geth account new --datadir ~/chaindata
+./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --bootnodes enr:-KO4QAHtFu3-uVxR29yZAcfFxbOfGQCVDBz4Ld5BHSAMN6Mwe_jCO_JGl0VZ6GFSJk70T99JmBY0Wq5z_x70IWzUY8GGAYtU7X0Ug2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQPTdT-sDAaR-zugRyw5nb6AFApvJND81gu1zmlDp2fi-oRzbmFwwIN0Y3CCdmmDdWRwgnZp
+./build/bin/geth attach ~/chaindata/geth.ipc
 
---unlock 0xC1B2c0dFD381e6aC08f34816172d6343Decbb12b --password node1/password.txt
-personal.unlockAccount(eth.accounts[0], "", 300)
-eth.sendTransaction({from: eth.accounts[0], to: "0xb3360a6ef50f5a540c5d6aa99fe5d2467a1d342a", value: 55})
