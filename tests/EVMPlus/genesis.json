@@ -11,10 +11,7 @@
         "istanbulBlock": 0,
         "berlinBlock": 0,
         "londonBlock": 0,
-        "clique": {
-            "period": 5,
-            "epoch": 30000
-          }
+        "ethash": {}
     },
     "alloc": {
         "0xb316c8ca80e0dce73f3a81338ed97f31fe0a31eb": {
