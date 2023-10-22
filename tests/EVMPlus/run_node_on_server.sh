@@ -26,13 +26,13 @@ tmux new -s geth
 // remember to open HTTP port, any other?
 
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
-enr:-KO4QFFzqcNw-MmlNGkhVzUxLnrKjofxJkMQ4OMYHgAMoRXWcLsxORD6ZQdEaf8taOSXHZ3QZLt7ytIq_LntSB3kuheGAYtU_c0Wg2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQJcLOQyM1uEO4XA7ud1oNfJk2ZduzNkzX6m1ImVjjqes4RzbmFwwIN0Y3CCdmmDdWRwgnZp
+enr:-KO4QADz4jFPdEhiGCd7NRkYqF4E_RZVWJzWiyQh33NrB-IJBzzsSy22EmyqcLW9uZH8bpA1DqpjQtsLvUR0eS7yrZiGAYtVJttTg2V0aMfGhKkY9ZOAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQMbb-flS4GLsP7tkVEDFltsiJnKszXtgKU3uVRh4EkJ34RzbmFwwIN0Y3CCdmmDdWRwgnZp
 
 // member node steps
 
 ./build/bin/geth account new --datadir ~/chaindata
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
-./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --http --http.api 'personal,eth,net,web3' --bootnodes enr:-KO4QFFzqcNw-MmlNGkhVzUxLnrKjofxJkMQ4OMYHgAMoRXWcLsxORD6ZQdEaf8taOSXHZ3QZLt7ytIq_LntSB3kuheGAYtU_c0Wg2V0aMfGhAE7G9WAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQJcLOQyM1uEO4XA7ud1oNfJk2ZduzNkzX6m1ImVjjqes4RzbmFwwIN0Y3CCdmmDdWRwgnZp
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --http --http.api 'personal,eth,net,web3' --bootnodes enr:-KO4QADz4jFPdEhiGCd7NRkYqF4E_RZVWJzWiyQh33NrB-IJBzzsSy22EmyqcLW9uZH8bpA1DqpjQtsLvUR0eS7yrZiGAYtVJttTg2V0aMfGhKkY9ZOAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQMbb-flS4GLsP7tkVEDFltsiJnKszXtgKU3uVRh4EkJ34RzbmFwwIN0Y3CCdmmDdWRwgnZp
 ./build/bin/geth attach ~/chaindata/geth.ipc
 
 // write password from account new step into file
