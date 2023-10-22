@@ -37,6 +37,8 @@ eth.sendTransaction({
   gas: "1000000"
 });
 
+var deployed_contract={address:"0x5e20ee9d02234051aef23150a72a6139c0fecb59"}
+
 eth.getStorageAt(deployed_contract.address,0)
 eth.getStorageAt(deployed_contract.address,1)
 eth.getStorageAt(deployed_contract.address,2)

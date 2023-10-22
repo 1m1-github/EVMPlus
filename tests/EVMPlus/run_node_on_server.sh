@@ -1,3 +1,6 @@
+// the below is work in progress...it did not completely work, for different reasons
+// currenrtly, i am running a mining geth node on a server with http and ws opened for testing
+
 // server bootnode steps
 
 sudo apt update
@@ -32,8 +35,7 @@ tmux new -s miner
 // 
 tmux new -s geth
 
-./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --http --http.corsdomain '*' --ws --ws.origins '*' --allow-insecure-unlock --unlock 0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e --mine
---miner.etherbase=0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e
+./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --http --http.addr 0.0.0.0 --http.port 8555 --http.corsdomain '*' --ws --ws.addr 0.0.0.0 --ws.port 8556 --ws.origins '*' --allow-insecure-unlock --unlock 0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e --password ~/chaindata/password.txt --mine --miner.etherbase=0x58c4c45c9b5954ee15E81C0FB7437DCaCEAD665e
 
 
 ./build/bin/geth account new --datadir ~/chaindata
@@ -46,16 +48,14 @@ tmux new -s geth
 ./build/bin/geth attach --exec admin.nodeInfo.enr ~/chaindata/geth.ipc
 enr:-KO4QIzzViglXefgjUBy1A2V_t1BrjZ1dgcn8Lu2Yes0ZUjBf-QJ7bp47KVUQil_WVtA89idZCnluKLkffQ0Ns0czYWGAYtVNkH0g2V0aMfGhKHCtOKAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQNZ5N2y4Z2Ehb7UQVuKC24a1CWntX4b2OEBesNFVnaX9IRzbmFwwIN0Y3CCdmmDdWRwgnZp
 
-// member node steps
+// member node steps <- this part did not work
 
 ./build/bin/geth account new --datadir ~/chaindata
 ./build/bin/geth init --datadir ~/chaindata ./tests/EVMPlus/genesis.json
 ./build/bin/geth --datadir ~/chaindata --networkid 196790 --port 30313 --unlock 0xb316c8ca80e0dce73f3a81338ed97f31fe0a31eb --password ~/chaindata/password.txt --bootnodes enr:-KO4QIzzViglXefgjUBy1A2V_t1BrjZ1dgcn8Lu2Yes0ZUjBf-QJ7bp47KVUQil_WVtA89idZCnluKLkffQ0Ns0czYWGAYtVNkH0g2V0aMfGhKHCtOKAgmlkgnY0gmlwhCPRZH2Jc2VjcDI1NmsxoQNZ5N2y4Z2Ehb7UQVuKC24a1CWntX4b2OEBesNFVnaX9IRzbmFwwIN0Y3CCdmmDdWRwgnZp
 ./build/bin/geth attach ~/chaindata/geth.ipc
 
-// write password from account new step into file
-echo "password" >> ~/chaindata/password.txt
-./build/bin/geth --unlock 0xb316c8ca80e0dce73f3a81338ed97f31fe0a31eb --password ~/chaindata/password.txt attach ~/chaindata/geth.ipc
+// attach
 
-// send gas to friends
-eth.sendTransaction({from: eth.accounts[0], to: "0xd442f325d8B7491029417b87607e35DA9A8F4619", value: 55})
+./build/bin/geth attach http://35.209.100.125:8555
+./build/bin/geth --unlock 0xb316c8ca80e0dce73f3a81338ed97f31fe0a31eb --password ~/chaindata/password.txt attach http://35.209.100.125:8545

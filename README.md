@@ -103,9 +103,19 @@ The first version allows for 256 bits of precision for the significand and expon
 
 ### EIP
 
-no shrinking from real line to [0, 1], as is often done, because this is an OPCODE, it was to provide the most basic functionality. the user can shrink *using* OPCODEs made available here (e.g. for the logistic function) to improve efficiency (faster convergence in [0,1]).
+https://github.com/1m1-github/EthereumEIPs/blob/main/EIPS/eip-EVM%2B.md
 
-constants (like TAU, LN_2) should be hardcoded by the user to desired precision vs having computed everytime.
+### Magicians forum
+
+https://ethereum-magicians.org/t/decimal-math-on-evm/16194
+
+## live
+
+at the following url, there is a PoA geth node and miner running on London EVM+: http://35.209.100.125:8555 or ws://35.209.100.125:8556
+
+you can now write Yul smart contracts like in the BlackScholes example linked above, using the new OPCODEs, compile with `solc --evm-version london --strict-assembly smartcontract.yul >> smartcontract.txt` to bytecode and use something like `ethers.js` to deploy/interact with a EVM+ node.
+
+yes, you could attack it and take control of the PoA account ~ pls do not, it's just for testing/showcasing.
 
 ## Go Ethereum
 
