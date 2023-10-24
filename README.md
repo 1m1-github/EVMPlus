@@ -33,7 +33,7 @@ SIN gives us all of trigonometry.
 
 ### implementation
 
-1. define DECADD, DECNEG , DECMUL, DECINV following https://github.com/JuliaMath/Decimals.jl
+1. define DECADD, DECNEG , DECMUL, DECINV following https://github.com/JuliaMath/Decimals.jl/blob/master/src/arithmetic.jl
 2. DECEXP, DECSIN via Taylor series expansion https://en.wikipedia.org/wiki/Taylor_series#Exponential_function and https://en.wikipedia.org/wiki/Taylor_series#Trigonometric_functions
 3. DECLN via continued fractions https://en.wikipedia.org/wiki/Natural_logarithm#Continued_fractions
 
