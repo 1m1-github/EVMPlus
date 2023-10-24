@@ -69,10 +69,7 @@ the first run, identical to the second, is to get the bottom-up gas cost, which 
 
 this gives an embedded gas calcuation, which works well for complex OPCODEs (see `gasEVMPlusEmulate` in https://github.com/1m1-github/go-ethereum-plus/blob/main/core/vm/gas_table.go).
 
-to remove the double gas, a future EIP would suggest the following:
-allow contract code to run whilst accumulating gas (at runtime) and panicking in case of limit breach, without requiring the cost in advance.
-this only works for contract code that is *local*, defined as code that only depends on the user input and the inner bytecode of the contract. local contracts cannot use state from the chain, nor make calls to other contracts. pure mathematical functions would e.g. be local contracts.
-local contracts are fully deterministic given the input, allowing a user to estimate gas costs offline (cheaper) and the EVM to panic at runtime, without knowing gas in advance.
+to remove the double gas, a future EIP would suggest the following: allow contract code to run whilst accumulating gas (at runtime) and panicking in case of limit breach, without requiring the cost in advance. this only works for contract code that is pure, defined as code that only depends on the user input and the inner bytecode of the contract. pure contracts cannot use state from the chain, nor make calls to other contracts. pure mathematical functions would e.g. be pure contracts. pure contracts are fully deterministic given the input, allowing a user to estimate gas costs offline (cheaper) and the EVM to panic at runtime, without knowing gas in advance.
 
 since the costs depend on the input, a fuzzing would give us close to the worst cases (TODO). 
 
