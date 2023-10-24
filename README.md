@@ -43,10 +43,10 @@ lots of scientific, mathematical, financial, digital art calculations require un
 
 these new capabilities will invite large universes of apps into Ethereum.
 
-two example, functional use cases:
+two functioning example use cases:
 
-1. Black-Scholes ~ basic formula to value options risk neutrally (https://github.com/1m1-github/go-ethereum-plus/blob/main/tests/EVMPlus/BlackScholes.yul)
-2. Neuron ~ sigmoid activated single neuron (https://github.com/1m1-github/EVMPlus/blob/main/tests/EVMPlus/Neuron.yul)
+1. Black-Scholes ~ basic formula to value options risk neutrally (https://github.com/1m1-github/go-ethereum-plus/blob/main/tests/EVMPlus/BlackScholes.yul) ~ ca. 32k gas (charged double)
+2. Neuron ~ sigmoid activated single neuron (https://github.com/1m1-github/EVMPlus/blob/main/tests/EVMPlus/Neuron.yul) ~ ca. 24k gas (charged double)
 
 generally, with these OPCODES, users can solve integrals, diff. equations, etc.
 
@@ -69,10 +69,7 @@ the first run, identical to the second, is to get the bottom-up gas cost, which 
 
 this gives an embedded gas calcuation, which works well for complex OPCODEs (see `gasEVMPlusEmulate` in https://github.com/1m1-github/go-ethereum-plus/blob/main/core/vm/gas_table.go).
 
-to remove the double gas, a future EIP would suggest the following:
-allow contract code to run whilst accumulating gas (at runtime) and panicking in case of limit breach, without requiring the cost in advance.
-this only works for contract code that is *local*, defined as code that only depends on the user input and the inner bytecode of the contract. local contracts cannot use state from the chain, nor make calls to other contracts. pure mathematical functions would e.g. be local contracts.
-local contracts are fully deterministic given the input, allowing a user to estimate gas costs offline (cheaper) and the EVM to panic at runtime, without knowing gas in advance.
+to remove the double gas, a future EIP would suggest the following: allow contract code to run whilst accumulating gas (at runtime) and panicking in case of limit breach, without requiring the cost in advance. this only works for contract code that is pure, defined as code that only depends on the user input and the inner bytecode of the contract. pure contracts cannot use state from the chain, nor make calls to other contracts. pure mathematical functions would e.g. be pure contracts. pure contracts are fully deterministic given the input, allowing a user to estimate gas costs offline (cheaper) and the EVM to panic at runtime, without knowing gas in advance.
 
 since the costs depend on the input, a fuzzing would give us close to the worst cases (TODO). 
 
@@ -103,7 +100,7 @@ The first version allows for 256 bits of precision for the significand and expon
 
 ### EIP
 
-https://github.com/1m1-github/EthereumEIPs/blob/main/EIPS/eip-EVM%2B.md
+https://github.com/1m1-github/EthereumEIPs/blob/main/EIPS/eip-7543.md
 
 ### Magicians forum
 
@@ -113,9 +110,13 @@ https://ethereum-magicians.org/t/decimal-math-on-evm/16194
 
 at the following url, there is a PoA geth node and miner running on London EVM+: http://35.209.100.125:8555 or ws://35.209.100.125:8556
 
-you can now write Yul smart contracts like in the BlackScholes example linked above, using the new OPCODEs, compile with `solc --evm-version london --strict-assembly smartcontract.yul >> smartcontract.txt` to bytecode and use something like `ethers.js` to deploy/interact with a EVM+ node.
+you can now write Yul smart contracts like in the BlackScholes or Neuron example linked above, using the new OPCODEs, compile with `solc --evm-version london --strict-assembly smartcontract.yul >> smartcontract.txt` to bytecode and use something like `ethers.js` to deploy/interact with a EVM+ node.
 
 yes, you could attack it and take control of the PoA account ~ pls do not, it's just for testing/showcasing.
+
+email@1m1.io for gas.
+
+i used this project to test the smart contracts: https://github.com/1m1-github/EVMPlus_TESTING
 
 ## Go Ethereum
 
