@@ -45,8 +45,8 @@ these new capabilities will invite large universes of apps into Ethereum.
 
 two functioning example use cases:
 
-1. Black-Scholes ~ basic formula to value options risk neutrally (https://github.com/1m1-github/go-ethereum-plus/blob/main/tests/EVMPlus/BlackScholes.yul)
-2. Neuron ~ sigmoid activated single neuron (https://github.com/1m1-github/EVMPlus/blob/main/tests/EVMPlus/Neuron.yul)
+1. Black-Scholes ~ basic formula to value options risk neutrally (https://github.com/1m1-github/go-ethereum-plus/blob/main/tests/EVMPlus/BlackScholes.yul) ~ ca. 32k gas (charged double)
+2. Neuron ~ sigmoid activated single neuron (https://github.com/1m1-github/EVMPlus/blob/main/tests/EVMPlus/Neuron.yul) ~ ca. 24k gas (charged double)
 
 generally, with these OPCODES, users can solve integrals, diff. equations, etc.
 
