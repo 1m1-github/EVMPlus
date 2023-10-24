@@ -103,7 +103,7 @@ The first version allows for 256 bits of precision for the significand and expon
 
 ### EIP
 
-https://github.com/1m1-github/EthereumEIPs/blob/main/EIPS/eip-EVM%2B.md
+[https://github.com/1m1-github/EthereumEIPs/blob/main/EIPS/eip-EVM%2B.md](https://github.com/1m1-github/EthereumEIPs/blob/main/EIPS/eip-7543.md)
 
 ### Magicians forum
 
