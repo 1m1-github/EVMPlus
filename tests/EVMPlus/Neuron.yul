@@ -46,19 +46,11 @@ object "Neuron" {
                 let num_inputs := div(num_inputs_times_64, 64) // expect full word per weight // 64 since two words make one decimal // 68: 4 for function selector
                 let yc, yq := neuron(num_inputs, precision, steps)
                 
-                mstore(0, yc)
-                mstore(32, yq)
-
-                //debug
-                // sstore(12, num_inputs)
-                // sstore(13, precision)
-                // sstore(14, steps)
-                // sstore(15, yc)
-                // sstore(16, yq)
+                // return
+                mstore(0, yc) // yc
+                mstore(32, yq) // yc
                 log0(0, 32) // yc
                 log0(32, 32) // yq
-                //debug
-
                 return(0, 64)
             }
             default {
@@ -74,14 +66,6 @@ object "Neuron" {
             function neuron(num_inputs, precision, steps) -> yc, yq {
                 let xc, xq := weighted_sum(num_inputs, precision, steps)
                 yc, yq := sigmoid(xc, xq, precision, steps)
-
-                //debug
-                // sstore(15, xc)
-                // sstore(16, xq)
-                // sstore(17, yc)
-                // sstore(18, yq)
-                //debug
-                
             }
 
             function weighted_sum(num_inputs, precision, steps) -> total_c, total_q {
@@ -103,19 +87,6 @@ object "Neuron" {
                     let product_c, product_q := dec_mul(weight_c, weight_q, input_c, input_q, precision)
 
                     total_c, total_q := dec_add(total_c, total_q, product_c, product_q, precision)
-
-                    //debug
-                    // sstore(add(mul(i,10),30), index_address)
-                    // sstore(add(mul(i,10),31), memory_address)
-                    // sstore(add(mul(i,10),32), input_c)
-                    // sstore(add(mul(i,10),33), input_q)
-                    // sstore(add(mul(i,10),34), weight_c)
-                    // sstore(add(mul(i,10),35), weight_q)
-                    // sstore(add(mul(i,10),36), product_c)
-                    // sstore(add(mul(i,10),37), product_q)
-                    // sstore(add(mul(i,10),38), total_c)
-                    // sstore(add(mul(i,10),39), total_q)
-                    //debug
                 }
             }
 
