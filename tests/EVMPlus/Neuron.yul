@@ -36,7 +36,7 @@ object "Neuron" {
 
             // will use as many input weights as input supplied
             // first two inputs are precision and steps
-            // inputs: precision_c, precision_q, steps_c, steps_q, input_1_c, input_1_q, input_2_c, input_2_q, ..., input_(num_inputs)_c, input_(num_inputs)_q
+            // inputs: precision, steps, input_1_c, input_1_q, input_2_c, input_2_q, ..., input_(num_inputs)_c, input_(num_inputs)_q
             // run(int256[])
             case 0xc5b5bb77 {
                 let precision := calldataload(4)
