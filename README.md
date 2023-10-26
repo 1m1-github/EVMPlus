@@ -10,13 +10,13 @@ with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpret
 
 ### OPCODE defs
 
-DECADD  a + b  OpCode = 0xd0  (ac, aq, bc, bq, precision) -> (cc, cq)  
-DECNEG  -a  OpCode = 0xd1  (ac, aq) -> (bc, bq)  
-DECMUL  a * b  OpCode = 0xd2  (ac, aq, bc, bq, precision) -> (cc, cq)  
-DECINV  1/a  OpCode = 0xd3  (ac, aq, precision) -> (bc, bq)  
-DECEXP  exp(a)  OpCode = 0xd4  (ac, aq, precision, steps) -> (bc, bq)  
-DECLN ln(a)  OpCode = 0xd5  (ac, aq, precision, steps) -> (bc, bq)  
-DECSIN  sin(a)  OpCode = 0xd6  (ac, aq, precision, steps) -> (bc, bq)  
+0xd0 DECADD  a + b  (ac, aq, bc, bq, precision) -> (cc, cq)  
+0xd1 DECNEG  -a     (ac, aq) -> (bc, bq)  
+0xd2 DECMUL  a * b  (ac, aq, bc, bq, precision) -> (cc, cq)  
+0xd3 DECINV  1/a    (ac, aq, precision) -> (bc, bq)  
+0xd4 DECEXP  exp(a) (ac, aq, precision, steps) -> (bc, bq)  
+0xd5 DECLN   ln(a)  (ac, aq, precision, steps) -> (bc, bq)  
+0xd6 DECSIN  sin(a) (ac, aq, precision, steps) -> (bc, bq)  
 
 precision is the # of digits kept. steps for DECEXP and DECSIN are the # of Taylor expansion steps. steps for DECLN is the depth of the continued fractions expansion.
 
