@@ -16,6 +16,7 @@ object "Neuron" {
             // Dispatcher
             switch selector()
             
+            // inputs: weight_1_c, weight_1_q, weight_2_c, weight_2_q, ..., weight_num_weights_c, weight_num_weights_q
             // set_weights(int256[])
             case 0x61d311e8 {
                 let num_weights := div(calldatasize(), 64) // should be even // 64 since two words make one decimal
@@ -35,6 +36,7 @@ object "Neuron" {
 
             // will use as many input weights as input supplied
             // first two inputs are precision and steps
+            // inputs: precision_c, precision_q, steps_c, steps_q, input_1_c, input_1_q, input_2_c, input_2_q, ..., input_(num_inputs)_c, input_(num_inputs)_q
             // run(int256[])
             case 0xc5b5bb77 {
                 let precision := calldataload(4)
@@ -63,11 +65,13 @@ object "Neuron" {
             // Neuron with sigmoid activation
             // https://en.wikipedia.org/wiki/Artificial_neuron
 
+            // sigmoid(sum(weights .* inputs))
             function neuron(num_inputs, precision, steps) -> yc, yq {
                 let xc, xq := weighted_sum(num_inputs, precision, steps)
                 yc, yq := sigmoid(xc, xq, precision, steps)
             }
 
+            // sum(weights .* inputs)
             function weighted_sum(num_inputs, precision, steps) -> total_c, total_q {
                 total_c := 0
                 total_q := 0
@@ -90,6 +94,7 @@ object "Neuron" {
                 }
             }
 
+            // sigmoid(x) = (1 + exp(-x))^(-1)
             function sigmoid(xc, xq, precision, steps) -> yc, yq {
                 let mxc, mxq := dec_neg(xc, xq) // -x
                 let emxc, emxq := dec_exp(mxc, mxq, precision, steps) // exp(-x)
