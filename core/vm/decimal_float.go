@@ -345,7 +345,7 @@ func (a *Decimal) lessThan(b *Decimal, precision *int256, gas *uint64) bool {
 func signedDiv(numerator, denominator, out *int256, gas *uint64) *int256 {
 	sn := Sign(numerator, gas)
 	sd := Sign(denominator, gas)
-	if sn == 0 && sd == 0 {
+	if sn == 0 && sd == 0 { // TODO correct? xor just sd == 0 ?
 		out = nil
 		return nil
 	}
