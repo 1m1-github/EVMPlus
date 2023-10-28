@@ -1,4 +1,4 @@
-// math based on https://github.com/JuliaMath/Decimals.jl
+// arithmetic based on https://github.com/JuliaMath/Decimals.jl
 
 package vm
 
