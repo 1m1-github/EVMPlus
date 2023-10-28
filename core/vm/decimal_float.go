@@ -45,8 +45,8 @@ func (out *Decimal) Add(a, b *Decimal, precision *int256, gas *uint64) *Decimal 
 
 	ca := add_helper(a, b, gas)
 	cb := add_helper(b, a, gas)
-
 	Add(&ca, &cb, &out.c, gas)
+	
 	q := min(&a.q, &b.q, gas)
 	Set(q, &out.q, gas)
 
