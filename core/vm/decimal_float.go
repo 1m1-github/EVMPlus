@@ -47,7 +47,7 @@ func (out *Decimal) Add(a, b *Decimal, precision *int256, gas *uint64) *Decimal 
 	cb := add_helper(b, a, gas)
 
 	Add(&ca, &cb, &out.c, gas)
-	Set(min(&a.q, &b.q, gas), &out.q, gas)
+	Set(signedMin(&a.q, &b.q, gas), &out.q, gas)
 
 	out.normalize(out, precision, false, gas)
 
@@ -78,7 +78,7 @@ func (out *Decimal) Inv(a *Decimal, precision *int256, gas *uint64) *Decimal {
 
 	var precision_m_aq int256
 	Sub(precision, &a.q, &precision_m_aq, gas)
-	if SignedCmp(&precision_m_aq, ZERO_INT256, gas) == -1 {
+	if signedCmp(&precision_m_aq, ZERO_INT256, gas) == -1 {
 		panic("precision_m_aq NEGATIVE")
 	}
 
@@ -262,9 +262,9 @@ func DecSin(ac, aq, precision, steps *int256, gas *uint64) (bc, bq *int256) {
 
 // -1 if a <  b
 //
-//	0 if a == b
-//	1 if b <  a
-func SignedCmp(a, b *int256, gas *uint64) int {
+// 0 if a == b
+// 1 if b <  a
+func signedCmp(a, b *int256, gas *uint64) int {
 	c := a.Cmp(b)
 
 	if c == 0 { // a == b
@@ -297,9 +297,9 @@ func SignedCmp(a, b *int256, gas *uint64) int {
 	}
 }
 
-// min(a, b)
-func min(a, b *int256, gas *uint64) (c *int256) {
-	if SignedCmp(a, b, gas) == -1 {
+// signedMin(a, b)
+func signedMin(a, b *int256, gas *uint64) (c *int256) {
+	if signedCmp(a, b, gas) == -1 {
 		return a
 	} else {
 		return b
@@ -440,7 +440,7 @@ func (out *Decimal) round(a *Decimal, precision *int256, normal bool, gas *uint6
 	var shift, ten_power int256
 	Add(precision, &a.q, &shift, gas)
 
-	if SignedCmp(&shift, ZERO_INT256, gas) == 1 || SignedCmp(&shift, &a.q, gas) == -1 {
+	if signedCmp(&shift, ZERO_INT256, gas) == 1 || signedCmp(&shift, &a.q, gas) == -1 {
 		if normal {
 			Set(&a.c, &out.c, gas)
 			Set(&a.q, &out.q, gas)
