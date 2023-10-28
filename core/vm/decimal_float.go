@@ -373,18 +373,18 @@ func signedDiv(numerator, denominator, out *int256, gas *uint64) *int256 {
 	return out
 }
 
-// c = (-1)^d1.s * d1.c * 10^max(d1.q - d2.q, 0)
-func add_helper(d1, d2 *Decimal, gas *uint64) (c int256) {
+// out = {c: d1.c, q: 10^max(d1.q - d2.q, 0)}
+func add_helper(d1, d2 *Decimal, gas *uint64) (out int256) {
 	var exponent_diff int256
 	Sub(&d1.q, &d2.q, &exponent_diff, gas)
 	if Sign(&exponent_diff, gas) == -1 {
 		exponent_diff = *ZERO_INT256 // shallow copy ok
 	}
 
-	Exp(TEN_INT256, &exponent_diff, &c, gas)
-	Mul(&d1.c, &c, &c, gas)
+	Exp(TEN_INT256, &exponent_diff, &out, gas)
+	Mul(&d1.c, &out, &out, gas)
 
-	return c
+	return out
 }
 
 // remove trailing zeros from coefficient
