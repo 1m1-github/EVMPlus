@@ -21,7 +21,7 @@ func createDecimal(_c, _q *int256, gas *uint64) *Decimal {
 }
 
 // CONSTANTS
-var GLOBAL_GAS uint64
+var GLOBAL_GAS uint64 // not needed, only once per node start, just as an argument into New and createDecimal
 
 var MINUS_ONE_INT256 = new(int256).Neg(ONE_INT256)
 var ZERO_INT256 = New(0, &GLOBAL_GAS)
