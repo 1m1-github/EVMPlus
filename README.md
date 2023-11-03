@@ -102,6 +102,8 @@ The first version allows for 256 bits of precision for the significand and expon
 
 https://github.com/1m1-github/EthereumEIPs/blob/main/EIPS/eip-7543.md
 
+PR to EIPs repo: https://github.com/ethereum/EIPs/pull/7904/files#diff-909e06a2fa0255eedcfa32be67c39afe5e1d0d0db2f69a8b89b4222a51a09db7
+
 ### Magicians forum
 
 https://ethereum-magicians.org/t/decimal-math-on-evm/16194
