@@ -23,7 +23,7 @@ with $c$ (coefficiant) and $q$ (exponent) are taken from the stack and interpret
 
 precision is the # of digits kept. steps for DECEXP and DECSIN are the # of Taylor expansion steps. steps for DECLN is the depth of the continued fractions expansion.
 
-### derived functions
+### elementary functions
 
 in the smart contract code (or as precompiled smart contracts), we can easily get the following functions:
 
@@ -33,6 +33,8 @@ TAN(a) = SIN(a) / COS(a)
 
 a^b gives us all polynomials.
 SIN gives us all of trigonometry.
+
+putting all together, we get all elementary functions.
 
 ### implementation
 
