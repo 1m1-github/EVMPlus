@@ -1,5 +1,4 @@
-WINNER OF ETHONLINE HACKATHON 2023
-(45:32 @ https://www.youtube.com/live/ASnWiZ4moA8?si=3giCUgUHv5ImbF8X)
+WINNER OF ETHONLINE HACKATHON 2023: https://www.youtube.com/live/ASnWiZ4moA8?si=3giCUgUHv5ImbF8X&t=45m32s
 
 ## EVM+
 
