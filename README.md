@@ -75,6 +75,8 @@ this gives an embedded gas calcuation, which works well for complex OPCODEs (see
 
 to remove the double gas, a future EIP would suggest the following: allow contract code to run whilst accumulating gas (at runtime) and panicking in case of limit breach, without requiring the cost in advance. this only works for contract code that is pure, defined as code that only depends on the user input and the inner bytecode of the contract. pure contracts cannot use state from the chain, nor make calls to other contracts. pure mathematical functions would e.g. be pure contracts. pure contracts are fully deterministic given the input, allowing a user to estimate gas costs offline (cheaper) and the EVM to panic at runtime, without knowing gas in advance.
 
+another method to remove the double gas would be to find (and prove) an upper bound dependent on the inputs much closer than the double.
+
 since the costs depend on the input, a fuzzing would give us close to the worst cases (TODO). 
 
 ### binary vs decimal
